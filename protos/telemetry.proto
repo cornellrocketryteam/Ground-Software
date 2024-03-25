@@ -1,0 +1,24 @@
+// Protobuf definition for Cornell Rocketry Team's 
+// Fill Station Telemetry
+//
+// Author: Zach Garcia
+
+syntax = "proto3";
+
+package telemetry;
+
+// The telemetry service definition
+service Telemeter {
+    // Sends telemetry
+    rpc SendTelemetry (Telemetry) returns (TelemetryReply) {}
+}
+
+// The telemetry message
+message Telemetry {
+    string temp = 1;
+}
+
+// The response message containing an ack
+message TelemetryReply {
+    bool ack = 1;
+}

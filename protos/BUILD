@@ -19,3 +19,20 @@ cc_grpc_library(
     grpc_only = True,
     deps = [":telemetry_cc_proto"],
 )
+
+proto_library(
+    name = "command_proto",
+    srcs = ["command.proto"],
+)
+
+cc_proto_library(
+    name = "command_cc_proto",
+    deps = [":command_proto"],
+)
+
+cc_grpc_library(
+    name = "command_cc_grpc",
+    srcs = [":command_proto"],
+    grpc_only = True,
+    deps = [":command_cc_proto"],
+)

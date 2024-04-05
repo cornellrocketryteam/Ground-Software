@@ -24,7 +24,7 @@ def _impl(ctx):
         ),
         tool_path(
             name = "ld",
-            path = "/usr/bin/ld",
+            path = "/bin/false",
         ),
         tool_path(
             name = "ar",

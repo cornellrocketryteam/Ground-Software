@@ -29,7 +29,7 @@ using telemetry::Telemeter;
 using telemetry::Telemetry;
 using telemetry::TelemetryReply;
 
-ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
+ABSL_FLAG(uint16_t, server_port, 50052, "Server port for the service");
 ABSL_FLAG(std::string, client_target, "localhost:50051", "Server address");
 
 /*
@@ -43,6 +43,7 @@ class TelemeterServiceImpl final : public Telemeter::Service
                          TelemetryReply *reply) override
     {
         // TODO(Zach) read request, update telemetry based on values, and set reply values
+        std::cout << "Temp: " << request->temp() << std::endl;
         reply->set_ack(true);
         return Status::OK;
     }

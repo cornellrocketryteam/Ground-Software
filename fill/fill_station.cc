@@ -5,6 +5,8 @@
 #include <chrono>
 #include <thread>
 
+#include "telemetry_reader.h"
+
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/strings/str_format.h"
@@ -30,7 +32,7 @@ using telemetry::Telemetry;
 using telemetry::TelemetryReply;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
-ABSL_FLAG(std::string, client_target, "localhost:50051", "Server address");
+ABSL_FLAG(std::string, client_target, "localhost:50052", "Server address");
 
 /*
 SERVER CODE
@@ -86,10 +88,8 @@ public:
     // TODO(Zach) add telemetry parameters
     bool SendTelemetry(const std::string &temp)
     {
-        // Data we are sending to the server.
-        Telemetry telem;
-        // TODO(Zach) add telemetry parameters
-        telem.set_temp(temp);
+        TelemetryReader reader;
+        Telemetry telem = reader.read();
 
         // Container for the Ack
         TelemetryReply reply;
@@ -142,7 +142,8 @@ int main(int argc, char **argv)
 
     // TODO(Zach) tie into command interface and populate SendTelemetry
     std::string temp("It works!");
-    while(true) {
+    while (true)
+    {
         bool reply = fillStation.SendTelemetry(temp);
 
         // Check reply

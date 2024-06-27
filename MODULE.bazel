@@ -13,7 +13,8 @@ module(
 )
 
 # Dependencies
-bazel_dep(name = "grpc", version = "1.56.3", repo_name = "com_github_grpc_grpc")
-bazel_dep(name = "protobuf", version = "23.1")
 bazel_dep(name = "abseil-cpp", version = "20230802.0.bcr.1")
 bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
+bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "grpc", version = "1.56.3", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "protobuf", version = "23.1")

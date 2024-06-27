@@ -1,6 +1,6 @@
 {
   "lockFileVersion": 6,
-  "moduleFileHash": "91db455609b81a814d959e4a82a46764f002561ab881a01eba1b46711171a492",
+  "moduleFileHash": "5580296fe045f94c3fa765061254490c07711b303fe7eba9742cd8a9b4bd9e4b",
   "flags": {
     "cmdRegistries": [
       "https://bcr.bazel.build/"
@@ -29,6 +29,7 @@
         "protobuf": "protobuf@23.1",
         "abseil-cpp": "abseil-cpp@20230802.0.bcr.1",
         "buildifier_prebuilt": "buildifier_prebuilt@6.4.0",
+        "googletest": "googletest@1.14.0.bcr.1",
         "bazel_tools": "bazel_tools@_",
         "local_config_platform": "local_config_platform@_"
       }
@@ -486,6 +487,38 @@
           "strip_prefix": "buildifier-prebuilt-6.4.0",
           "remote_patches": {
             "https://bcr.bazel.build/modules/buildifier_prebuilt/6.4.0/patches/module_dot_bazel_version.patch": "sha256-FpUp/q4zJ2H12lwezrYaPUGLY2rr1XoWpiDRaE19udw="
+          },
+          "remote_patch_strip": 0
+        }
+      }
+    },
+    "googletest@1.14.0.bcr.1": {
+      "name": "googletest",
+      "version": "1.14.0.bcr.1",
+      "key": "googletest@1.14.0.bcr.1",
+      "repoName": "googletest",
+      "executionPlatformsToRegister": [],
+      "toolchainsToRegister": [],
+      "extensionUsages": [],
+      "deps": {
+        "com_google_absl": "abseil-cpp@20230802.0.bcr.1",
+        "platforms": "platforms@0.0.8",
+        "rules_cc": "rules_cc@0.0.9",
+        "com_googlesource_code_re2": "re2@2023-09-01",
+        "bazel_tools": "bazel_tools@_",
+        "local_config_platform": "local_config_platform@_"
+      },
+      "repoSpec": {
+        "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+        "ruleClassName": "http_archive",
+        "attributes": {
+          "urls": [
+            "https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"
+          ],
+          "integrity": "sha256-itWYxzrXluDYKAsILOvYKmMNc+c808cAV5OKZQG7pdc=",
+          "strip_prefix": "googletest-1.14.0",
+          "remote_patches": {
+            "https://bcr.bazel.build/modules/googletest/1.14.0.bcr.1/patches/module_dot_bazel.patch": "sha256-jijctisPYOzP4X4cl0K7neRh/kqJB+yODNHf8V8heCE="
           },
           "remote_patch_strip": 0
         }
@@ -1183,38 +1216,6 @@
           "integrity": "sha256-bcLaerTPXXv8fJSXdrG3xzPwXlbtxLzZAiuySdLiqZY=",
           "strip_prefix": "",
           "remote_patches": {},
-          "remote_patch_strip": 0
-        }
-      }
-    },
-    "googletest@1.14.0.bcr.1": {
-      "name": "googletest",
-      "version": "1.14.0.bcr.1",
-      "key": "googletest@1.14.0.bcr.1",
-      "repoName": "googletest",
-      "executionPlatformsToRegister": [],
-      "toolchainsToRegister": [],
-      "extensionUsages": [],
-      "deps": {
-        "com_google_absl": "abseil-cpp@20230802.0.bcr.1",
-        "platforms": "platforms@0.0.8",
-        "rules_cc": "rules_cc@0.0.9",
-        "com_googlesource_code_re2": "re2@2023-09-01",
-        "bazel_tools": "bazel_tools@_",
-        "local_config_platform": "local_config_platform@_"
-      },
-      "repoSpec": {
-        "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-        "ruleClassName": "http_archive",
-        "attributes": {
-          "urls": [
-            "https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz"
-          ],
-          "integrity": "sha256-itWYxzrXluDYKAsILOvYKmMNc+c808cAV5OKZQG7pdc=",
-          "strip_prefix": "googletest-1.14.0",
-          "remote_patches": {
-            "https://bcr.bazel.build/modules/googletest/1.14.0.bcr.1/patches/module_dot_bazel.patch": "sha256-jijctisPYOzP4X4cl0K7neRh/kqJB+yODNHf8V8heCE="
-          },
           "remote_patch_strip": 0
         }
       }

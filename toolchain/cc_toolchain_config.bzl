@@ -1,7 +1,6 @@
 """ Toolchain for cross-compiling from x86 linux (e.g. WSL) to arm linux (e.g. Raspi) """
 
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
-
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "feature",

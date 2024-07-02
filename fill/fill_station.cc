@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "telemetry_reader.h"
+#include "sensors/ducer.h"
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -83,12 +84,12 @@ class FillStationClient
 {
 public:
     FillStationClient(std::shared_ptr<Channel> channel)
-        : stub_(Telemeter::NewStub(channel)) {}
+        : stub_(Telemeter::NewStub(channel)), ducer_(std::make_shared<Ducer>()) {}
 
     // TODO(Zach) add telemetry parameters
     bool SendTelemetry(const std::string &temp)
     {
-        TelemetryReader reader;
+        TelemetryReader reader(*ducer_);
         Telemetry telem = reader.read();
 
         // Container for the Ack
@@ -117,6 +118,7 @@ public:
 
 private:
     std::unique_ptr<Telemeter::Stub> stub_;
+    std::shared_ptr<Sensor> ducer_;
 };
 
 /*

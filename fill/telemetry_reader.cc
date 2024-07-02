@@ -5,6 +5,6 @@ using telemetry::Telemetry;
 Telemetry TelemetryReader::read() {
     Telemetry telem;
     // TODO(Zach) add telemetry parameters
-    telem.set_temp("It works!");
+    telem.set_temp(sensor_.Read());
     return telem;
 }

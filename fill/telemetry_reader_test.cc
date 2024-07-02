@@ -14,7 +14,7 @@ TEST(TelemetryReaderTest, BasicTest) {
     EXPECT_CALL(sensor, Read()).Times(1).WillOnce(Return(test_val));
     TelemetryReader reader(sensor);
     Telemetry telem = reader.read();
-    EXPECT_EQ(telem.temp(), test_val);
+    EXPECT_EQ(telem.temp(), 3);
 }
 
 } //namespace

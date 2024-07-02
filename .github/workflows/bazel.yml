@@ -1,0 +1,17 @@
+name: Bazel
+
+on: [push, pull_request]
+
+jobs:
+  setup-bazel:
+      runs-on: ubuntu-22.04
+      steps:
+        - name: Run setup-bazel
+          uses: bazel-contrib/setup-bazel@0.8.5
+          with:
+            # Avoid downloading Bazel every time.
+            bazelisk-cache: true
+            # Store build cache per workflow.
+            disk-cache: ${{ github.workflow }}
+            # Share repository cache between workflows.
+            repository-cache: true

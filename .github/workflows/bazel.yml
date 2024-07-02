@@ -15,3 +15,11 @@ jobs:
             disk-cache: ${{ github.workflow }}
             # Share repository cache between workflows.
             repository-cache: true
+
+          # build
+        - name: Build the code
+          run: bazel build //...
+
+          # test
+        - name: Test the code
+          run: bazel test //...

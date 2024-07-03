@@ -17,7 +17,7 @@ service Telemeter {
 // The telemetry message
 // TODO(Zach) add telemetry values
 message Telemetry {
-    string temp = 1;
+    float temp = 1;
 }
 
 // The response message containing an ack

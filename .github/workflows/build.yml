@@ -4,7 +4,9 @@ name: Create and publish the Ground Station Docker image
 # Configures this workflow to run every time a change is pushed to the branch called `release`.
 on:
   push:
-    branches: ['main', 'action-to-build-docker']
+    branches: ['main']
+  pull_request:
+    branches: ['main']
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
@@ -47,7 +49,6 @@ jobs:
         with:
           context: ground-server
           push: true
-          visibility: public
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       

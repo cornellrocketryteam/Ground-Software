@@ -1,20 +1,29 @@
-# Base the installation on the node.js image since React is based on Node
-FROM node:hydrogen-alpine3.20
+# Stage 1: Build the React app
+FROM node AS build
 
-# Set the working directory (where all commands will be run) to a docker directory
-WORKDIR /ground-server/
+# Set the working directory
+WORKDIR /app
 
-# Copy the code that's needed into the working directory
-COPY public/ /ground-server/public
-COPY src/ /ground-server/src
-COPY package.json /ground-server/
+# Copy the application code
+COPY . .
 
-# Expose a port to run it on
-EXPOSE 3000
+# Install dependencies
+RUN npm install --frozen-lockfile
 
-# Install dependencies in package.json
-RUN npm install
+# Build the React app for production
+RUN npm run build
 
-# Define the command that will actually start the container (in our case npm start)
-CMD ["npm", "start"]
+# Stage 2: Serve the app using Nginx
+FROM nginx:alpine
 
+# Copy the build output from the previous stage to Nginx's web directory
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom Nginx configuration file that instruct Nginx how to serve our files (once we add one)
+# COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port 80 to the outside world so the website can be viewed from a browser without specifying a port
+EXPOSE 80
+
+# Command to run Nginx
+CMD ["nginx", "-g", "daemon off;"]

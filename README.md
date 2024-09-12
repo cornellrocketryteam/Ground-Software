@@ -6,7 +6,7 @@ Ground Support Equipment Software for the Cornell Rocketry Team including fill s
 First, install Docker for your specific computer. Then, to start the ground server run:
 ```shell
 docker pull ghcr.io/cornellrocketryteam/ground-software
-docker run -it -d -p 80:80 zachgarcia42/ground-server-image
+docker run -it -d -p 80:80 ghcr.io/cornellrocketryteam/ground-software
 ```
 
 ## Fix and Format Bazel files

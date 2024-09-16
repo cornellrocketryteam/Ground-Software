@@ -1,5 +1,11 @@
-# Fill-Station
-Fill Station Software for the Cornell Rocketry Team
+# Ground-Software
+Ground Support Equipment Software for the Cornell Rocketry Team including fill station and ground server
+
+## Ground Server
+To start the ground server, run
+```sudo snap install docker```
+```docker pull zachgarcia42/ground-server-image```
+```docker run -it -d -p 80:80 zachgarcia42/ground-server-image```
 
 ## Fix and Format Bazel files
 Buildifier will fix a lot and format all bazel files by running

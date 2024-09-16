@@ -2,10 +2,12 @@
 Ground Support Equipment Software for the Cornell Rocketry Team including fill station and ground server
 
 ## Ground Server
-To start the ground server, run
-```sudo snap install docker```
-```docker pull zachgarcia42/ground-server-image```
-```docker run -it -d -p 80:80 zachgarcia42/ground-server-image```
+
+First, install Docker for your specific computer. Then, to start the ground server run:
+```shell
+docker pull ghcr.io/cornellrocketryteam/ground-server
+docker run -it -d -p 80:80 ghcr.io/cornellrocketryteam/ground-server
+```
 
 ## Fix and Format Bazel files
 Buildifier will fix a lot and format all bazel files by running

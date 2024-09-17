@@ -3,6 +3,7 @@
 bazel-*
 bazel_format_virtual_environment/
 tools/bazel-*
+MODULE.bazel.lock
 
 # Bazel wrapper
 bazel_wrapper

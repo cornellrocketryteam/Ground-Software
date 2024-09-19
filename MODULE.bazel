@@ -8,8 +8,8 @@
 """ Root module for fill station software """
 
 module(
-    name = "fill_station",
-    repo_name = "com_fill_station",
+    name = "ground_software",
+    repo_name = "com_ground_software",
 )
 
 # Dependencies

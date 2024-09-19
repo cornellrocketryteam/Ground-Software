@@ -1,0 +1,32 @@
+name: Build and Test the Fill Station Code with Bazel
+
+# Configures this workflow to run every time a change is pushed to the branch called `main` or a pull request to `main` is created
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, which is the CWD for
+      # the rest of the steps
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          # Avoid downloading Bazel every time.
+          bazelisk-cache: true
+          # Store build cache per workflow.
+          disk-cache: ${{ github.workflow }}
+          # Share repository cache between workflows.
+          repository-cache: true
+
+        # test
+      - name: Build and Test with Bazel
+        run: bazel test //fill:all

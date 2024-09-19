@@ -1,12 +1,32 @@
 # Ground-Software
 Ground Support Equipment Software for the Cornell Rocketry Team including fill station and ground server
 
-## Ground Server
+## Ground Server Docker Image
 
 First, install Docker for your specific computer. Then, to start the ground server run:
 ```shell
 docker pull ghcr.io/cornellrocketryteam/ground-server
 docker run -it -d -p 80:80 ghcr.io/cornellrocketryteam/ground-server
+```
+
+If you want to build the docker image locally, navigate to the root directory then build:
+```shell
+cd Ground-Software/ground-server
+docker build -t ground-server .
+```
+
+## Fill Station Docker Image
+
+First, install Docker for your specific computer. Then, to start the ground server run:
+```shell
+docker pull ghcr.io/cornellrocketryteam/fill-station
+docker run -it -d --network="host" ghcr.io/cornellrocketryteam/fill-station
+```
+
+If you want to build the docker image locally, navigate to the root directory then build:
+```shell
+cd Ground-Software
+docker build -t fill-station -f ./fill/Dockerfile .
 ```
 
 ## Fix and Format Bazel files
@@ -20,7 +40,7 @@ FOR x86 LINUX OR WSL (NOT RASPBERRY PI)
 
 ```sudo apt install bazel```
  
-2. Check version (tested with version 7.1.1): 
+2. Check version (tested with version 7.3.1): 
 
 ```bazel --version```
  

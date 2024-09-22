@@ -6,13 +6,13 @@ Ground Support Equipment Software for the Cornell Rocketry Team including fill s
 First, install Docker for your specific computer. Then, to start the ground server run:
 ```shell
 docker pull ghcr.io/cornellrocketryteam/ground-server
-docker run -it -d -p 80:80 ghcr.io/cornellrocketryteam/ground-server
+docker run -it -d --network="host" ghcr.io/cornellrocketryteam/ground-server
 ```
 
 If you want to build the docker image locally, navigate to the root directory then build:
 ```shell
 cd Ground-Software/ground-server
-docker build -t ground-server .
+docker build -t ground-server -f ./ground-server/Dockerfile .
 ```
 
 ## Fill Station Docker Image

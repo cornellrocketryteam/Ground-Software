@@ -3,7 +3,8 @@ FROM node
 WORKDIR /app
 
 # Copy the application code
-COPY . .
+COPY ./ground-server .
+COPY ./protos /protos
 
 # Install dependencies
 RUN npm install

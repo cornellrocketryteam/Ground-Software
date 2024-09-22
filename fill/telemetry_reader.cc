@@ -1,6 +1,6 @@
 #include "telemetry_reader.h"
 
-using telemetry::Telemetry;
+using command::Telemetry;
 
 Telemetry TelemetryReader::read() {
     Telemetry telem;

@@ -4,23 +4,6 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 package(default_visibility = ["//visibility:public"])
 
 proto_library(
-    name = "telemetry_proto",
-    srcs = ["telemetry.proto"],
-)
-
-cc_proto_library(
-    name = "telemetry_cc_proto",
-    deps = [":telemetry_proto"],
-)
-
-cc_grpc_library(
-    name = "telemetry_cc_grpc",
-    srcs = [":telemetry_proto"],
-    grpc_only = True,
-    deps = [":telemetry_cc_proto"],
-)
-
-proto_library(
     name = "command_proto",
     srcs = ["command.proto"],
 )

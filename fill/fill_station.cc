@@ -16,24 +16,20 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "protos/telemetry.grpc.pb.h"
 #include "protos/command.grpc.pb.h"
 
 using command::Command;
 using command::Commander;
 using command::CommandReply;
+using command::Telemetry;
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using telemetry::Telemeter;
-using telemetry::Telemetry;
-using telemetry::TelemetryReply;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
-ABSL_FLAG(std::string, client_target, "localhost:50052", "Server address");
 
 /*
 SERVER CODE
@@ -47,6 +43,9 @@ class CommanderServiceImpl final : public Commander::Service
     {
         // TODO(Zach) read request, execute the command and set reply values
         reply->set_ack(true);
+        float temp = 3.14;
+        reply->mutable_telemetry()->set_temp(temp);
+        // reply->set_telemetry(temp);
         return Status::OK;
     }
 };
@@ -76,52 +75,6 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
 }
 
 /*
-CLIENT CODE
-*/
-
-// Client for sending telemetry
-class FillStationClient
-{
-public:
-    FillStationClient(std::shared_ptr<Channel> channel)
-        : stub_(Telemeter::NewStub(channel)), ducer_(std::make_shared<Ducer>()) {}
-
-    // TODO(Zach) add telemetry parameters
-    bool SendTelemetry(const std::string &temp)
-    {
-        TelemetryReader reader(*ducer_);
-        Telemetry telem = reader.read();
-
-        // Container for the Ack
-        TelemetryReply reply;
-
-        // Context for the client. It could be used to convey extra information to
-        // the server and/or tweak certain RPC behaviors.
-        ClientContext context;
-
-        // The actual RPC.
-        Status status = stub_->SendTelemetry(&context, telem, &reply);
-
-        // Act upon its status.
-        if (status.ok())
-        {
-            // TODO(Zach) do something with reply?
-            return reply.ack();
-        }
-        else
-        {
-            std::cout << status.error_code() << ": " << status.error_message()
-                      << std::endl;
-            return false;
-        }
-    }
-
-private:
-    std::unique_ptr<Telemeter::Stub> stub_;
-    std::shared_ptr<Sensor> ducer_;
-};
-
-/*
 MAIN
 */
 
@@ -131,35 +84,9 @@ int main(int argc, char **argv)
     absl::ParseCommandLine(argc, argv);
     // Start the server in another thread
     std::shared_ptr<Server> server;
-    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+    RunServer(absl::GetFlag(FLAGS_server_port), server);
+    // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
-    // Instantiate the client. It requires a channel, out of which the actual RPCs
-    // are created. This channel models a connection to an endpoint specified by
-    // the argument "--client_target=" which is the only expected argument.
-    std::string target_str = absl::GetFlag(FLAGS_client_target);
-    // We indicate that the channel isn't authenticated (use of
-    // InsecureChannelCredentials()).
-    FillStationClient fillStation(
-        grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-
-    // TODO(Zach) tie into command interface and populate SendTelemetry
-    std::string temp("It works!");
-    while (true)
-    {
-        bool reply = fillStation.SendTelemetry(temp);
-
-        // Check reply
-        if (reply)
-        {
-            printf("Ground Station acknowledged\n");
-        }
-        else
-        {
-            printf("Ground Station did not acknowledge\n");
-        }
-        // Sleep for a second
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
     server->Shutdown();
     return 0;
 }

@@ -3,7 +3,7 @@ cc_library(
     srcs = ["telemetry_reader.cc"],
     hdrs = ["telemetry_reader.h"],
     deps = [
-        "//protos:telemetry_cc_proto",
+        "//protos:command_cc_proto",
         "//sensors:sensor"],
 )
 
@@ -24,7 +24,6 @@ cc_binary(
     deps = [
         ":telemetry_reader",
         "//protos:command_cc_grpc",
-        "//protos:telemetry_cc_grpc",
         "//sensors:ducer",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",

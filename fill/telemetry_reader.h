@@ -1,10 +1,10 @@
 #ifndef FILL_TELEMETRY_READER_H_
 #define FILL_TELEMETRY_READER_H_
 
-#include "protos/telemetry.pb.h"
+#include "protos/command.pb.h"
 #include "sensors/sensor.h"
 
-using telemetry::Telemetry;
+using command::Telemetry;
 
 class TelemetryReader {
   public:

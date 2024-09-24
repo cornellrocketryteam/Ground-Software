@@ -23,4 +23,11 @@ message Command {
 // TODO(Zach) add relevant reply values?
 message CommandReply {
     bool ack = 1;
+    Telemetry telemetry = 2;
+}
+
+// The telemetry message
+// TODO(Zach) add telemetry values
+message Telemetry {
+    float temp = 1;
 }

@@ -1,0 +1,13 @@
+# Need ubuntu for dynamic linking
+FROM ubuntu:22.04 AS run
+
+# Copy the build output from the GitHub Workflow to Alpine
+COPY fill/output/fill_station /bin/fill_station
+
+RUN ["chmod", "+x", "/bin/fill_station"]
+
+# Expose the gRPC Server Port
+EXPOSE 50051
+
+# Run the binary
+ENTRYPOINT [ "/bin/fill_station" ]

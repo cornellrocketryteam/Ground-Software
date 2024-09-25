@@ -112,8 +112,8 @@ jobs:
       
       - name: Create manifest list and push
         run: |
-          docker buildx imagetools create --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-multi-arch:${{ steps.meta.outputs.tags }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-amd64:${{ steps.meta.outputs.tags }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-arm64:${{ steps.meta.outputs.tags }}
+          docker buildx imagetools create --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-amd64:${{ steps.meta.outputs.tags }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-arm64:${{ steps.meta.outputs.tags }}
       
       - name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-multi-arch:${{ steps.meta.outputs.tags }}
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}

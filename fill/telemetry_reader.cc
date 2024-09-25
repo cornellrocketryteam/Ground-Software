@@ -7,4 +7,4 @@ Telemetry TelemetryReader::read() {
     // TODO(Zach) add telemetry parameters
     telem.set_temp(sensor_.Read());
     return telem;
-}
+} 

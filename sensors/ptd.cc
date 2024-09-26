@@ -1,4 +1,4 @@
-#include "ducer.h"
+#include "ptd.h"
 
 float Ducer::Read() {
   float reading = 3.14;

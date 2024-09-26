@@ -5,7 +5,6 @@
 
 class Sensor {
   public:
-    virtual Sensor() {}
     virtual ~Sensor() {}
     virtual float Read() = 0;
   protected:

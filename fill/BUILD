@@ -24,7 +24,7 @@ cc_binary(
     deps = [
         ":telemetry_reader",
         "//protos:command_cc_grpc",
-        "//sensors:ducer",
+        "//sensors:ptd",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

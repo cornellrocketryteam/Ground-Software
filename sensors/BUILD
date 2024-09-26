@@ -4,18 +4,26 @@ cc_library(
     deps = [],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
 cc_library(
-    name = "ducer",
-    srcs = ["ducer.cc"],
-    hdrs = ["ducer.h"],
+    name = "load_cell",
+    srcs = ["load_cell.cc"],
+    hdrs = ["load_cell.h"],
     deps = [":sensor"],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
+        ],
+)
+
+cc_library(
+    name = "ptd",
+    srcs = ["ptd.cc"],
+    hdrs = ["ptd.h"],
+    deps = [":sensor"],
+    visibility = [
+        "//fill:__subpackages__",
         ],
 )
 
@@ -28,6 +36,5 @@ cc_library(
         ],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )

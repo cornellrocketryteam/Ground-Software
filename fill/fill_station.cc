@@ -6,7 +6,7 @@
 #include <thread>
 
 #include "telemetry_reader.h"
-#include "sensors/ducer.h"
+#include "sensors/ptd.h"
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"

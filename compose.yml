@@ -1,0 +1,40 @@
+services:
+  webserver:
+    # Your existing web server configuration
+    image: ghcr.io/cornellrocketryteam/ground-server:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - influxdb
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - 8086:8086
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb-admin-username
+      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb-admin-password 
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+      DOCKER_INFLUXDB_INIT_ORG: crt
+      DOCKER_INFLUXDB_INIT_BUCKET: telemetry
+    secrets:
+      - influxdb-admin-username
+      - influxdb-admin-password
+      - influxdb-admin-token
+    volumes:
+      - type: volume
+        source: influxdb-data
+        target: /var/lib/influxdb
+      - type: volume
+        source: influxdb-config
+        target: /etc/influxdb
+secrets:
+  influxdb-admin-username:
+    file: ./.env.influxdb-admin-username
+  influxdb-admin-password:
+    file: ./.env.influxdb-admin-password
+  influxdb-admin-token:
+    file: ./.env.influxdb-admin-token
+volumes:
+  influxdb-data:
+  influxdb-config:

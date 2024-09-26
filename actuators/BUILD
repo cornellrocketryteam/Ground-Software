@@ -4,7 +4,6 @@ cc_library(
     deps = [],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
@@ -15,7 +14,6 @@ cc_library(
     deps = [":actuator"],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
@@ -26,6 +24,5 @@ cc_library(
     deps = [":actuator"],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )

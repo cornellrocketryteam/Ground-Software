@@ -4,7 +4,6 @@ cc_library(
     deps = [],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
@@ -15,7 +14,6 @@ cc_library(
     deps = [":sensor"],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
@@ -26,7 +24,6 @@ cc_library(
     deps = [":sensor"],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )
 
@@ -39,6 +36,5 @@ cc_library(
         ],
     visibility = [
         "//fill:__subpackages__",
-        "//ground:__subpackages__",
         ],
 )

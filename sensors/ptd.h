@@ -1,6 +1,6 @@
 #include "sensor.h"
 
-class Ducer : public Sensor {
+class PTD : public Sensor {
  public:
   float Read();
 };

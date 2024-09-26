@@ -12,3 +12,6 @@ bazel_wrapper.bazelrc
 
 # VSCode
 .vscode/*
+
+# Docker Compose Secrets
+.env*

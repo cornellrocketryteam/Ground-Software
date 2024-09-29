@@ -49,6 +49,11 @@ jobs:
           fi
           sudo mkdir -p ./fill/output
           sudo cp bazel-bin/fill/fill_station ./fill/output
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all 
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -84,6 +89,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            TARGETARCH=${{ matrix.arch }}
   
   merge:
     needs: build-and-test

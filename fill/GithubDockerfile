@@ -1,6 +1,15 @@
 # Need ubuntu for dynamic linking
 FROM ubuntu:22.04 AS run
 
+ARG TARGETARCH
+
+# Install necessary 32-bit libraries (replace with actual dependencies)
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        dpkg --add-architecture armhf && apt-get update && apt-get install -y \
+            libc6:armhf \
+            libstdc++6:armhf; \
+    fi
+
 # Copy the build output from the GitHub Workflow to Alpine
 COPY fill/output/fill_station /bin/fill_station
 

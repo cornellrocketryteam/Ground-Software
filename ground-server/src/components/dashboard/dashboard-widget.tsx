@@ -12,7 +12,6 @@ interface DashboardWidgetProps {
   children: ReactNode
 }
 
-
 export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(({
   style,
   className, 
@@ -22,7 +21,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
   children, 
 }, ref) => {
   return (
-    <div style={style} className={cn("border border-gray-200 p-4", className)} ref={ref} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onTouchEnd={onTouchEnd}>
+    <div style={style} className={cn("border border-gray-200 rounded p-2", className)} ref={ref} onMouseDown={onMouseDown} onMouseUp={onMouseUp} onTouchEnd={onTouchEnd}>
       {children} 
     </div>
   );

@@ -5,9 +5,17 @@
 
 syntax = "proto3";
 
+option go_package = "../protos/command.proto";
+
 package command;
 
 // The telemetry service definition
+service Telemeter {
+    // Sends telemetry
+    rpc StreamTelemetry (TelemetryRequest) returns (stream Telemetry) {}
+}
+
+// The commanding service definition
 service Commander {
     // Sends telemetry
     rpc SendCommand (Command) returns (CommandReply) {}
@@ -24,6 +32,11 @@ message Command {
 message CommandReply {
     bool ack = 1;
     Telemetry telemetry = 2;
+}
+
+// The telemetry request message
+message TelemetryRequest {
+    // Add any fields you need for the request (e.g., sensor IDs to subscribe to)
 }
 
 // The telemetry message

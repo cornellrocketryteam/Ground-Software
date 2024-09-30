@@ -4,6 +4,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
 
 #include "telemetry_reader.h"
 #include "sensors/ptd.h"
@@ -20,13 +21,16 @@
 
 using command::Command;
 using command::Commander;
+using command::Telemeter;
 using command::CommandReply;
 using command::Telemetry;
+using command::TelemetryRequest;
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
+using grpc::ServerWriter;
 using grpc::Status;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
@@ -50,20 +54,39 @@ class CommanderServiceImpl final : public Commander::Service
     }
 };
 
+// Fill Station service to stream telemetry.
+class TelemeterServiceImpl final : public Telemeter::Service
+{
+    Status StreamTelemetry(ServerContext *context, const TelemetryRequest *request,
+                       ServerWriter<Telemetry> *writer) override
+    {
+        for (int i = 0; i < 10; i++) {
+            Telemetry t;
+            t.set_temp(rand() % 100);
+            if (!writer->Write(t)) {
+                // Broken stream
+                return Status::CANCELLED; 
+            }
+        }
+        return Status::OK;
+    }
+};
+
 // Server startup function
 void RunServer(uint16_t port, std::shared_ptr<Server> server)
 {
     std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
-    CommanderServiceImpl service;
+    CommanderServiceImpl commander_service;
+    TelemeterServiceImpl telemeter_service;
 
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    // Register "service" as the instance through which we'll communicate with
-    // clients. In this case it corresponds to an *synchronous* service.
-    builder.RegisterService(&service);
+    // Register services.
+    builder.RegisterService(&commander_service);
+    builder.RegisterService(&telemeter_service);
     // Finally assemble the server.
     server = builder.BuildAndStart();
     // std::unique_ptr<Server> server(builder.BuildAndStart());

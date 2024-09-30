@@ -5,11 +5,16 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/cornellrocketryteam/Ground-Software/telemetry-proxy/proto-out" // Replace with your proto package path
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
 const (
@@ -17,6 +22,15 @@ const (
 )
 
 func main() {
+	// Set up a connection to the influxdb instance.
+	token := os.Getenv("INFLUXDB_TOKEN")
+	influx_url := "http://localhost:8086"
+	influx_client := influxdb2.NewClient(influx_url, token)
+
+	org := "crt"
+	bucket := "telemetry"
+	writeAPI := influx_client.WriteAPIBlocking(org, bucket)
+
 	// Set up a connection to the grpc server
 	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -44,7 +58,16 @@ func main() {
 		}
 
 		// Parse and process the telemetry packet
-		fmt.Printf("Received packet with temp: %.2f\n",
-			packet.Temp)
+		fmt.Printf("Received packet with temp: %.2f\n", packet.Temp)
+		// Write to InfluxDB
+		tags := map[string]string{}
+		fields := map[string]interface{}{
+			"temp": packet.Temp,
+		}
+		point := write.NewPoint("temperature", tags, fields, time.Now())
+
+		if err := writeAPI.WritePoint(context.Background(), point); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

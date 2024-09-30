@@ -1,11 +1,12 @@
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
-import { type Dispatch, type SetStateAction } from 'react';
+import { useMemo, type Dispatch, type SetStateAction } from 'react';
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 import { type Widget } from '@/lib/definitions';
 
 import { DashboardWidget } from './dashboard-widget';
+
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
@@ -16,6 +17,7 @@ export function Dashboard({
   widgets: Widget[], 
   setWidgets: Dispatch<SetStateAction<Widget[]>>
 }) {
+
   const onLayoutChange = (layout: Layout[]) => {
     setWidgets((prevWidgets) =>
       prevWidgets.map((widget) => {
@@ -28,6 +30,14 @@ export function Dashboard({
     );
   }
 
+  const children = useMemo(() => {
+    return widgets.map(widget => (
+      <DashboardWidget key={widget.layout.i}>
+        {widget.children}
+      </DashboardWidget>
+    ))
+  }, [widgets]);
+
   return (
     <div>
       <ResponsiveReactGridLayout
@@ -37,16 +47,10 @@ export function Dashboard({
         }}
         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
         rowHeight={100}
-        compactType={null}
-        preventCollision={true}
         autoSize={false}
         onLayoutChange={onLayoutChange}
       >
-        {widgets.map(widget => (
-          <DashboardWidget key={widget.layout.i}>
-            {widget.children}
-          </DashboardWidget>
-        ))}
+        {children}
       </ResponsiveReactGridLayout>
     </div>
   )

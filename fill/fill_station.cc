@@ -67,6 +67,7 @@ class TelemeterServiceImpl final : public Telemeter::Service
                 // Broken stream
                 return Status::CANCELLED; 
             }
+            sleep(1);
         }
         return Status::OK;
     }

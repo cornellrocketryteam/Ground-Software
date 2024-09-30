@@ -73,7 +73,7 @@ export function TelemetryAdder({
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="px-2 py-2 h-9 w-9">
+          <Button variant="outline" size="icon" className="px-2 py-2 h-9 w-9">
             <PlusIcon className="h-[1.2rem] w-[1.2rem]" />
           </Button>
         </PopoverTrigger>
@@ -87,7 +87,7 @@ export function TelemetryAdder({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="px-2 py-2 h-9 w-9">
+        <Button variant="outline" size="icon" className="px-2 py-2 h-9 w-9">
           <PlusIcon className="h-[1.2rem] w-[1.2rem]"/>
         </Button>
       </DrawerTrigger>

@@ -27,6 +27,7 @@
     "react-dom": "^18",
     "react-grid-layout": "^1.4.4",
     "react-resizable": "^3.0.5",
+    "sharp": "^0.33.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9"

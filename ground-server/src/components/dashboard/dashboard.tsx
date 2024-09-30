@@ -7,7 +7,6 @@ import { type Widget } from '@/lib/definitions';
 
 import { DashboardWidget } from './dashboard-widget';
 
-
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export function Dashboard({ 
@@ -17,7 +16,6 @@ export function Dashboard({
   widgets: Widget[], 
   setWidgets: Dispatch<SetStateAction<Widget[]>>
 }) {
-
   const onLayoutChange = (layout: Layout[]) => {
     setWidgets((prevWidgets) =>
       prevWidgets.map((widget) => {

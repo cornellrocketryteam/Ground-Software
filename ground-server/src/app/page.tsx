@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import crt from './crt.png';
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/avatar";
 import { ModeToggle } from "@/components/mode-toggle";
 import { TelemetryAdder } from "@/components/telemetry-adder";
 import { Dashboard } from "@/components/dashboard/dashboard";
@@ -22,10 +22,7 @@ export default function Home() {
         <div className="flex gap-4">
           <TelemetryAdder setWidgets={setWidgets} />
           <ModeToggle />
-          <Avatar>
-            <AvatarImage src="https://github.com/maxslarsson.png" alt="@maxslarsson" />
-            <AvatarFallback>ML</AvatarFallback>
-          </Avatar>
+          <Avatar />
         </div>
       </nav>
       <main>

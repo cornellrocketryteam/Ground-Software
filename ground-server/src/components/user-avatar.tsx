@@ -24,10 +24,10 @@ export function UserAvatar() {
         <DropdownMenuLabel>Max Larsson</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <p>Settings</p>
+          Settings
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <p className="text-red-600">Sign out</p>
+        <DropdownMenuItem className="text-red-600">
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

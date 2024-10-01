@@ -8,11 +8,10 @@ interface WidgetHandleProps {
 }
 
 export const WidgetHandle = forwardRef<HTMLDivElement, WidgetHandleProps>(
-  (props, ref) => {
-    const { onMouseDown, onMouseUp, onTouchEnd } = props;
+  ({ onMouseDown, onMouseUp, onTouchEnd }, ref) => {
     return (
-      <div
-        className="widget-handle absolute bottom-0 right-0 text-gray-400 dark:text-gray-200 cursor-se-resize"
+      <span
+        className="drag-ignore absolute bottom-0 right-0 text-gray-400 dark:text-gray-200 cursor-se-resize"
         ref={ref}
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
@@ -33,7 +32,7 @@ export const WidgetHandle = forwardRef<HTMLDivElement, WidgetHandleProps>(
             strokeLinejoin="round"
           />
         </svg>
-      </div>
+      </span>
     );
   }
 );

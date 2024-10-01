@@ -109,11 +109,13 @@ function StatusList({
       {
         children: <div>{status.label}</div>,
         layout: {
-          i: widgets.length.toString(),
+          i: Date.now().toString(),
           x: 0,
           y: 0,
-          w: 2,
+          w: 3,
           h: 2,
+          minW: 3,
+          minH: 2,
         },
       },
     ]);

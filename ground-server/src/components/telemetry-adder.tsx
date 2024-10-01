@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, type Dispatch, type SetStateAction } from "react"
-import { PlusIcon } from "@radix-ui/react-icons"
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { PlusIcon } from "@radix-ui/react-icons";
 
-import { useMediaQuery } from "@/hooks/use-media-query"
-import { Button } from "@/components/ui/button"
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,23 +12,19 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/command";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import { Widget } from "@/lib/definitions";
 
 type Status = {
-  value: string
-  label: string
-}
+  value: string;
+  label: string;
+};
 
 const statuses: Status[] = [
   {
@@ -59,15 +55,15 @@ const statuses: Status[] = [
     value: "pressure",
     label: "Pressure",
   },
-]
+];
 
 export function TelemetryAdder({
   setWidgets,
 }: {
-  setWidgets: Dispatch<SetStateAction<Widget[]>>
+  setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
-  const [open, setOpen] = useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+  const [open, setOpen] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {
     return (
@@ -81,14 +77,14 @@ export function TelemetryAdder({
           <StatusList setOpen={setOpen} setWidgets={setWidgets} />
         </PopoverContent>
       </Popover>
-    )
+    );
   }
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button variant="outline" size="icon" className="px-2 py-2 h-9 w-9">
-          <PlusIcon className="h-[1.2rem] w-[1.2rem]"/>
+          <PlusIcon className="h-[1.2rem] w-[1.2rem]" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
@@ -97,30 +93,33 @@ export function TelemetryAdder({
         </div>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
 
 function StatusList({
   setOpen,
   setWidgets,
 }: {
-  setOpen: (open: boolean) => void
-  setWidgets: Dispatch<SetStateAction<Widget[]>>
+  setOpen: (open: boolean) => void;
+  setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
   const addWidget = (status: Status) => {
-    setWidgets((widgets) => [...widgets, {
-      children: <div>{status.label}</div>,
-      layout: {
-        i: widgets.length.toString(),
-        x: 0,
-        y: 0,
-        w: 2,
-        h: 2,
-      }
-    }])
+    setWidgets((widgets) => [
+      ...widgets,
+      {
+        children: <div>{status.label}</div>,
+        layout: {
+          i: widgets.length.toString(),
+          x: 0,
+          y: 0,
+          w: 2,
+          h: 2,
+        },
+      },
+    ]);
 
-    setOpen(false)
-  }
+    setOpen(false);
+  };
 
   return (
     <Command>
@@ -140,5 +139,5 @@ function StatusList({
         </CommandGroup>
       </CommandList>
     </Command>
-  )
+  );
 }

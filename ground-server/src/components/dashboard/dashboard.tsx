@@ -1,21 +1,21 @@
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 
-import { useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
-import { type Widget } from '@/lib/definitions';
+import { type Widget } from "@/lib/definitions";
 
-import { WidgetHandle } from './widget-handle';
-import { DashboardWidget } from './dashboard-widget';
+import { WidgetHandle } from "./widget-handle";
+import { DashboardWidget } from "./dashboard-widget";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
-export function Dashboard({ 
+export function Dashboard({
   widgets,
   setWidgets,
 }: {
-  widgets: Widget[], 
-  setWidgets: Dispatch<SetStateAction<Widget[]>>
+  widgets: Widget[];
+  setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
   const onLayoutChange = (layout: Layout[]) => {
     setWidgets((prevWidgets) =>
@@ -27,23 +27,21 @@ export function Dashboard({
         return widget;
       })
     );
-  }
+  };
 
   const children = useMemo(() => {
-    return widgets.map(widget => (
-      <DashboardWidget key={widget.layout.i}>
-        {widget.children}
-      </DashboardWidget>
-    ))
+    return widgets.map((widget) => (
+      <DashboardWidget key={widget.layout.i}>{widget.children}</DashboardWidget>
+    ));
   }, [widgets]);
 
   return (
     <div>
       <ResponsiveReactGridLayout
         className="layout"
-        draggableCancel='.widget-handle'
+        draggableCancel=".widget-handle"
         layouts={{
-          lg: widgets.map((widget) => widget.layout)
+          lg: widgets.map((widget) => widget.layout),
         }}
         cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
         rowHeight={50}
@@ -54,5 +52,5 @@ export function Dashboard({
         {children}
       </ResponsiveReactGridLayout>
     </div>
-  )
+  );
 }

@@ -5,6 +5,7 @@ import { useMemo, type Dispatch, type SetStateAction } from 'react';
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 import { type Widget } from '@/lib/definitions';
 
+import { WidgetHandle } from './widget-handle';
 import { DashboardWidget } from './dashboard-widget';
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
@@ -40,13 +41,15 @@ export function Dashboard({
     <div>
       <ResponsiveReactGridLayout
         className="layout"
+        draggableCancel='.widget-handle'
         layouts={{
           lg: widgets.map((widget) => widget.layout)
         }}
-        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-        rowHeight={100}
+        cols={{ lg: 24, md: 20, sm: 12, xs: 8, xxs: 4 }}
+        rowHeight={50}
         autoSize={false}
         onLayoutChange={onLayoutChange}
+        resizeHandle={<WidgetHandle />}
       >
         {children}
       </ResponsiveReactGridLayout>

@@ -107,6 +107,21 @@ function StatusList({
   setOpen: (open: boolean) => void
   setWidgets: Dispatch<SetStateAction<Widget[]>>
 }) {
+  const addWidget = (status: Status) => {
+    setWidgets((widgets) => [...widgets, {
+      children: <div>{status.label}</div>,
+      layout: {
+        i: widgets.length.toString(),
+        x: 0,
+        y: 0,
+        w: 2,
+        h: 2,
+      }
+    }])
+
+    setOpen(false)
+  }
+
   return (
     <Command>
       <CommandInput placeholder="Filter datapoints..." />
@@ -117,20 +132,7 @@ function StatusList({
             <CommandItem
               key={status.value}
               value={status.value}
-              onSelect={() => {
-                setWidgets((widgets) => [...widgets, {
-                  children: <div>{status.label}</div>,
-                  layout: {
-                    i: widgets.length.toString(),
-                    x: 0,
-                    y: 0,
-                    w: 2,
-                    h: 2,
-                  }
-                }])
-
-                setOpen(false)
-              }}
+              onSelect={() => addWidget(status)}
             >
               {status.label}
             </CommandItem>

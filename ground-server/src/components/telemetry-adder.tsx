@@ -19,14 +19,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Widget } from "@/lib/definitions";
+import { type Telemetry, type Widget } from "@/lib/definitions";
 
-type Status = {
-  value: string;
-  label: string;
-};
-
-const statuses: Status[] = [
+const telemetry: Telemetry[] = [
   {
     value: "velocity",
     label: "Velocity",
@@ -69,7 +64,7 @@ export function TelemetryAdder({
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="icon" className="px-2 py-2 h-9 w-9">
+          <Button variant="outline" size="icon" className="px-2 py-2 h-10 w-10">
             <PlusIcon className="h-[1.2rem] w-[1.2rem]" />
           </Button>
         </PopoverTrigger>
@@ -83,7 +78,7 @@ export function TelemetryAdder({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" size="icon" className="px-2 py-2 h-9 w-9">
+        <Button variant="outline" size="icon" className="px-2 py-2 h-10 w-10">
           <PlusIcon className="h-[1.2rem] w-[1.2rem]" />
         </Button>
       </DrawerTrigger>
@@ -103,11 +98,11 @@ function StatusList({
   setOpen: (open: boolean) => void;
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
-  const addWidget = (status: Status) => {
+  const addWidget = (t: Telemetry) => {
     setWidgets((widgets) => [
       ...widgets,
       {
-        children: <div>{status.label}</div>,
+        children: <div>{t.label}</div>,
         layout: {
           i: Date.now().toString(),
           x: 0,
@@ -129,13 +124,13 @@ function StatusList({
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
-          {statuses.map((status) => (
+          {telemetry.map((t) => (
             <CommandItem
-              key={status.value}
-              value={status.value}
-              onSelect={() => addWidget(status)}
+              key={t.value}
+              value={t.value}
+              onSelect={() => addWidget(t)}
             >
-              {status.label}
+              {t.label}
             </CommandItem>
           ))}
         </CommandGroup>

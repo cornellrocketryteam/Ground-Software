@@ -8,6 +8,15 @@ cc_library(
 )
 
 cc_library(
+    name = "qd",
+    hdrs = ["qd.h"],
+    deps = [":actuator"],
+    visibility = [
+        "//fill:__subpackages__",
+        ],
+)
+
+cc_library(
     name = "ball_valve",
     srcs = ["ball_valve.cc"],
     hdrs = ["ball_valve.h"],

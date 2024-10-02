@@ -11,7 +11,7 @@ public:
     /* Returns isActuating */
     virtual bool isActuated() = 0; 
 protected:
-    bool isActuating;
+    bool actuated;
 };
 
 #endif 

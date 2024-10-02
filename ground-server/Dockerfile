@@ -2,12 +2,17 @@ FROM node
 
 WORKDIR /ground-server
 
+RUN npx next telemetry disable
+
 # Copy the application code
 COPY ./ground-server/package.json .
 COPY ./ground-server/package-lock.json .
 
 # Install dependencies
 RUN npm ci
+
+# Generate a NextAuth encryption secret
+RUN npx auth secret
 
 # Set environment variables 
 ENV NODE_ENV=production

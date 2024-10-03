@@ -13,7 +13,14 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 import {
   Popover,
   PopoverContent,
@@ -83,7 +90,13 @@ export function TelemetryAdder({
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <div className="mt-4 border-t">
+        <DrawerHeader hidden>
+          <DrawerTitle hidden>Add telemetry</DrawerTitle>
+          <DrawerDescription hidden>
+            Select what telemetry datapoint to add to the dashboard
+          </DrawerDescription>
+        </DrawerHeader>
+        <div className="border-t">
           <StatusList setOpen={setOpen} setWidgets={setWidgets} />
         </div>
       </DrawerContent>

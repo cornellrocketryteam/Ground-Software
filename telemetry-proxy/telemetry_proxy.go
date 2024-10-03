@@ -17,14 +17,10 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
-const (
-	address = "fill-station:50051" // Replace with your server address
-)
-
 func main() {
 	// Set up a connection to the influxdb instance.
 	token := os.Getenv("INFLUXDB_TOKEN")
-	influx_url := "http://influxdb:8086"
+	influx_url := "http://"+os.Getenv("INFLUXDB_HOSTNAME")+":8086"
 	influx_client := influxdb2.NewClient(influx_url, token)
 
 	org := "crt"
@@ -32,6 +28,7 @@ func main() {
 	writeAPI := influx_client.WriteAPIBlocking(org, bucket)
 
 	// Set up a connection to the grpc server
+	address := os.Getenv("FILL_HOSTNAME")+":50051" // Replace with your server address
 	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)

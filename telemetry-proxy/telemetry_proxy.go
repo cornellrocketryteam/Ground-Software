@@ -18,13 +18,13 @@ import (
 )
 
 const (
-	address = "localhost:50051" // Replace with your server address
+	address = "fill-station:50051" // Replace with your server address
 )
 
 func main() {
 	// Set up a connection to the influxdb instance.
 	token := os.Getenv("INFLUXDB_TOKEN")
-	influx_url := "http://localhost:8086"
+	influx_url := "http://influxdb:8086"
 	influx_client := influxdb2.NewClient(influx_url, token)
 
 	org := "crt"

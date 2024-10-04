@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import { SessionProvider } from "next-auth/react";
+
 import { ThemeProvider } from "@/components/theme-provider";
+import Navbar from "@/components/navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,7 +40,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SessionProvider>
+            <Navbar />
+            <main>{children}</main>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -60,7 +60,7 @@ class TelemeterServiceImpl final : public Telemeter::Service
     Status StreamTelemetry(ServerContext *context, const TelemetryRequest *request,
                        ServerWriter<Telemetry> *writer) override
     {
-        for (int i = 0; i < 10; i++) {
+        while (true) {
             Telemetry t;
             t.set_temp(rand() % 100);
             if (!writer->Write(t)) {

@@ -1,12 +1,12 @@
-import { type ReactNode } from 'react'
 import { type Layout } from 'react-grid-layout'
 
 export type Telemetry = {
-    value: string;
+    id: string;
     label: string;
 };
 
 export type Widget = {
-    children: ReactNode
-    layout: Layout
-}
+    value: number | null;
+    layout: Layout;
+    telemetryType: string;
+};

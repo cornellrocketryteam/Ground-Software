@@ -3,7 +3,7 @@
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
 import { WidgetHandle } from "@/components/dashboard/widget-handle";
@@ -15,7 +15,53 @@ import { TelemetryAdder } from "@/components/telemetry-adder";
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export default function Home() {
+  // ... other state variables
   const [widgets, setWidgets] = useState<Widget[]>([]);
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8080/ws'); // Replace with your WebSocket server URL
+
+    ws.onopen = () => {
+      console.log('WebSocket connection opened');
+      // ... handle connection open (e.g., send an initial message)
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      
+      setWidgets((prevWidgets) => {
+        const updatedWidgets = prevWidgets.map((widget) => {
+          if (widget.telemetryType === 'Temperature' && message.temp !== undefined) {
+            return {
+              ...widget,
+              value: message.temp, // Store the value in the widget's state
+            };
+          } 
+          // ... other telemetry types
+          return widget;
+        });
+        console.log("Updated widgets:", updatedWidgets);
+        return updatedWidgets;
+      });
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+      // ... handle connection close (e.g., attempt reconnection)
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      // ... handle errors (e.g., display error message)
+    };
+
+    // Clean up on unmount
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const onLayoutChange = (layout: Layout[]) => {
     setWidgets((prevWidgets) =>
@@ -38,7 +84,7 @@ export default function Home() {
 
     return (
       <DashboardWidget key={widget.layout.i} deleteWidget={deleteWidget}>
-        {widget.children}
+        <p>{widget.telemetryType}: {widget.value} </p>
       </DashboardWidget>
     );
   });

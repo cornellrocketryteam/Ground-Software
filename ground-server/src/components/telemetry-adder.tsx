@@ -30,31 +30,31 @@ import { type Telemetry, type Widget } from "@/lib/definitions";
 
 const telemetry: Telemetry[] = [
   {
-    value: "velocity",
+    id: "velocity",
     label: "Velocity",
   },
   {
-    value: "altitude",
+    id: "altitude",
     label: "Altitude",
   },
   {
-    value: "rssi",
+    id: "rssi",
     label: "RSSI",
   },
   {
-    value: "longitude",
+    id: "longitude",
     label: "Longitude",
   },
   {
-    value: "latitude",
+    id: "latitude",
     label: "Latitude",
   },
   {
-    value: "temperature",
+    id: "temperature",
     label: "Temperature",
   },
   {
-    value: "pressure",
+    id: "pressure",
     label: "Pressure",
   },
 ];
@@ -115,7 +115,7 @@ function StatusList({
     setWidgets((widgets) => [
       ...widgets,
       {
-        children: <div>{t.label}</div>,
+        value: null,
         layout: {
           i: Date.now().toString(),
           x: 0,
@@ -125,6 +125,7 @@ function StatusList({
           minW: 3,
           minH: 2,
         },
+        telemetryType: t.label,
       },
     ]);
 
@@ -139,8 +140,8 @@ function StatusList({
         <CommandGroup>
           {telemetry.map((t) => (
             <CommandItem
-              key={t.value}
-              value={t.value}
+              key={t.id}
+              id={t.id}
               onSelect={() => addWidget(t)}
             >
               {t.label}

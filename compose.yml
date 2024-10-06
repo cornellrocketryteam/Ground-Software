@@ -9,6 +9,8 @@ services:
       - ground-network
     depends_on:
       - influxdb
+    ports:
+      - 80:80
   telemetry-proxy:
     image: ghcr.io/cornellrocketryteam/telemetry-proxy:latest
     depends_on:
@@ -17,6 +19,8 @@ services:
       - fill-station
     networks:
       - ground-network
+    ports:
+      - 8080:8080
     env_file:
       - ./.env.proxy
   influxdb:

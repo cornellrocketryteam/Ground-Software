@@ -3,19 +3,48 @@
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
 import { WidgetHandle } from "@/components/dashboard/widget-handle";
 import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
+import TelemetryAdder from "@/components/telemetry-adder";
 
-import { type Widget } from "@/lib/definitions";
-import { TelemetryAdder } from "@/components/telemetry-adder";
+import { type Widget, type Data } from "@/lib/definitions";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export default function Home() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
+  const [data, setData] = useState<Data>({ temp: 0 });
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
+
+    ws.onopen = () => {
+      console.log("WebSocket connection opened");
+    };
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setData(message);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    // Clean up on unmount
+    return () => {
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const onLayoutChange = (layout: Layout[]) => {
     setWidgets((prevWidgets) =>
@@ -37,9 +66,12 @@ export default function Home() {
       );
 
     return (
-      <DashboardWidget key={widget.layout.i} deleteWidget={deleteWidget}>
-        {widget.children}
-      </DashboardWidget>
+      <DashboardWidget
+        key={widget.layout.i}
+        widget={widget}
+        data={data}
+        deleteWidget={deleteWidget}
+      />
     );
   });
 

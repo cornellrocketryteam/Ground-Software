@@ -20,20 +20,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
+import { type Widget, type Data } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
+  widget: Widget;
+  data: Data;
   deleteWidget: () => void;
   style?: CSSProperties;
   className?: string;
   onMouseDown?: (event: MouseEvent) => void;
   onMouseUp?: (event: MouseEvent) => void;
   onTouchEnd?: (event: TouchEvent) => void;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
-  ({ deleteWidget, style, className, onMouseDown, onMouseUp, onTouchEnd, children }, ref) => {
-    const [displayStyle, setDisplayStyle] = useState("value");
+  (
+    {
+      widget,
+      data,
+      deleteWidget,
+      style,
+      className,
+      onMouseDown,
+      onMouseUp,
+      onTouchEnd,
+      children,
+    },
+    ref
+  ) => {
+    const [mode, setMode] = useState(widget.channel.modes[0] ?? "");
 
     return (
       <div
@@ -44,24 +60,32 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        {children}
+        {widget.channel.render(mode, data)}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <DotsVerticalIcon className="drag-ignore absolute top-2 right-1 h-4 cursor-pointer" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-34 drag-ignore">
-            <DropdownMenuRadioGroup
-              value={displayStyle}
-              onValueChange={setDisplayStyle}
-            >
-              <DropdownMenuRadioItem value="value">Value</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="chart">Chart</DropdownMenuRadioItem>
+            <DropdownMenuRadioGroup value={mode} onValueChange={setMode}>
+              {widget.channel.modes.map((m) => (
+                <DropdownMenuRadioItem key={m} value={m}>
+                  {m}
+                </DropdownMenuRadioItem>
+              ))}
             </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem inset className="text-red-600" onClick={deleteWidget}>Delete</DropdownMenuItem>
+            {widget.channel.modes.length > 0 ? <DropdownMenuSeparator /> : <></>}
+            <DropdownMenuItem
+              inset
+              className="text-red-600"
+              onClick={deleteWidget}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {children}
       </div>
     );
   }

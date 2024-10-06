@@ -26,40 +26,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type Telemetry, type Widget } from "@/lib/definitions";
+import { type TelemetryChannel, type Widget } from "@/lib/definitions";
+import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 
-const telemetry: Telemetry[] = [
-  {
-    value: "velocity",
-    label: "Velocity",
-  },
-  {
-    value: "altitude",
-    label: "Altitude",
-  },
-  {
-    value: "rssi",
-    label: "RSSI",
-  },
-  {
-    value: "longitude",
-    label: "Longitude",
-  },
-  {
-    value: "latitude",
-    label: "Latitude",
-  },
-  {
-    value: "temperature",
-    label: "Temperature",
-  },
-  {
-    value: "pressure",
-    label: "Pressure",
-  },
-];
-
-export function TelemetryAdder({
+export default function TelemetryAdder({
   setWidgets,
 }: {
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
@@ -111,11 +81,11 @@ function StatusList({
   setOpen: (open: boolean) => void;
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
-  const addWidget = (t: Telemetry) => {
+  const addWidget = (channel: TelemetryChannel) => {
     setWidgets((widgets) => [
       ...widgets,
       {
-        children: <div>{t.label}</div>,
+        channel: channel,
         layout: {
           i: Date.now().toString(),
           x: 0,
@@ -133,17 +103,17 @@ function StatusList({
 
   return (
     <Command>
-      <CommandInput placeholder="Filter datapoints..." />
+      <CommandInput placeholder="Filter channels..." />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>No channels found.</CommandEmpty>
         <CommandGroup>
-          {telemetry.map((t) => (
+          {TELEMETRY_CHANNELS.map((channel) => (
             <CommandItem
-              key={t.value}
-              value={t.value}
-              onSelect={() => addWidget(t)}
+              key={channel.label}
+              value={channel.label}
+              onSelect={() => addWidget(channel)}
             >
-              {t.label}
+              {channel.label}
             </CommandItem>
           ))}
         </CommandGroup>

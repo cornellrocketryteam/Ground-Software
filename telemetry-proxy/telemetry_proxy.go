@@ -13,6 +13,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	pb "github.com/cornellrocketryteam/Ground-Software/telemetry-proxy/proto-out" // Replace with your proto package path
 
@@ -30,7 +31,17 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// Create a channel to send Protobuf telemetry messages to the WebSocket handler
+var telemetryChannel = make(chan *pb.Telemetry)
+
+// Map to store active WebSocket connections
+var connections = make(map[*websocket.Conn]bool)
+
 func main() {
+	// Create a context that can be canceled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // Cancel the context when main exits
+
 	// Set up a connection to the influxdb instance.
 	token := os.Getenv("INFLUXDB_TOKEN")
 	influx_url := "http://" + os.Getenv("INFLUXDB_HOSTNAME") + ":8086"
@@ -42,7 +53,7 @@ func main() {
 
 	// Set up a connection to the grpc server
 	address := os.Getenv("FILL_HOSTNAME") + ":50051"
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -52,9 +63,15 @@ func main() {
 	// Start gRPC stream in a separate Goroutine
 	go receiveTelemetry(c, writeAPI)
 
+	// Start the broadcaster Goroutine
+	go broadcaster(ctx)
+
 	// Start the WebSocket Server
 	http.HandleFunc("/ws", websocketHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil)) // Listen on port 8080 for WebSocket connections
+	err = http.ListenAndServe(":8080", nil) // Listen on port 8080 for WebSocket connections
+	if err != nil {
+		log.Println("Error starting WebSocket server:", err)
+	}
 }
 
 func receiveTelemetry(c pb.TelemeterClient, writeAPI api.WriteAPIBlocking) {
@@ -80,6 +97,9 @@ func receiveTelemetry(c pb.TelemeterClient, writeAPI api.WriteAPIBlocking) {
 				break // Break out of the inner loop to retry the connection
 			}
 
+			// Send packet over websocket
+			telemetryChannel <- packet
+
 			// Parse and process the telemetry packet
 			fmt.Printf("Received packet with temp: %.2f\n", packet.Temp)
 			// Write to InfluxDB
@@ -96,6 +116,40 @@ func receiveTelemetry(c pb.TelemeterClient, writeAPI api.WriteAPIBlocking) {
 	}
 }
 
+func broadcaster(ctx context.Context) {
+	for {
+		select {
+		case packet := <-telemetryChannel:
+			// Create a protojson marshaler with the EmitUnpopulated option
+			marshaler := protojson.MarshalOptions{
+				EmitUnpopulated: true, // Include fields with zero values
+			}
+
+			// Marshal the Protobuf message to JSON using the custom marshaler
+			jsonData, err := marshaler.Marshal(packet)
+			if err != nil {
+				log.Println("Error marshaling Protobuf to JSON:", err)
+				continue // Skip this message if there's an error
+			}
+
+			// Iterate through all active connections and send the data
+			for c := range connections {
+				if err := c.WriteMessage(websocket.TextMessage, jsonData); err != nil {
+					log.Println("Error writing JSON message:", err)
+					// Remove the connection from the map if there's an error
+					delete(connections, c)
+					// Close the connection
+					c.Close()
+				}
+			}
+		case <-ctx.Done():
+			// Stop the broadcaster Goroutine
+			log.Println("Broadcaster stopping...")
+			return
+		}
+	}
+}
+
 func websocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Upgrade the HTTP connection to a WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -104,6 +158,11 @@ func websocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer conn.Close()
+
+	// Add the new connection to the map
+	connections[conn] = true
+	// Remove the connection from the map when it closes
+	defer delete(connections, conn)
 
 	// Handle WebSocket messages
 	for {

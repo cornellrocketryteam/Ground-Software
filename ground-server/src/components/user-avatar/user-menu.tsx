@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -14,6 +15,13 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function UserMenu() {
   const { data: session } = useSession();
+  const { refresh } = useRouter();
+
+  const signOutClicked = () => {
+    signOut({ redirect: false }).then(() => {
+      refresh();
+    })
+  };
 
   return (
     <DropdownMenu>
@@ -30,7 +38,7 @@ export default function UserMenu() {
         <DropdownMenuLabel>{session?.user?.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>
+        <DropdownMenuItem className="text-red-600" onClick={signOutClicked}>
           Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

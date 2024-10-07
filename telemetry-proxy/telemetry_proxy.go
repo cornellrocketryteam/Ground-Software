@@ -1,55 +1,42 @@
+// The telemetry_proxy program receives telemetry from the fill station over gRPC and serves it to web clients via WebSocket
 package main
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	pb "github.com/cornellrocketryteam/Ground-Software/telemetry-proxy/proto-out"
 	"github.com/gorilla/websocket"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/encoding/protojson"
-
-	pb "github.com/cornellrocketryteam/Ground-Software/telemetry-proxy/proto-out" // Replace with your proto package path
-
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// Define the WebSocket upgrader
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow all origins for now (you might want to restrict this in production)
-	},
-}
-
-// Create a channel to send Protobuf telemetry messages to the WebSocket handler
+// telemetryChannel passes Protobuf telemetry messages to the WebSocket handler
 var telemetryChannel = make(chan *pb.Telemetry)
 
-// Map to store active WebSocket connections
+// connections stores active WebSocket connections
 var connections = make(map[*websocket.Conn]bool)
 
 func main() {
-	// Create a context that can be canceled
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() // Cancel the context when main exits
+	defer cancel()
 
 	// Set up a connection to the influxdb instance.
 	token := os.Getenv("INFLUXDB_TOKEN")
-	influx_url := "http://" + os.Getenv("INFLUXDB_HOSTNAME") + ":8086"
-	influx_client := influxdb2.NewClient(influx_url, token)
+	influxUrl := "http://" + os.Getenv("INFLUXDB_HOSTNAME") + ":8086"
+	influxClient := influxdb2.NewClient(influxUrl, token)
 
 	org := "crt"
 	bucket := "telemetry"
-	writeAPI := influx_client.WriteAPIBlocking(org, bucket)
+	writeAPI := influxClient.WriteAPIBlocking(org, bucket)
 
 	// Set up a connection to the grpc server
 	address := os.Getenv("FILL_HOSTNAME") + ":50051"
@@ -58,28 +45,42 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewTelemeterClient(conn)
+	grpcClient := pb.NewTelemeterClient(conn)
 
 	// Start gRPC stream in a separate Goroutine
-	go receiveTelemetry(c, writeAPI)
+	go receiveTelemetry(ctx, grpcClient)
 
 	// Start the broadcaster Goroutine
-	go broadcaster(ctx)
+	go func() {
+		for {
+			select {
+			case packet := <-telemetryChannel:
+				HandlePacket(ctx, packet, writeAPI)
+			case <-ctx.Done():
+				log.Println("Broadcaster stopping...")
+				return
+			}
+		}
+	}()
+
+	websocketHandlerWrapper := func(w http.ResponseWriter, r *http.Request) {
+		websocketHandler(ctx, w, r) // Pass rootCtx to the actual handler
+	}
 
 	// Start the WebSocket Server
-	http.HandleFunc("/ws", websocketHandler)
+	http.HandleFunc("/ws", websocketHandlerWrapper)
 	err = http.ListenAndServe(":8080", nil) // Listen on port 8080 for WebSocket connections
 	if err != nil {
 		log.Println("Error starting WebSocket server:", err)
 	}
 }
 
-func receiveTelemetry(c pb.TelemeterClient, writeAPI api.WriteAPIBlocking) {
+func receiveTelemetry(ctx context.Context, grpcClient pb.TelemeterClient) {
+	new_ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	for {
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
 
-		stream, err := c.StreamTelemetry(ctx, &pb.TelemetryRequest{})
+		stream, err := grpcClient.StreamTelemetry(new_ctx, &pb.TelemetryRequest{})
 		if err != nil {
 			log.Printf("could not receive stream: %v, retrying in 5 seconds...", err)
 			time.Sleep(5 * time.Second)
@@ -88,95 +89,106 @@ func receiveTelemetry(c pb.TelemeterClient, writeAPI api.WriteAPIBlocking) {
 
 		for {
 			packet, err := stream.Recv()
-			if err == io.EOF {
-				log.Println("stream ended, retrying connection...")
-				break // Break out of the inner loop to retry the connection
-			}
-			if err != nil {
-				log.Printf("error receiving packet: %v, retrying connection...", err)
+			if err == io.EOF || err != nil {
+				log.Printf("Received %v, retrying connection...\n", err)
 				break // Break out of the inner loop to retry the connection
 			}
 
 			// Send packet over websocket
 			telemetryChannel <- packet
-
-			// Parse and process the telemetry packet
-			fmt.Printf("Received packet with temp: %.2f\n", packet.Temp)
-			// Write to InfluxDB
-			tags := map[string]string{}
-			fields := map[string]interface{}{
-				"temp": packet.Temp,
-			}
-			point := write.NewPoint("temperature", tags, fields, time.Now())
-
-			if err := writeAPI.WritePoint(context.Background(), point); err != nil {
-				log.Fatal(err)
-			}
 		}
 	}
 }
 
-func broadcaster(ctx context.Context) {
-	for {
-		select {
-		case packet := <-telemetryChannel:
-			// Create a protojson marshaler with the EmitUnpopulated option
-			marshaler := protojson.MarshalOptions{
-				EmitUnpopulated: true, // Include fields with zero values
-			}
+func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteAPIBlocking) {
+	// Parse and process the telemetry packet
+	log.Printf("Received packet with temp: %.2f\n", packet.Temp)
 
-			// Marshal the Protobuf message to JSON using the custom marshaler
-			jsonData, err := marshaler.Marshal(packet)
-			if err != nil {
-				log.Println("Error marshaling Protobuf to JSON:", err)
-				continue // Skip this message if there's an error
-			}
+	// Write to InfluxDB
+	tags := map[string]string{}
+	fields := map[string]interface{}{
+		"temp": packet.Temp,
+	}
+	point := write.NewPoint("temperature", tags, fields, time.Now())
+	writeCtx, writeCancel := context.WithTimeout(ctx, time.Second)
+	defer writeCancel()
+	if err := writeAPI.WritePoint(writeCtx, point); err != nil {
+		log.Fatal(err)
+	}
 
-			// Iterate through all active connections and send the data
-			for c := range connections {
-				if err := c.WriteMessage(websocket.TextMessage, jsonData); err != nil {
-					log.Println("Error writing JSON message:", err)
-					// Remove the connection from the map if there's an error
-					delete(connections, c)
-					// Close the connection
-					c.Close()
-				}
-			}
-		case <-ctx.Done():
-			// Stop the broadcaster Goroutine
-			log.Println("Broadcaster stopping...")
-			return
+	marshaler := protojson.MarshalOptions{
+		EmitUnpopulated: true, // Include fields with zero values
+	}
+
+	// Marshal the Protobuf message to JSON using the custom marshaler
+	jsonData, err := marshaler.Marshal(packet)
+	if err != nil {
+		log.Println("Error marshaling Protobuf to JSON:", err)
+		return
+	}
+
+	// Iterate through all active connections and send the data
+	for c := range connections {
+		if err := c.WriteMessage(websocket.TextMessage, jsonData); err != nil {
+			log.Println("Error writing JSON message:", err)
+			// Remove the connection from the map if there's an error
+			delete(connections, c)
+			// Close the connection
+			c.Close()
 		}
 	}
 }
 
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
+func websocketHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	// upgrader is used to upgrade a http connection to a websocket connection
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true // Allow all origins for now (we might want to restrict this in production)
+		},
+	}
+
 	// Upgrade the HTTP connection to a WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Error upgrading connection:", err)
 		return
 	}
-	defer conn.Close()
+
+	wsCtx, _ := context.WithCancel(ctx)
 
 	// Add the new connection to the map
 	connections[conn] = true
-	// Remove the connection from the map when it closes
-	defer delete(connections, conn)
 
-	// Handle WebSocket messages
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("Error reading message:", err)
-			break
-		}
-		fmt.Printf("Received message: %s\n", p)
+	conn.SetCloseHandler(func(code int, text string) error {
+		delete(connections, conn)
+		return nil
+	})
 
-		// You can process the received message here and potentially send a response back to the client
-		if err := conn.WriteMessage(messageType, []byte("Message received!")); err != nil {
-			log.Println("Error writing message:", err)
-			break
+	// Handle WebSocket messages in a separate goroutine with context
+	go func(ctx context.Context, conn *websocket.Conn) {
+		defer delete(connections, conn)
+		defer conn.Close()
+		for {
+			select {
+			case <-ctx.Done(): // Handle context cancellation (server shutdown)
+				conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Server shutting down"), time.Now().Add(5*time.Second))
+				return // Exit the goroutine
+
+			default:
+				messageType, p, err := conn.ReadMessage()
+				if err != nil {
+					log.Println("Error reading message:", err)
+					return
+				}
+				log.Printf("Received message: %s\n", p)
+
+				// Process Message
+				if err := conn.WriteMessage(messageType, []byte("Message received!")); err != nil {
+					log.Println("Error writing message:", err)
+				}
+			}
 		}
-	}
+	}(wsCtx, conn)
 }

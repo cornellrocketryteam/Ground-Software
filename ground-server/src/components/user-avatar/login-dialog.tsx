@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { passwordSchema } from "@/lib/zod";
+import { useRouter } from 'next/navigation';
 
 import {
   Dialog,
@@ -28,6 +29,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function LoginDialog() {
+  const { refresh } = useRouter();
+
   const form = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
   });
@@ -35,7 +38,7 @@ export default function LoginDialog() {
   const onSubmit = (values: z.infer<typeof passwordSchema>) => {
     signIn("credentials", {
       ...values,
-      redirect: true,
+      redirect: false,
     }).then((response) => {
       if (response?.error === "CredentialsSignin") {
         form.setError(
@@ -60,6 +63,8 @@ export default function LoginDialog() {
           }
         );
       }
+
+      refresh();
     });
   };
 

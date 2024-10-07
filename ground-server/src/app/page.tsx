@@ -18,8 +18,10 @@ export default function Home() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [data, setData] = useState<Data>({ temp: 0 });
 
+  const websocketUrl = process.env.WEBSOCKET_URL || "ws://localhost:8080/ws";
+
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
+    const ws = new WebSocket(websocketUrl);
 
     ws.onopen = () => {
       console.log("WebSocket connection opened");

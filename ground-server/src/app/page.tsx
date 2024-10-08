@@ -16,7 +16,7 @@ const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export default function Home() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
-  const [data, setData] = useState<Data>({ temp: 0 });
+  const [data, setData] = useState<Data[]>([]);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
@@ -27,7 +27,7 @@ export default function Home() {
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      setData(message);
+      setData((prevData) => [...prevData, message]);
     };
 
     ws.onclose = () => {

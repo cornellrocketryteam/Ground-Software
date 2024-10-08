@@ -1,4 +1,4 @@
-// The telemetry_proxy program receives telemetry from the fill station over gRPC and serves it to web clients via WebSocket
+// The telemetry_proxy program receives telemetry from the fill station over gRPC and serves it to web clients via WebSocket.
 package main
 
 import (
@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	pb "github.com/cornellrocketryteam/Ground-Software/telemetry-proxy/proto-out"
@@ -19,10 +20,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// telemetryChannel passes Protobuf telemetry messages to the WebSocket handler
-var telemetryChannel = make(chan *pb.Telemetry)
-
-// connections stores active WebSocket connections
+// connections stores active WebSocket connections.
+var connectionsMutex sync.RWMutex
 var connections = make(map[*websocket.Conn]bool)
 
 func main() {
@@ -47,8 +46,33 @@ func main() {
 	defer conn.Close()
 	grpcClient := pb.NewTelemeterClient(conn)
 
+	// telemetryChannel passes Protobuf telemetry messages to the WebSocket handler.
+	var telemetryChannel = make(chan *pb.Telemetry)
+
 	// Start gRPC stream in a separate Goroutine
-	go receiveTelemetry(ctx, grpcClient)
+	// go receiveTelemetry(ctx, grpcClient)
+	go func(ctx context.Context, grpcClient pb.TelemeterClient) {
+		for {
+
+			stream, err := grpcClient.StreamTelemetry(ctx, &pb.TelemetryRequest{})
+			if err != nil {
+				log.Printf("could not receive stream: %v, retrying in 5 seconds...", err)
+				time.Sleep(5 * time.Second)
+				continue // Retry the connection
+			}
+
+			for {
+				packet, err := stream.Recv()
+				if err == io.EOF || err != nil {
+					log.Printf("Received %v, retrying connection...\n", err)
+					break // Break out of the inner loop to retry the connection
+				}
+
+				// Send packet over websocket
+				telemetryChannel <- packet
+			}
+		}
+	}(ctx, grpcClient)
 
 	// Start the broadcaster Goroutine
 	go func() {
@@ -69,39 +93,15 @@ func main() {
 
 	// Start the WebSocket Server
 	http.HandleFunc("/ws", websocketHandlerWrapper)
-	err = http.ListenAndServe(":8080", nil) // Listen on port 8080 for WebSocket connections
-	if err != nil {
+	// Listen on port 8080 for WebSocket connections
+	if err = http.ListenAndServe(":8080", nil); err != nil {
 		log.Println("Error starting WebSocket server:", err)
 	}
 }
 
-func receiveTelemetry(ctx context.Context, grpcClient pb.TelemeterClient) {
-	new_ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	for {
-
-		stream, err := grpcClient.StreamTelemetry(new_ctx, &pb.TelemetryRequest{})
-		if err != nil {
-			log.Printf("could not receive stream: %v, retrying in 5 seconds...", err)
-			time.Sleep(5 * time.Second)
-			continue // Retry the connection
-		}
-
-		for {
-			packet, err := stream.Recv()
-			if err == io.EOF || err != nil {
-				log.Printf("Received %v, retrying connection...\n", err)
-				break // Break out of the inner loop to retry the connection
-			}
-
-			// Send packet over websocket
-			telemetryChannel <- packet
-		}
-	}
-}
-
+// HandlePacket parses and processes a telemetry packet
+// then stores it to InfluxDB and sends it to all active websocket connections.
 func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteAPIBlocking) {
-	// Parse and process the telemetry packet
 	log.Printf("Received packet with temp: %.2f\n", packet.Temp)
 
 	// Write to InfluxDB
@@ -128,47 +128,54 @@ func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteA
 	}
 
 	// Iterate through all active connections and send the data
+	connectionsMutex.RLock()
+	defer connectionsMutex.RUnlock()
 	for c := range connections {
+		connectionsMutex.RUnlock()
 		if err := c.WriteMessage(websocket.TextMessage, jsonData); err != nil {
 			log.Println("Error writing JSON message:", err)
 			// Remove the connection from the map if there's an error
+			connectionsMutex.Lock()
 			delete(connections, c)
+			connectionsMutex.Unlock()
 			// Close the connection
 			c.Close()
 		}
+		connectionsMutex.RLock()
 	}
 }
 
 func websocketHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	// upgrader is used to upgrade a http connection to a websocket connection
+	// upgrader is used to upgrade an http connection to a websocket connection.
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			return true // Allow all origins for now (we might want to restrict this in production)
+			return true // Allow all origins for now (we might want to restrict this in production).
 		},
 	}
 
-	// Upgrade the HTTP connection to a WebSocket connection
+	// Upgrade the HTTP connection to a WebSocket connection.
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Error upgrading connection:", err)
 		return
 	}
 
-	wsCtx, _ := context.WithCancel(ctx)
-
 	// Add the new connection to the map
+	connectionsMutex.Lock()
 	connections[conn] = true
+	connectionsMutex.Unlock()
 
 	conn.SetCloseHandler(func(code int, text string) error {
+		connectionsMutex.Lock()
+		defer connectionsMutex.Unlock()
 		delete(connections, conn)
 		return nil
 	})
 
 	// Handle WebSocket messages in a separate goroutine with context
 	go func(ctx context.Context, conn *websocket.Conn) {
-		defer delete(connections, conn)
 		defer conn.Close()
 		for {
 			select {
@@ -190,5 +197,5 @@ func websocketHandler(ctx context.Context, w http.ResponseWriter, r *http.Reques
 				}
 			}
 		}
-	}(wsCtx, conn)
+	}(ctx, conn)
 }

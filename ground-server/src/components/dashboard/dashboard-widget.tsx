@@ -49,6 +49,8 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     },
     ref
   ) => {
+    const WidgetComponent = widget.channel.component;
+
     const [mode, setMode] = useState(widget.channel.modes[0] ?? "");
 
     return (
@@ -60,7 +62,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        {widget.channel.render(mode, data)}
+        <WidgetComponent mode={mode} data={data} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -74,7 +76,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
-            {widget.channel.modes.length > 0 ? <DropdownMenuSeparator /> : <></>}
+            {widget.channel.modes.length > 0 && <DropdownMenuSeparator />}
             <DropdownMenuItem
               inset
               className="text-red-600"

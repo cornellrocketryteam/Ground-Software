@@ -7,7 +7,7 @@ export type Data = {
 
 export type WidgetProps = {
   mode: string;
-  data: Data;
+  data: Data[];
 };
 
 export type TelemetryChannel = {

@@ -24,7 +24,7 @@ import { type Widget, type Data } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
   widget: Widget;
-  data: Data;
+  data: Data[];
   deleteWidget: () => void;
   style?: CSSProperties;
   className?: string;

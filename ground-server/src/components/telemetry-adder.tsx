@@ -41,8 +41,8 @@ export default function TelemetryAdder({
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button size="icon" className="px-2 py-2 h-15 w-15">
-            <PlusIcon className="h-6 w-6" />
+          <Button className="px-4 py-2 md:py-3 md:px-5 lg:py-5 lg:text-lg">
+            <PlusIcon className="h-4 w-4 xl:h-5 xl:w-5 mr-2" /> Add Channel
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
@@ -55,15 +55,15 @@ export default function TelemetryAdder({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button size="icon" className="px-2 py-2 h-15 w-15">
-          <PlusIcon className="h-6 w-6" />
+        <Button className="px-4 py-2 md:py-3 md:px-5 lg:py-5 lg:text-lg">
+          <PlusIcon className="h-4 w-4 xl:h-5 xl:w-5 mr-2" /> Add Channel
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader hidden>
           <DrawerTitle hidden>Add telemetry</DrawerTitle>
           <DrawerDescription hidden>
-            Select what telemetry datapoint to add to the dashboard
+            Select what telemetry channel to add to the dashboard
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">

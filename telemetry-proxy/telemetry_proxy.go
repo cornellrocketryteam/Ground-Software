@@ -20,9 +20,100 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// connections stores active WebSocket connections.
-var connectionsMutex sync.RWMutex
-var connections = make(map[*websocket.Conn]bool)
+type WebClients struct {
+	ctx      context.Context
+	upgrader *websocket.Upgrader
+	mu       sync.Mutex
+	clients  map[*websocket.Conn]bool
+}
+
+var webClients WebClients
+
+// Start will initialize the struct and listen for connections.
+func (w *WebClients) Start(ctx context.Context) error {
+	w.ctx = ctx
+	w.upgrader = &websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true // Allow all origins for now (we might want to restrict this in production).
+		},
+	}
+	w.clients = map[*websocket.Conn]bool{}
+
+	// Start the WebSocket Server on port 8080.
+	http.HandleFunc("/ws", func(rw http.ResponseWriter, r *http.Request) {
+		w.Handle(rw, r)
+	})
+	err := http.ListenAndServe(":8080", nil)
+	return err
+}
+
+// Send writes data over all WebSocket connections in w.clients.
+func (w *WebClients) Send(data []byte) {
+	// Iterate through all active connections and send the data
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	for c := range w.clients {
+		if err := c.WriteMessage(websocket.TextMessage, data); err != nil {
+			log.Println("Error writing message to WebSocket client:", err)
+			// Remove the connection from the map if there's an error
+			delete(w.clients, c)
+			// Close the connection
+			c.Close()
+		}
+	}
+}
+
+// Handle upgrades the connection, adds a client to the list, and starts serving it.
+func (w *WebClients) Handle(rw http.ResponseWriter, r *http.Request) {
+	// Upgrade the HTTP connection to a WebSocket connection.
+	conn, err := w.upgrader.Upgrade(rw, r, nil)
+	if err != nil {
+		log.Println("Error upgrading connection:", err)
+		return
+	}
+
+	// Add the new connection to the map
+	w.mu.Lock()
+	w.clients[conn] = true
+	w.mu.Unlock()
+
+	conn.SetCloseHandler(func(code int, text string) error {
+		w.mu.Lock()
+		defer w.mu.Unlock()
+		delete(w.clients, conn)
+		return nil
+	})
+
+	go w.Serve(conn)
+}
+
+// Serve gets called within a goroutine from Handle.
+func (w *WebClients) Serve(conn *websocket.Conn) {
+	for {
+		select {
+		case <-w.ctx.Done(): // Handle context cancellation (server shutdown)
+			conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Server shutting down"), time.Now().Add(5*time.Second))
+			return // Exit the goroutine
+
+		default:
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				log.Println("Error reading message:", err)
+				return
+			}
+			log.Printf("Received message: %s\n", p)
+
+			// Process Message
+			w.mu.Lock()
+			if err := conn.WriteMessage(messageType, []byte("Message received!")); err != nil {
+				log.Println("Error writing message:", err)
+			}
+			w.mu.Unlock()
+		}
+	}
+}
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -79,7 +170,7 @@ func main() {
 		for {
 			select {
 			case packet := <-telemetryChannel:
-				HandlePacket(ctx, packet, writeAPI)
+				HandlePacket(ctx, packet, writeAPI, &webClients)
 			case <-ctx.Done():
 				log.Println("Broadcaster stopping...")
 				return
@@ -87,21 +178,14 @@ func main() {
 		}
 	}()
 
-	websocketHandlerWrapper := func(w http.ResponseWriter, r *http.Request) {
-		websocketHandler(ctx, w, r) // Pass rootCtx to the actual handler
-	}
+	webClients.Start(ctx)
 
-	// Start the WebSocket Server
-	http.HandleFunc("/ws", websocketHandlerWrapper)
-	// Listen on port 8080 for WebSocket connections
-	if err = http.ListenAndServe(":8080", nil); err != nil {
-		log.Println("Error starting WebSocket server:", err)
-	}
+	select {}
 }
 
 // HandlePacket parses and processes a telemetry packet
 // then stores it to InfluxDB and sends it to all active websocket connections.
-func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteAPIBlocking) {
+func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteAPIBlocking, w *WebClients) {
 	log.Printf("Received packet with temp: %.2f\n", packet.Temp)
 
 	// Write to InfluxDB
@@ -127,75 +211,5 @@ func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteA
 		return
 	}
 
-	// Iterate through all active connections and send the data
-	connectionsMutex.RLock()
-	defer connectionsMutex.RUnlock()
-	for c := range connections {
-		connectionsMutex.RUnlock()
-		if err := c.WriteMessage(websocket.TextMessage, jsonData); err != nil {
-			log.Println("Error writing JSON message:", err)
-			// Remove the connection from the map if there's an error
-			connectionsMutex.Lock()
-			delete(connections, c)
-			connectionsMutex.Unlock()
-			// Close the connection
-			c.Close()
-		}
-		connectionsMutex.RLock()
-	}
-}
-
-func websocketHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	// upgrader is used to upgrade an http connection to a websocket connection.
-	upgrader := websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-		CheckOrigin: func(r *http.Request) bool {
-			return true // Allow all origins for now (we might want to restrict this in production).
-		},
-	}
-
-	// Upgrade the HTTP connection to a WebSocket connection.
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Error upgrading connection:", err)
-		return
-	}
-
-	// Add the new connection to the map
-	connectionsMutex.Lock()
-	connections[conn] = true
-	connectionsMutex.Unlock()
-
-	conn.SetCloseHandler(func(code int, text string) error {
-		connectionsMutex.Lock()
-		defer connectionsMutex.Unlock()
-		delete(connections, conn)
-		return nil
-	})
-
-	// Handle WebSocket messages in a separate goroutine with context
-	go func(ctx context.Context, conn *websocket.Conn) {
-		defer conn.Close()
-		for {
-			select {
-			case <-ctx.Done(): // Handle context cancellation (server shutdown)
-				conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Server shutting down"), time.Now().Add(5*time.Second))
-				return // Exit the goroutine
-
-			default:
-				messageType, p, err := conn.ReadMessage()
-				if err != nil {
-					log.Println("Error reading message:", err)
-					return
-				}
-				log.Printf("Received message: %s\n", p)
-
-				// Process Message
-				if err := conn.WriteMessage(messageType, []byte("Message received!")); err != nil {
-					log.Println("Error writing message:", err)
-				}
-			}
-		}
-	}(ctx, conn)
+	w.Send(jsonData)
 }

@@ -17,7 +17,7 @@ services:
     env_file:
       - ./.env.proxy
   influxdb:
-    image: influxdb:latest
+    image: influxdb:2.7.10
     networks:
       - ground-network
     ports:
@@ -36,10 +36,10 @@ services:
     volumes:
       - type: volume
         source: influxdb-data
-        target: /var/lib/influxdb
+        target: /var/lib/influxdb2
       - type: volume
         source: influxdb-config
-        target: /etc/influxdb
+        target: /etc/influxdb2
 secrets:
   influxdb-admin-username:
     file: ./.env.influxdb-admin-username

@@ -91,9 +91,9 @@ function StatusList({
           x: 0,
           y: 0,
           w: 3,
-          h: 2,
+          h: 3,
           minW: 3,
-          minH: 2,
+          minH: 3,
         },
       },
     ]);

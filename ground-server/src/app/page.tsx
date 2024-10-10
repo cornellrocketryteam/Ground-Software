@@ -3,7 +3,7 @@
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
 import { WidgetHandle } from "@/components/dashboard/widget-handle";
@@ -17,31 +17,45 @@ const ResponsiveReactGridLayout = WidthProvider(Responsive);
 export default function Home() {
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [data, setData] = useState<Data[]>([]);
+  const wsRef = useRef<WebSocket | null>(null); // Store the WebSocket instance
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
 
     ws.onopen = () => {
       console.log("WebSocket connection opened");
+      wsRef.current = ws; // Store the WebSocket instance
     };
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      setData((prevData) => [...prevData, message]);
+
+      // Check if the message is historical data or a live data point
+       if (message.historical) { 
+        // Historical data – overwrite existing data
+        setData(message.data.map((item: { timestamp: Date; value: number; }) => ({
+          timestamp: new Date(item.timestamp),
+          temp: Number(item.value) // Map "value" to "temp"
+        })));
+      } else { // Check for live data structure
+        setData(prevData => [...prevData, { timestamp: new Date(Date.now()), temp: message.temp }]); // Add timestamp to live data
+    }
     };
 
     ws.onclose = () => {
       console.log("WebSocket connection closed");
+      wsRef.current = null; // Clear the WebSocket instance
     };
 
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
+      wsRef.current = null; // Clear the WebSocket instance
     };
 
     // Clean up on unmount
     return () => {
-      if (ws) {
-        ws.close();
+      if (wsRef.current) {
+        wsRef.current.close();
       }
     };
   }, []); // Empty dependency array ensures this runs only once on mount
@@ -53,6 +67,32 @@ export default function Home() {
         if (updatedLayout) {
           return { ...widget, layout: updatedLayout };
         }
+        return widget;
+      })
+    );
+  };
+
+  const onWidgetModeChange = (widgetId: string, newMode: string) => {
+    setWidgets((prevWidgets) =>
+      prevWidgets.map((widget) => {
+        if (widget.layout.i === widgetId && newMode === "15m Chart") {
+          if (wsRef.current) {
+            wsRef.current.send(
+              JSON.stringify({
+                start: -15,
+                stop: 0,
+                measurement: "temperature",
+                field: "temp",
+              })
+            );
+          } else {
+            console.error("WebSocket not connected. Cannot request historical data.");
+          }
+          return { ...widget, mode: newMode };
+        } else if (widget.layout.i === widgetId){
+          return {...widget, mode: newMode};
+        }
+        
         return widget;
       })
     );
@@ -71,6 +111,7 @@ export default function Home() {
         widget={widget}
         data={data}
         deleteWidget={deleteWidget}
+        onModeChange={onWidgetModeChange}
       />
     );
   });

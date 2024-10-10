@@ -3,10 +3,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"slices"
 	"sync"
 	"time"
 
@@ -19,6 +22,120 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 )
+
+type HistoricalDataRequest struct {
+	Start       int    `json:"start"` // Minutes ago
+	Stop        int    `json:"stop"`  // Minutes ago
+	Measurement string `json:"measurement"`
+	Field       string `json:"field"`
+	Aggregation string `json:"aggregation"` //e.g., "mean", "max", etc.
+	Every       int    `json:"every"`       // Seconds for aggregateWindow
+}
+
+type DataPoint struct {
+	Timestamp time.Time `json:"timestamp"`
+	Value     float64   `json:"value"`
+}
+
+type HistoricalDataResponse struct {
+	Data  []DataPoint `json:"data"`
+	Error string      `json:"error"`
+}
+
+type Datastore struct {
+	ctx          context.Context
+	token        string
+	influxUrl    string
+	influxClient influxdb2.Client
+	org          string
+	bucket       string
+	writeAPI     api.WriteAPIBlocking
+	queryAPI     api.QueryAPI
+}
+
+var datastore Datastore
+var legalMeasurements = []string{"temperature"}
+var legalFields = []string{"temp"}
+var legalAggregation = []string{"mean", "median", "mode"}
+
+// Init initializes the struct with default values
+func (d *Datastore) Init(ctx context.Context) {
+	// Set up a connection to the influxdb instance.
+	d.ctx = ctx
+	d.token = os.Getenv("INFLUXDB_TOKEN")
+	d.influxUrl = "http://" + os.Getenv("INFLUXDB_HOSTNAME") + ":8086"
+	d.influxClient = influxdb2.NewClient(d.influxUrl, d.token)
+
+	d.org = "crt"
+	d.bucket = "telemetry"
+	d.writeAPI = d.influxClient.WriteAPIBlocking(d.org, d.bucket)
+	d.queryAPI = d.influxClient.QueryAPI(d.org)
+}
+
+// Store parses a packet and writes it to InfluxDB
+func (d *Datastore) Store(packet *pb.Telemetry) {
+	// Write to InfluxDB
+	tags := map[string]string{}
+	fields := map[string]interface{}{
+		"temp": packet.Temp,
+	}
+	point := write.NewPoint("temperature", tags, fields, time.Now())
+	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
+	defer writeCancel()
+	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Query parses and executes a json request for historical data
+func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
+	// Validate input (important to prevent injection attacks!)
+	if req.Measurement == "" || req.Field == "" || !slices.Contains(legalMeasurements, req.Measurement) || !slices.Contains(legalFields, req.Field) {
+		response := HistoricalDataResponse{Error: "Measurement and field are required"}
+		return response
+	}
+
+	if req.Aggregation == "" || !slices.Contains(legalAggregation, req.Aggregation) {
+		req.Aggregation = "mean" // Default to mean if not provided
+	}
+
+	if req.Every == 0 {
+		// Default to 100 data points
+		numDatapoints := 100.0
+		if width := int((float64(req.Stop-req.Start) / numDatapoints) * 60); width != 0 {
+			req.Every = width
+		} else {
+			req.Every = 1
+		}
+	}
+
+	// Construct query
+	query := fmt.Sprintf(`from(bucket: "telemetry")
+	  |> range(start: %dm, stop: %dm)
+	  |> filter(fn: (r) => r._measurement == "%s")
+	  |> filter(fn: (r) => r._field == "%s")
+	  |> aggregateWindow(every: %ds, fn: %s, createEmpty: false)
+	  |> drop(columns: ["table", "_measurement", "_field", "_start", "_stop"])
+	  |> yield(name: "mean")`, req.Start, req.Stop, req.Measurement, req.Field, req.Every, req.Aggregation)
+
+	// Process historical data request.
+	log.Printf("Querying with: %s", query)
+	results, err := d.queryAPI.Query(d.ctx, query)
+	response := HistoricalDataResponse{}
+	if err != nil {
+		response.Error = err.Error()
+	} else {
+		log.Println("Result of Query: ")
+		for results.Next() {
+			log.Println(results.Record())
+			response.Data = append(response.Data, DataPoint{
+				Timestamp: results.Record().Time(),
+				Value:     results.Record().Value().(float64),
+			})
+		}
+	}
+	return response
+}
 
 type WebClients struct {
 	ctx      context.Context
@@ -45,8 +162,7 @@ func (w *WebClients) Start(ctx context.Context) error {
 	http.HandleFunc("/ws", func(rw http.ResponseWriter, r *http.Request) {
 		w.Handle(rw, r)
 	})
-	err := http.ListenAndServe(":8080", nil)
-	return err
+	return http.ListenAndServe(":8080", nil)
 }
 
 // Send writes data over all WebSocket connections in w.clients.
@@ -89,28 +205,37 @@ func (w *WebClients) Handle(rw http.ResponseWriter, r *http.Request) {
 	go w.Serve(conn)
 }
 
-// Serve gets called within a goroutine from Handle.
+// Serve handles WebSocket requests.
 func (w *WebClients) Serve(conn *websocket.Conn) {
 	for {
 		select {
 		case <-w.ctx.Done(): // Handle context cancellation (server shutdown)
 			conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Server shutting down"), time.Now().Add(5*time.Second))
 			return // Exit the goroutine
-
 		default:
-			messageType, p, err := conn.ReadMessage()
+			_, p, err := conn.ReadMessage()
 			if err != nil {
-				log.Println("Error reading message:", err)
+				log.Println("Error reading message; closing connection:", err)
+				w.mu.Lock()
+				conn.Close()
+				w.mu.Unlock()
 				return
 			}
-			log.Printf("Received message: %s\n", p)
 
-			// Process Message
-			w.mu.Lock()
-			if err := conn.WriteMessage(messageType, []byte("Message received!")); err != nil {
-				log.Println("Error writing message:", err)
+			// Check if the message is a JSON request for historical data.
+			var req HistoricalDataRequest
+			if err := json.Unmarshal(p, &req); err == nil {
+				response := datastore.Query(req)
+				jsonData, err := json.Marshal(response)
+				if err != nil {
+					log.Println("Error marshaling response to JSON:", err)
+				}
+				w.mu.Lock()
+				if err := conn.WriteMessage(websocket.TextMessage, jsonData); err != nil {
+					log.Println("Error writing message:", err)
+				}
+				w.mu.Unlock()
 			}
-			w.mu.Unlock()
 		}
 	}
 }
@@ -119,14 +244,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Set up a connection to the influxdb instance.
-	token := os.Getenv("INFLUXDB_TOKEN")
-	influxUrl := "http://" + os.Getenv("INFLUXDB_HOSTNAME") + ":8086"
-	influxClient := influxdb2.NewClient(influxUrl, token)
-
-	org := "crt"
-	bucket := "telemetry"
-	writeAPI := influxClient.WriteAPIBlocking(org, bucket)
+	// Initialize datastore
+	datastore.Init(ctx)
 
 	// Set up a connection to the grpc server
 	address := os.Getenv("FILL_HOSTNAME") + ":50051"
@@ -170,7 +289,7 @@ func main() {
 		for {
 			select {
 			case packet := <-telemetryChannel:
-				HandlePacket(ctx, packet, writeAPI, &webClients)
+				HandlePacket(ctx, packet, &webClients)
 			case <-ctx.Done():
 				log.Println("Broadcaster stopping...")
 				return
@@ -185,20 +304,11 @@ func main() {
 
 // HandlePacket parses and processes a telemetry packet
 // then stores it to InfluxDB and sends it to all active websocket connections.
-func HandlePacket(ctx context.Context, packet *pb.Telemetry, writeAPI api.WriteAPIBlocking, w *WebClients) {
+func HandlePacket(ctx context.Context, packet *pb.Telemetry, w *WebClients) {
 	log.Printf("Received packet with temp: %.2f\n", packet.Temp)
 
 	// Write to InfluxDB
-	tags := map[string]string{}
-	fields := map[string]interface{}{
-		"temp": packet.Temp,
-	}
-	point := write.NewPoint("temperature", tags, fields, time.Now())
-	writeCtx, writeCancel := context.WithTimeout(ctx, time.Second)
-	defer writeCancel()
-	if err := writeAPI.WritePoint(writeCtx, point); err != nil {
-		log.Fatal(err)
-	}
+	datastore.Store(packet)
 
 	marshaler := protojson.MarshalOptions{
 		EmitUnpopulated: true, // Include fields with zero values

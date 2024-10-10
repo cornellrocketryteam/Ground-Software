@@ -89,6 +89,20 @@ export default function Home() {
             console.error("WebSocket not connected. Cannot request historical data.");
           }
           return { ...widget, mode: newMode };
+        } else if (widget.layout.i === widgetId && newMode === "60m Chart") {
+          if (wsRef.current) {
+            wsRef.current.send(
+              JSON.stringify({
+                start: -60,
+                stop: 0,
+                measurement: "temperature",
+                field: "temp",
+              })
+            );
+          } else {
+            console.error("WebSocket not connected. Cannot request historical data.");
+          }
+          return { ...widget, mode: newMode };
         } else if (widget.layout.i === widgetId){
           return {...widget, mode: newMode};
         }

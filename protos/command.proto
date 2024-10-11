@@ -24,23 +24,125 @@ service Commander {
 // The telemetry message
 // TODO(Zach) add parameters for commanding
 message Command {
-    string temp = 1;
+    bool sv1_open = 1;
+    bool bv1_open = 2;
+    bool bv1_off = 3;
+    bool qd_retract = 4;
+    bool ignite = 5;
+    bool sv2_close = 6;
+    bool mav_open = 7;
+    bool fire = 8;
 }
 
 // The response message containing an ack
 // TODO(Zach) add relevant reply values?
-message CommandReply {
-    bool ack = 1;
-    Telemetry telemetry = 2;
-}
+message CommandReply {}
 
 // The telemetry request message
-message TelemetryRequest {
-    // Add any fields you need for the request (e.g., sensor IDs to subscribe to)
+message TelemetryRequest {}
+
+enum SensorStatus {
+    OFF = 0;
+    VALID = 1;
+    INVALID = 2;
+}
+
+enum FlightMode {
+    STARTUP = 0;
+    STANDBY = 1;
+    ASCENT = 2;
+    DROGUE_DEPLOYED = 3;
+    MAIN_DEPLOYED = 4;
+    FAULT = 5;
+}
+
+enum Events {
+    KEY_ARMED = 0;
+    ALTITUDE_ARMED = 1;
+    ALTIMETER_INIT_FAILED = 2;
+    ALTIMETER_READING_FAILED = 3;
+    ALTIMETER_WAS_TURNED_OFF = 4;
+    GPS_INIT_FAILED = 5;
+    GPS_READING_FAILED = 6;
+    GPS_WAS_TURNED_OFF = 7;
+    IMU_INIT_FAILED = 8;
+    IMU_READING_FAILED = 9;
+    IMU_WAS_TURNED_OFF = 10;
+    ACCELEROMETER_INIT_FAILED = 11;
+    ACCELEROMETER_READING_FAILED = 12;
+    ACCELEROMETER_WAS_TURNED_OFF = 13;
+    THERMOMETER_INIT_FAILED = 14;
+    THERMOMETER_READING_FAILED = 15;
+    THERMOMETER_WAS_TURNED_OFF = 16;
+    SD_INIT_FAILED = 17;
+    SD_WRITE_FAILED = 18;
+    RFM_INIT_FAILED = 19;
+    RFM_TRANSMIT_FAILED = 20;
+}
+
+message RocketMetadata {
+    bool alt_armed = 1;
+    bool gps_valid = 2;
+    bool sd_init = 3;
+    SensorStatus therm_status = 4;
+    SensorStatus acc_status = 5;
+    SensorStatus imu_status = 6;
+    SensorStatus gps_status = 7;
+    SensorStatus alt_status = 8;
+    SensorStatus fram_status = 9;
+    FlightMode flight_mode = 10;
+}
+
+message GPSTelemetry {
+    int32 latitude = 1;
+    int32 longitude = 2;
+    uint32 num_satellites = 3;
+}
+
+message AccelerometerTelemetry {
+    float accel_x = 1;
+    float accel_y = 2;
+    float accel_z = 3;
+}
+
+message IMUTelemetry {
+    float gyro_x = 1;
+    float gyro_y = 2;
+    float gyro_z = 3;
+    float accel_x = 4;
+    float accel_y = 5;
+    float accel_z = 6;
+    float ori_x = 7;
+    float ori_y = 8;
+    float ori_z = 9;
+    float grav_x = 10;
+    float grav_y = 11;
+    float grav_z = 12;
+}
+
+message RocketTelemetry {
+    RocketMetadata metadata = 1;
+    uint32 timestamp = 2;
+    Events events = 3;
+    float altitude = 4;
+    GPSTelemetry gps_telem = 5;
+    AccelerometerTelemetry accel_telem = 6;
+    IMUTelemetry imu_telem = 7;
+    float temp = 8;
+    float voltage = 9;
+    float current = 10;
+    float pt3 = 11;
+    int32 blims_state = 12;
 }
 
 // The telemetry message
-// TODO(Zach) add telemetry values
 message Telemetry {
-    float temp = 1;
+    uint32 timestamp = 1;
+    float pt1 = 2;
+    float pt2 = 3;
+    float lc1 = 4;
+    float sv1_cont = 5;
+    float ign1_cont = 6;
+    float ign2_cont = 7;
+    RocketTelemetry rock_telem = 8;
 }

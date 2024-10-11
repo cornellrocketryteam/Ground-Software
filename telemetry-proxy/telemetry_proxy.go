@@ -78,7 +78,7 @@ func (d *Datastore) Store(packet *pb.Telemetry) {
 	// Write to InfluxDB
 	tags := map[string]string{}
 	fields := map[string]interface{}{
-		"temp": packet.Temp,
+		"temp": packet.RockTelem.Temp,
 	}
 	point := write.NewPoint("temperature", tags, fields, time.Now())
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
@@ -306,7 +306,7 @@ func main() {
 // HandlePacket parses and processes a telemetry packet
 // then stores it to InfluxDB and sends it to all active websocket connections.
 func HandlePacket(ctx context.Context, packet *pb.Telemetry, w *WebClients) {
-	log.Printf("Received packet with temp: %.2f\n", packet.Temp)
+	log.Printf("Received packet with temp: %.2f\n", packet.RockTelem.Temp)
 
 	// Write to InfluxDB
 	datastore.Store(packet)

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -26,7 +27,6 @@ import (
 type HistoricalDataRequest struct {
 	Start       int    `json:"start"` // Minutes ago
 	Stop        int    `json:"stop"`  // Minutes ago
-	Measurement string `json:"measurement"`
 	Field       string `json:"field"`
 	Aggregation string `json:"aggregation"` //e.g., "mean", "max", etc.
 	Every       int    `json:"every"`       // Seconds for aggregateWindow
@@ -55,8 +55,20 @@ type Datastore struct {
 }
 
 var datastore Datastore
-var legalMeasurements = []string{"temperature"}
-var legalFields = []string{"temp"}
+var legalFields = []string{
+	"rocket_time", "altitude", "temp", "voltage", "current", "pt3", "blims_state",
+	"latitude", "longitude", "num_satellites",
+	"accel_x", "accel_y", "accel_z",
+	"gyro_x", "gyro_y", "gyro_z", "imu_accel_x", "imu_accel_y", "imu_accel_z",
+	"ori_x", "ori_y", "ori_z", "grav_x", "grav_y", "grav_z",
+	"pt1", "pt2", "lc1", "sv1_cont", "ign1_cont", "ign2_cont",
+	"key_armed", "altitude_armed", "altimeter_init_failed", "altimeter_reading_failed",
+	"altimeter_was_turned_off", "gps_init_failed", "gps_reading_failed", "gps_was_turned_off",
+	"imu_init_failed", "imu_reading_failed", "imu_was_turned_off", "accelerometer_init_failed",
+	"accelerometer_reading_failed", "accelerometer_was_turned_off", "thermometer_init_failed",
+	"thermometer_reading_failed", "thermometer_was_turned_off", "sd_init_failed", "sd_write_failed",
+	"rfm_init_failed", "rfm_transmit_failed",
+}
 var legalAggregation = []string{"mean", "median", "mode"}
 
 // Init initializes the struct with default values
@@ -75,12 +87,91 @@ func (d *Datastore) Init(ctx context.Context) {
 
 // Store parses a packet and writes it to InfluxDB
 func (d *Datastore) Store(packet *pb.Telemetry) {
-	// Write to InfluxDB
-	tags := map[string]string{}
-	fields := map[string]interface{}{
-		"temp": packet.RockTelem.Temp,
+	// Convert Protobuf enums to strings for InfluxDB tags
+	flightModeStr := pb.FlightMode_name[int32(packet.RockTelem.Metadata.FlightMode)]
+	thermStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.ThermStatus)]
+	accStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.AccStatus)]
+	imuStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.ImuStatus)]
+	gpsStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.GpsStatus)]
+	altStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.AltStatus)]
+	framStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.FramStatus)]
+
+	// Create tags map
+	tags := map[string]string{
+		"flight_mode":  flightModeStr,
+		"alt_armed":    strconv.FormatBool(packet.RockTelem.Metadata.AltArmed),
+		"gps_valid":    strconv.FormatBool(packet.RockTelem.Metadata.GpsValid),
+		"sd_init":      strconv.FormatBool(packet.RockTelem.Metadata.SdInit),
+		"therm_status": thermStatusStr,
+		"acc_status":   accStatusStr,
+		"imu_status":   imuStatusStr,
+		"gps_status":   gpsStatusStr,
+		"alt_status":   altStatusStr,
+		"fram_status":  framStatusStr,
 	}
-	point := write.NewPoint("temperature", tags, fields, time.Now())
+
+	// Create fields map
+	fields := map[string]interface{}{
+		"rocket_time": packet.RockTelem.Timestamp,
+		"altitude":    packet.RockTelem.Altitude,
+		"temp":        packet.RockTelem.Temp,
+		"voltage":     packet.RockTelem.Voltage,
+		"current":     packet.RockTelem.Current,
+		"pt3":         packet.RockTelem.Pt3,
+		"blims_state": packet.RockTelem.BlimsState,
+
+		"latitude":       packet.RockTelem.GpsTelem.Latitude,
+		"longitude":      packet.RockTelem.GpsTelem.Longitude,
+		"num_satellites": packet.RockTelem.GpsTelem.NumSatellites,
+
+		"accel_x": packet.RockTelem.AccelTelem.AccelX,
+		"accel_y": packet.RockTelem.AccelTelem.AccelY,
+		"accel_z": packet.RockTelem.AccelTelem.AccelZ,
+
+		"gyro_x":      packet.RockTelem.ImuTelem.GyroX,
+		"gyro_y":      packet.RockTelem.ImuTelem.GyroY,
+		"gyro_z":      packet.RockTelem.ImuTelem.GyroZ,
+		"imu_accel_x": packet.RockTelem.ImuTelem.AccelX,
+		"imu_accel_y": packet.RockTelem.ImuTelem.AccelY,
+		"imu_accel_z": packet.RockTelem.ImuTelem.AccelZ,
+		"ori_x":       packet.RockTelem.ImuTelem.OriX,
+		"ori_y":       packet.RockTelem.ImuTelem.OriY,
+		"ori_z":       packet.RockTelem.ImuTelem.OriZ,
+		"grav_x":      packet.RockTelem.ImuTelem.GravX,
+		"grav_y":      packet.RockTelem.ImuTelem.GravY,
+		"grav_z":      packet.RockTelem.ImuTelem.GravZ,
+
+		"pt1":       packet.Pt1,
+		"pt2":       packet.Pt2,
+		"lc1":       packet.Lc1,
+		"sv1_cont":  packet.Sv1Cont,
+		"ign1_cont": packet.Ign1Cont,
+		"ign2_cont": packet.Ign2Cont,
+
+		"key_armed":                    packet.RockTelem.Events.KeyArmed,
+		"altitude_armed":               packet.RockTelem.Events.AltitudeArmed,
+		"altimeter_init_failed":        packet.RockTelem.Events.AltimeterInitFailed,
+		"altimeter_reading_failed":     packet.RockTelem.Events.AltimeterReadingFailed,
+		"altimeter_was_turned_off":     packet.RockTelem.Events.AltimeterWasTurnedOff,
+		"gps_init_failed":              packet.RockTelem.Events.GpsInitFailed,
+		"gps_reading_failed":           packet.RockTelem.Events.GpsReadingFailed,
+		"gps_was_turned_off":           packet.RockTelem.Events.GpsWasTurnedOff,
+		"imu_init_failed":              packet.RockTelem.Events.ImuInitFailed,
+		"imu_reading_failed":           packet.RockTelem.Events.ImuReadingFailed,
+		"imu_was_turned_off":           packet.RockTelem.Events.ImuWasTurnedOff,
+		"accelerometer_init_failed":    packet.RockTelem.Events.AccelerometerInitFailed,
+		"accelerometer_reading_failed": packet.RockTelem.Events.AccelerometerReadingFailed,
+		"accelerometer_was_turned_off": packet.RockTelem.Events.AccelerometerWasTurnedOff,
+		"thermometer_init_failed":      packet.RockTelem.Events.ThermometerInitFailed,
+		"thermometer_reading_failed":   packet.RockTelem.Events.ThermometerReadingFailed,
+		"thermometer_was_turned_off":   packet.RockTelem.Events.ThermometerWasTurnedOff,
+		"sd_init_failed":               packet.RockTelem.Events.SdInitFailed,
+		"sd_write_failed":              packet.RockTelem.Events.SdWriteFailed,
+		"rfm_init_failed":              packet.RockTelem.Events.RfmInitFailed,
+		"rfm_transmit_failed":          packet.RockTelem.Events.RfmTransmitFailed,
+	}
+
+	point := write.NewPoint("telemetry", tags, fields, time.Unix(int64(packet.Timestamp), 0))
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
 	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {
@@ -91,8 +182,8 @@ func (d *Datastore) Store(packet *pb.Telemetry) {
 // Query parses and executes a json request for historical data
 func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Validate input (important to prevent injection attacks!)
-	if req.Measurement == "" || req.Field == "" || !slices.Contains(legalMeasurements, req.Measurement) || !slices.Contains(legalFields, req.Field) {
-		response := HistoricalDataResponse{Historical: true, Error: "Measurement and field are required"}
+	if req.Field == "" || !slices.Contains(legalFields, req.Field) {
+		response := HistoricalDataResponse{Error: "Field does not exist"}
 		return response
 	}
 
@@ -113,11 +204,10 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Construct query
 	query := fmt.Sprintf(`from(bucket: "telemetry")
 	  |> range(start: %dm, stop: %dm)
-	  |> filter(fn: (r) => r._measurement == "%s")
 	  |> filter(fn: (r) => r._field == "%s")
 	  |> aggregateWindow(every: %ds, fn: %s, createEmpty: false)
 	  |> drop(columns: ["table", "_measurement", "_field", "_start", "_stop"])
-	  |> yield(name: "mean")`, req.Start, req.Stop, req.Measurement, req.Field, req.Every, req.Aggregation)
+	  |> yield(name: "mean")`, req.Start, req.Stop, req.Field, req.Every, req.Aggregation)
 
 	// Process historical data request.
 	log.Printf("Querying with: %s", query)

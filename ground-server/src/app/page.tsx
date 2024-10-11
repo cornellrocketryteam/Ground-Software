@@ -81,7 +81,6 @@ export default function Home() {
               JSON.stringify({
                 start: -15,
                 stop: 0,
-                measurement: "temperature",
                 field: "temp",
               })
             );

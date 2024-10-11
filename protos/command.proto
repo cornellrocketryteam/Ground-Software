@@ -56,28 +56,28 @@ enum FlightMode {
     FAULT = 5;
 }
 
-enum Events {
-    KEY_ARMED = 0;
-    ALTITUDE_ARMED = 1;
-    ALTIMETER_INIT_FAILED = 2;
-    ALTIMETER_READING_FAILED = 3;
-    ALTIMETER_WAS_TURNED_OFF = 4;
-    GPS_INIT_FAILED = 5;
-    GPS_READING_FAILED = 6;
-    GPS_WAS_TURNED_OFF = 7;
-    IMU_INIT_FAILED = 8;
-    IMU_READING_FAILED = 9;
-    IMU_WAS_TURNED_OFF = 10;
-    ACCELEROMETER_INIT_FAILED = 11;
-    ACCELEROMETER_READING_FAILED = 12;
-    ACCELEROMETER_WAS_TURNED_OFF = 13;
-    THERMOMETER_INIT_FAILED = 14;
-    THERMOMETER_READING_FAILED = 15;
-    THERMOMETER_WAS_TURNED_OFF = 16;
-    SD_INIT_FAILED = 17;
-    SD_WRITE_FAILED = 18;
-    RFM_INIT_FAILED = 19;
-    RFM_TRANSMIT_FAILED = 20;
+message Events {
+    bool key_armed = 1;
+    bool altitude_armed = 2;
+    bool altimeter_init_failed = 3;
+    bool altimeter_reading_failed = 4;
+    bool altimeter_was_turned_off = 5;
+    bool gps_init_failed = 6;
+    bool gps_reading_failed = 7;
+    bool gps_was_turned_off = 8;
+    bool imu_init_failed = 9;
+    bool imu_reading_failed = 10;
+    bool imu_was_turned_off = 11;
+    bool accelerometer_init_failed = 12;
+    bool accelerometer_reading_failed = 13;
+    bool accelerometer_was_turned_off = 14;
+    bool thermometer_init_failed = 15;
+    bool thermometer_reading_failed = 16;
+    bool thermometer_was_turned_off = 17;
+    bool sd_init_failed = 18;
+    bool sd_write_failed = 19;
+    bool rfm_init_failed = 20;
+    bool rfm_transmit_failed = 21;
 }
 
 message RocketMetadata {
@@ -121,8 +121,8 @@ message IMUTelemetry {
 }
 
 message RocketTelemetry {
-    RocketMetadata metadata = 1;
-    uint32 timestamp = 2;
+    uint32 timestamp = 1;
+    RocketMetadata metadata = 2;
     Events events = 3;
     float altitude = 4;
     GPSTelemetry gps_telem = 5;

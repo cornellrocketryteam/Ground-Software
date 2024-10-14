@@ -34,6 +34,7 @@ type HistoricalDataRequest struct {
 
 type DataPoint struct {
 	Timestamp time.Time `json:"timestamp"`
+	Field     string    `json:"field"`
 	Value     float64   `json:"value"`
 }
 
@@ -206,7 +207,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	  |> range(start: %dm, stop: %dm)
 	  |> filter(fn: (r) => r._field == "%s")
 	  |> aggregateWindow(every: %ds, fn: %s, createEmpty: false)
-	  |> drop(columns: ["table", "_measurement", "_field", "_start", "_stop"])
+	  |> drop(columns: ["table", "_measurement", "_start", "_stop"])
 	  |> yield(name: "mean")`, req.Start, req.Stop, req.Field, req.Every, req.Aggregation)
 
 	// Process historical data request.
@@ -221,6 +222,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 			log.Println(results.Record())
 			response.Data = append(response.Data, DataPoint{
 				Timestamp: results.Record().Time(),
+				Field:     results.Record().Field(),
 				Value:     results.Record().Value().(float64),
 			})
 		}

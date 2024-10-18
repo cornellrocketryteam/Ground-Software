@@ -37,8 +37,8 @@ export default function Home() {
           timestamp: new Date(item.timestamp),
           temp: Number(item.value) // Map "value" to "temp"
         })));
-      } else { // Check for live data structure
-        setData(prevData => [...prevData, { timestamp: new Date(Date.now()), temp: message.temp }]); // Add timestamp to live data
+      } else {
+        setData(prevData => [...prevData, { timestamp: new Date(Date.now()), temp: message.rockTelem.temp }]); // Add timestamp to live data
     }
     };
 

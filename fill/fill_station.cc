@@ -24,6 +24,7 @@ using command::Commander;
 using command::Telemeter;
 using command::CommandReply;
 using command::Telemetry;
+using command::RocketTelemetry;
 using command::TelemetryRequest;
 using grpc::Channel;
 using grpc::ClientContext;
@@ -45,11 +46,6 @@ class CommanderServiceImpl final : public Commander::Service
     Status SendCommand(ServerContext *context, const Command *request,
                        CommandReply *reply) override
     {
-        // TODO(Zach) read request, execute the command and set reply values
-        reply->set_ack(true);
-        float temp = 3.14;
-        reply->mutable_telemetry()->set_temp(temp);
-        // reply->set_telemetry(temp);
         return Status::OK;
     }
 };
@@ -62,7 +58,8 @@ class TelemeterServiceImpl final : public Telemeter::Service
     {
         while (true) {
             Telemetry t;
-            t.set_temp(rand() % 100);
+            RocketTelemetry* rock_telem = t.mutable_rock_telem();
+            rock_telem->set_temp(rand() % 100);
             if (!writer->Write(t)) {
                 // Broken stream
                 return Status::CANCELLED; 

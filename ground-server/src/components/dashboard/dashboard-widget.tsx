@@ -32,6 +32,7 @@ interface DashboardWidgetProps {
   onMouseUp?: (event: MouseEvent) => void;
   onTouchEnd?: (event: TouchEvent) => void;
   children?: ReactNode;
+  onModeChange: (widgetId: string, newMode: string) => void;
 }
 
 export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
@@ -46,12 +47,18 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
       onMouseUp,
       onTouchEnd,
       children,
+      onModeChange,
     },
     ref
   ) => {
     const WidgetComponent = widget.channel.component;
 
     const [mode, setMode] = useState(widget.channel.modes[0] ?? "");
+
+    const handleModeChange = (newMode: string) => {
+      setMode(newMode);
+      onModeChange(widget.layout.i, newMode);
+    }
 
     return (
       <div
@@ -69,7 +76,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
             <DotsVerticalIcon className="drag-ignore absolute top-2 right-1 h-4 cursor-pointer" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-34 drag-ignore">
-            <DropdownMenuRadioGroup value={mode} onValueChange={setMode}>
+            <DropdownMenuRadioGroup value={mode} onValueChange={handleModeChange}>
               {widget.channel.modes.map((m) => (
                 <DropdownMenuRadioItem key={m} value={m}>
                   {m}

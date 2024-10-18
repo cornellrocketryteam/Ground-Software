@@ -93,21 +93,21 @@ function HistoricalChart(duration: string, chartData: { timestamp: number; temp:
   );
 }
 
-export default function TemperatureWidget({ mode, data }: WidgetProps) {
-  if (data.length === 0) {
+export default function TemperatureWidget({ mode, channel }: WidgetProps) {
+  if (channel.data.length === 0) {
     return <div>No data</div>;
   }
 
   if (mode === "Value") {
     return (
       <p className="w-full h-full flex justify-center items-center font-semibold text-2xl">
-        {data[data.length - 1].temp} &deg;C
+        {channel.data[channel.data.length - 1].value} &deg;C
       </p>
     );
   }
 
   if (mode === "Chart") {
-    const chartData = data.map((d, i) => ({ id: i, temp: d.temp }));
+    const chartData = channel.data.map((d, i) => ({ id: i, temp: d.value }));
     return (
       <ChartContainer config={chartConfig} className="w-full h-full">
         <LineChart
@@ -149,12 +149,12 @@ export default function TemperatureWidget({ mode, data }: WidgetProps) {
   }
 
   if (mode === "15m Chart") {
-    const chartData = data.map((d) => ({ timestamp: d.timestamp.getTime(), temp: d.temp })); // Use timestamp
+    const chartData = channel.data.map((d) => ({ timestamp: d.timestamp.getTime(), temp: d.value })); // Use timestamp
     return HistoricalChart("15", chartData);
   }
 
   if (mode === "60m Chart") {
-    const chartData = data.map((d) => ({ timestamp: d.timestamp.getTime(), temp: d.temp })); // Use timestamp
+    const chartData = channel.data.map((d) => ({ timestamp: d.timestamp.getTime(), temp: d.value })); // Use timestamp
     return HistoricalChart("60", chartData);
   }
 

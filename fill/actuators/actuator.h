@@ -3,15 +3,13 @@
 
 class Actuator {
 public: 
-    /* Actuates the actuator. 
-    Returns true if activation is successful, and false otherwise. 
-    Sets isActuating to true if activation is successful.*/  
+    // Actuates the actuator 
     virtual bool Actuate() = 0;
     
-    /* Returns isActuating */
-    virtual bool isActuated() = 0; 
+    // Returns actuating
+    virtual bool isActuating() = 0; 
 protected:
-    bool isActuating;
+    bool actuating;
 };
 
 #endif 

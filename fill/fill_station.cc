@@ -10,6 +10,9 @@
 #include "telemetry_reader.h"
 #include "sensors/ptd.h"
 
+#include "actuators/qd.h"
+#include "wiringPi.h"
+
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/strings/str_format.h"
@@ -19,6 +22,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "protos/command.grpc.pb.h"
+
 
 using command::Command;
 using command::Commander;
@@ -119,12 +123,23 @@ MAIN
 // Start server and client services
 int main(int argc, char **argv)
 {
-    absl::ParseCommandLine(argc, argv);
-    // Start the server in another thread
-    std::shared_ptr<Server> server;
-    RunServer(absl::GetFlag(FLAGS_server_port), server);
-    // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+    // absl::ParseCommandLine(argc, argv);
+    // // Start the server in another thread
+    // std::shared_ptr<Server> server;
+    // RunServer(absl::GetFlag(FLAGS_server_port), server);
+    // // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
-    server->Shutdown();
+    // server->Shutdown();
+
+    wiringPiSetup();
+
+    QD qd; 
+
+    qd.Actuate();
+
+    while(true){
+
+    }
+
     return 0;
 }

@@ -41,14 +41,19 @@ jobs:
       - name: Build and Test with Bazel
         run: |
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
+            bazel build //fill/lib/MockWiringPi:mock_wiringpi
+            ./fill/setup_mock_wiringpi.sh
             bazel test //fill:all
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             sudo apt-get install g++-11-arm-linux-gnueabihf
             sudo apt install gcc-11-arm-linux-gnueabihf
+            bazel build //fill/lib/MockWiringPi:mock_wiringpi --platforms=platform:rpi4 --cpu="aarch64"
+            ./fill/setup_mock_wiringpi.sh "--platforms=platform:rpi4 --cpu="aarch64""
             bazel build //fill:all --platforms=platform:rpi4 --cpu="aarch64"
           fi
           sudo mkdir -p ./fill/output
           sudo cp bazel-bin/fill/fill_station ./fill/output
+          sudo cp fill/lib/libwiringPi.so ./fill/output
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2

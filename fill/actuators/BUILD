@@ -9,8 +9,9 @@ cc_library(
 
 cc_library(
     name = "qd",
+    srcs = ["qd.cc"],
     hdrs = ["qd.h"],
-    deps = [":actuator"],
+    deps = [":actuator", "//fill/lib/SMDriver:smdriver"],
     visibility = [
         "//fill:__subpackages__",
         ],

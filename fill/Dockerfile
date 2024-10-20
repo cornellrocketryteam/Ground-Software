@@ -21,6 +21,8 @@ WORKDIR /app
 
 # Copy the build output from the GitHub Workflow to Alpine
 COPY --from=build /app/bazel-bin/fill/fill_station ./fill_station
+COPY --from=build /app/bazel-bin/fill/lib/libwiringPi.so /usr/lib/libwiringPi.so
+RUN export LD_LIBRARY_PATH=/usr/lib
 
 # Expose the gRPC Server Port
 EXPOSE 50051

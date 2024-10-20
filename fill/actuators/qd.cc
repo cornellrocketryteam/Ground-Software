@@ -1,7 +1,9 @@
+#include <unistd.h>
 #include "qd.h"
 
-QD::QD() {
-    stepperMotor = new StepperMotor(COIL1, COIL2, COIL3, COIL4);
+QD::QD(){
+    stepperMotor = new StepperMotor(COIL1, COIL2, COIL3, COIL4, false);
+    actuating = false; 
 }
 
 QD::~QD(){
@@ -13,7 +15,7 @@ bool QD::Actuate(){
         return false; // cannot actuate a sensor that is already actuating 
     }
 
-    std::thread actuate_thread(turnMotor);
+    std::thread actuate_thread(&QD::turnMotor, this);
 
     actuate_thread.detach(); // we want to continue normal operation 
 
@@ -22,16 +24,16 @@ bool QD::Actuate(){
 
 void QD::turnMotor(){
     actuating = true; 
-    
-    stepperMotor->Enable(); // enable sensor motor 
-    stepperMotor->Rotate(stepperMotor->CLOCKWISE, 50); // Rotate the motor clockwise, 50ms time delay
 
-    delay(60000); // We need 1200 steps
+    stepperMotor->Enable(); // enable sensor motor 
+    stepperMotor->Rotate(stepperMotor->CLOCKWISE, 1200, 50); // Rotate the motor clockwise, 50ms time delay
 
     stepperMotor->StopRotation(); // Holds in current location 
     stepperMotor->Disable();
 
     actuating = false; 
+
+    return;
 }
 
 bool QD::isActuating(){

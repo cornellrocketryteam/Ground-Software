@@ -12,6 +12,8 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
 
 # Copy the build output from the GitHub Workflow to Alpine
 COPY fill/output/fill_station /bin/fill_station
+COPY fill/output/libwiringPi.so /usr/lib/libwiringPi.so
+RUN export LD_LIBRARY_PATH=/usr/lib
 
 RUN ["chmod", "+x", "/bin/fill_station"]
 

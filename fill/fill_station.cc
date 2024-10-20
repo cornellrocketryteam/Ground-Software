@@ -9,6 +9,10 @@
 
 #include "telemetry_reader.h"
 #include "sensors/ptd.h"
+#include "sensors/load_cell.h"
+
+#include "actuators/qd.h"
+#include "wiringPi.h"
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -19,6 +23,8 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "protos/command.grpc.pb.h"
+
+QD qd; 
 
 using command::Command;
 using command::Commander;
@@ -33,6 +39,8 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
+
+Adafruit_ADS1015 adc;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -64,6 +72,9 @@ class CommanderServiceImpl final : public Commander::Service
     Status SendCommand(ServerContext *context, const Command *request,
                        CommandReply *reply) override
     {
+        if (request->qd_retract) {
+             qd.Actuate();
+        }
         return Status::OK;
     }
 };
@@ -119,12 +130,15 @@ MAIN
 // Start server and client services
 int main(int argc, char **argv)
 {
+    WiringPiSetup(); 
+
     absl::ParseCommandLine(argc, argv);
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);
-    // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
     server->Shutdown();
+
     return 0;
 }

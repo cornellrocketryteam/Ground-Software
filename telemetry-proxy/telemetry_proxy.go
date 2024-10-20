@@ -38,8 +38,9 @@ type DataPoint struct {
 }
 
 type HistoricalDataResponse struct {
-	Data  []DataPoint `json:"data"`
-	Error string      `json:"error"`
+	Data       []DataPoint `json:"data"`
+	Historical bool        `json:"historical"`
+	Error      string      `json:"error"`
 }
 
 type Datastore struct {
@@ -91,7 +92,7 @@ func (d *Datastore) Store(packet *pb.Telemetry) {
 func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Validate input (important to prevent injection attacks!)
 	if req.Measurement == "" || req.Field == "" || !slices.Contains(legalMeasurements, req.Measurement) || !slices.Contains(legalFields, req.Field) {
-		response := HistoricalDataResponse{Error: "Measurement and field are required"}
+		response := HistoricalDataResponse{Historical: true, Error: "Measurement and field are required"}
 		return response
 	}
 
@@ -121,7 +122,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Process historical data request.
 	log.Printf("Querying with: %s", query)
 	results, err := d.queryAPI.Query(d.ctx, query)
-	response := HistoricalDataResponse{}
+	response := HistoricalDataResponse{Historical: true}
 	if err != nil {
 		response.Error = err.Error()
 	} else {

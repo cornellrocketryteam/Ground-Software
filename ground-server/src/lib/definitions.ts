@@ -2,6 +2,7 @@ import { type ComponentType } from "react";
 import { type Layout } from "react-grid-layout";
 
 export type Data = {
+  timestamp: Date;
   temp: number;
 };
 

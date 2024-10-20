@@ -4,7 +4,7 @@ cc_library(
     hdrs = ["telemetry_reader.h"],
     deps = [
         "//protos:command_cc_proto",
-        "//sensors:sensor"],
+        "//fill/sensors:sensor"],
 )
 
 cc_test(
@@ -13,7 +13,7 @@ cc_test(
     srcs = ["telemetry_reader_test.cc"],
     deps = [
         ":telemetry_reader",
-        "//sensors:mock_sensor",
+        "//fill/sensors:mock_sensor",
         "@googletest//:gtest_main",
     ],
 )
@@ -24,7 +24,7 @@ cc_binary(
     deps = [
         ":telemetry_reader",
         "//protos:command_cc_grpc",
-        "//sensors:ptd",
+        "//fill/sensors:ptd",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

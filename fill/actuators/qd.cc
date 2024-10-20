@@ -22,7 +22,7 @@ bool QD::Actuate(){
 
 void QD::turnMotor(){
     actuating = true; 
-    
+
     stepperMotor->Enable(); // enable sensor motor 
     stepperMotor->Rotate(stepperMotor->CLOCKWISE, 50); // Rotate the motor clockwise, 50ms time delay
 
@@ -32,6 +32,8 @@ void QD::turnMotor(){
     stepperMotor->Disable();
 
     actuating = false; 
+
+    return;
 }
 
 bool QD::isActuating(){

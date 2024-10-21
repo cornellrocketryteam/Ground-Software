@@ -2,13 +2,14 @@
 #define SENSORS_SENSOR_H_
 
 #include <vector>
+#include "Adafruit_ADS1015.h"
 
 class Sensor {
   public:
-    virtual ~Sensor() {}
-    virtual float Read() = 0;
+    // Read from the sensor 
+    virtual uint16_t Read(Adafruit_ADS1015* adc) = 0;
   protected:
     // cache for rolling averages
-    std::vector<float> cache_;
+    std::vector<uint16_t> cache_;
 };
 #endif

@@ -9,6 +9,7 @@
 
 #include "telemetry_reader.h"
 #include "sensors/ptd.h"
+#include "sensors/load_cell.h"
 
 #include "actuators/qd.h"
 #include "wiringPi.h"
@@ -37,6 +38,8 @@ using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
+
+Adafruit_ADS1015 adc;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -123,11 +126,22 @@ MAIN
 // Start server and client services
 int main(int argc, char **argv)
 {
+<<<<<<< HEAD
     // absl::ParseCommandLine(argc, argv);
     // // Start the server in another thread
     // std::shared_ptr<Server> server;
     // RunServer(absl::GetFlag(FLAGS_server_port), server);
     // // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+=======
+    // begin the ADC
+    adc.begin();
+
+    absl::ParseCommandLine(argc, argv);
+    // Start the server in another thread
+    std::shared_ptr<Server> server;
+    RunServer(absl::GetFlag(FLAGS_server_port), server);
+    // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+>>>>>>> 10422b2 (Beginning Sensor Implementation)
 
     // server->Shutdown();
 

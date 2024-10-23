@@ -11,10 +11,38 @@ export default async function Controls() {
   return (
     <div>
       <div className="grid grid-cols-2 gap-5 p-5">
-        <ActuationBox title="Quick Disconnect Motor"/>
-        <ActuationBox title="Ball Valve"/>
-        <ActuationBox title="Solenoid Valve"/>
-        <ActuationBox title="Igniter"/>
+        <ActuationBox 
+          title="Quick Disconnect Motor" 
+          onButtonLabel="Connect" 
+          offButtonLabel="Disconnect"
+          onStateLabel="Connected"
+          offStateLabel="Disconnected" 
+          initialStateLabel="No Data" 
+        />
+        <ActuationBox 
+          title="Ball Valve" 
+          onButtonLabel="Open" 
+          offButtonLabel="Close" 
+          onStateLabel="Opened"
+          offStateLabel="Closed"
+          initialStateLabel="No Data" 
+        />
+        <ActuationBox 
+          title="Solenoid Valve" 
+          onButtonLabel="Open" 
+          offButtonLabel="Close" 
+          onStateLabel="Opened"
+          offStateLabel="Closed"
+          initialStateLabel="No Data" 
+        />
+        <ActuationBox 
+          title="Igniter" 
+          onButtonLabel="Activate" 
+          offButtonLabel="Deactivate" 
+          onStateLabel="Activated"
+          offStateLabel="Deactivated"
+          initialStateLabel="No Data" 
+        />
       </div>
     </div>
   );

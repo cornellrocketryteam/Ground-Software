@@ -31,10 +31,8 @@ import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 
 export default function TelemetryAdder({
   setWidgets,
-  widgetsRef,
 }: {
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
-  widgetsRef: React.MutableRefObject<Widget[]>;
 }) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -48,7 +46,7 @@ export default function TelemetryAdder({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
-          <StatusList setOpen={setOpen} setWidgets={setWidgets} widgetsRef={widgetsRef} />
+          <StatusList setOpen={setOpen} setWidgets={setWidgets} />
         </PopoverContent>
       </Popover>
     );
@@ -69,7 +67,7 @@ export default function TelemetryAdder({
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">
-          <StatusList setOpen={setOpen} setWidgets={setWidgets} widgetsRef={widgetsRef} />
+          <StatusList setOpen={setOpen} setWidgets={setWidgets} />
         </div>
       </DrawerContent>
     </Drawer>
@@ -79,11 +77,9 @@ export default function TelemetryAdder({
 function StatusList({
   setOpen,
   setWidgets,
-  widgetsRef,
 }: {
   setOpen: (open: boolean) => void;
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
-  widgetsRef: React.MutableRefObject<Widget[]>;
 }) {
   const addWidget = (channel: TelemetryChannel) => {
     const id = Date.now().toString()
@@ -99,11 +95,11 @@ function StatusList({
         minW: 3,
         minH: 3,
       },
-      id: id
+      id: id,
+      data: [],
     }
-    widgetsRef.current.push(newWidget); // Add to ref first
-    setWidgets(widgetsRef.current);
 
+    setWidgets((prevWidgets) => [...prevWidgets, newWidget]);
     setOpen(false);
   };
 

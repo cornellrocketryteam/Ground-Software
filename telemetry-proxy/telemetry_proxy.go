@@ -34,11 +34,11 @@ type HistoricalDataRequest struct {
 
 type DataPoint struct {
 	Timestamp time.Time `json:"timestamp"`
-	Field     string    `json:"field"`
 	Value     float64   `json:"value"`
 }
 
 type HistoricalDataResponse struct {
+	Field      string      `json:"field"`
 	Data       []DataPoint `json:"data"`
 	Historical bool        `json:"historical"`
 	Error      string      `json:"error"`
@@ -214,6 +214,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	log.Printf("Querying with: %s", query)
 	results, err := d.queryAPI.Query(d.ctx, query)
 	response := HistoricalDataResponse{Historical: true}
+	response.Field = req.Field
 	if err != nil {
 		response.Error = err.Error()
 	} else {
@@ -222,7 +223,6 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 			log.Println(results.Record())
 			response.Data = append(response.Data, DataPoint{
 				Timestamp: results.Record().Time(),
-				Field:     results.Record().Field(),
 				Value:     results.Record().Value().(float64),
 			})
 		}

@@ -20,11 +20,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
-import { type Widget, type DataPoint } from "@/lib/definitions";
+import { type Widget } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
   widget: Widget;
-  data: DataPoint[];
   deleteWidget: () => void;
   style?: CSSProperties;
   className?: string;
@@ -68,7 +67,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <WidgetComponent mode={mode} channel={widget.channel} />
+        <WidgetComponent mode={mode} channel={widget.channel} data={widget.data} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

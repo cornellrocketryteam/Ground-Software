@@ -9,6 +9,7 @@ export type DataPoint = {
 export type WidgetProps = {
   mode: string;
   channel: TelemetryChannel;
+  data: DataPoint[];
 };
 
 export type TelemetryChannel = {
@@ -18,7 +19,6 @@ export type TelemetryChannel = {
   dbField: string;
   jsonField: string;
   modes: string[];
-  data: DataPoint[];
   component: ComponentType<WidgetProps>;
 };
 
@@ -26,4 +26,5 @@ export type Widget = {
   channel: TelemetryChannel;
   layout: Layout;
   id: string;
+  data: DataPoint[];
 };

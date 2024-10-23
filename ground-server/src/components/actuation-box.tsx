@@ -17,86 +17,109 @@ import { Button } from "@/components/ui/button";
 
 interface ActuationBoxProps {
   title: string;
+  offButtonLabel: string;
+  onButtonLabel: string; 
+  onStateLabel: string;
+  offStateLabel: string;
+  initialStateLabel: string;
 }
 
-export default function ActuationBox({ title }: ActuationBoxProps) {
-  const [isOn, setIsOn] = useState(false); //default state is off
+export default function ActuationBox({ 
+  title, 
+  offButtonLabel, 
+  onButtonLabel, 
+  onStateLabel, 
+  offStateLabel, 
+  initialStateLabel 
+}: ActuationBoxProps) {
+  const [currentState, setCurrentState] = useState<string | null>(null); 
 
   const handleTurnOn = () => {
-    setIsOn(true);
+    setCurrentState(onStateLabel); // Set state to onStateLabel
   };
 
   const handleTurnOff = () => {
-    setIsOn(false);
+    setCurrentState(offStateLabel); // Set state to offStateLabel
   };
 
   return (
-    <div className="border border-gray-300 p-6 rounded-lg bg-white dark:bg-black text-center">
-      <h2 className="text-lg font-bold mb-2">{title}</h2>
-      <div>
-        <h4 className="text-sm font-medium mb-2">Current Telemetry</h4>
-        <div 
-          className= "mb-4 h-[100px] bg-gray-200 dark:bg-gray-800"> 
-          {/* Placeholder for telemetry data */}
-          {isOn ? 'ON' : 'OFF'}
+    <div className="border border-gray-300 p-8 rounded-lg bg-white dark:bg-black flex flex-col items-center">
+      {/* Title */}
+      <h2 className="text-lg font-bold mb-10 text-center">{title}</h2>
+
+      <div className="flex items-center justify-around w-full space-x-10">
+        {/* Button Section */}
+        <div className="flex flex-col items-center space-y-6">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="default" 
+                className="h-12 w-52 text-lg"
+              >
+                {onButtonLabel}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="max-w-lg p-4">
+              <AlertDialogHeader>
+                <AlertDialogTitle>{onButtonLabel} {title} </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to {onButtonLabel} the {title}?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleTurnOn}>
+                  Yes, {onButtonLabel}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="default" 
+                className="h-12 w-52 text-lg"
+              >
+                {offButtonLabel}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="max-w-lg p-4">
+              <AlertDialogHeader>
+                <AlertDialogTitle>{offButtonLabel} {title}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to {offButtonLabel} the {title}?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleTurnOff}>
+                  Yes, {offButtonLabel}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+
+        {/* State Section */}
+        <div>
+          <h4 className="text-sm font-medium mb-2 text-center">Current State</h4>
+          <div 
+            className={`h-[100px] w-[150px] flex items-center justify-center text-lg font-bold ${
+              currentState === onStateLabel
+                ? 'bg-green-500 text-white'
+                : currentState === offStateLabel
+                ? 'bg-red-500 text-white'
+                : 'bg-gray-300 dark:bg-gray-800'
+            }`}
+          > 
+            {currentState || initialStateLabel}
+          </div>
         </div>
       </div>
-      <div className="flex justify-center space-x-4">
-        
-        {/* Off Button with Alert Dialog */}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant={isOn ? "default" : "secondary"} 
-              disabled={!isOn}
-              className={`${!isOn ? "opacity-50" : ""}`}
-            >
-              Turn Off
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="max-w-lg p-4">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Turn {title} Off</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to turn {title} off?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleTurnOff}>
-                Yes, turn off
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
 
-        {/* On Button with Alert Dialog */}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant={isOn ? "secondary" : "default"} 
-              disabled={isOn}
-              className={`${isOn ? "opacity-50" : ""}`}
-            >
-              Turn On
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="max-w-lg p-4">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Turn {title} On</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to turn {title} on?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleTurnOn}>
-                Yes, turn on
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      {/* Extra Spacing at the bottom */}
+      <div className="mt-8"></div>
     </div>
   );
 }

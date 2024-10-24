@@ -13,8 +13,8 @@ TEST(TelemetryReaderTest, BasicTest) {
     MockSensor sensor;
     EXPECT_CALL(sensor, Read()).Times(1).WillOnce(Return(test_val));
     TelemetryReader reader(sensor);
-    Telemetry telem = reader.read();
-    EXPECT_EQ(telem.rock_telem().temp(), test_val);
+    FillStationTelemetry telem = reader.read();
+    EXPECT_EQ(telem.pt1(), test_val);
 }
 
 } //namespace

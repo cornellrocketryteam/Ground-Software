@@ -10,9 +10,15 @@ option go_package = "../protos/command.proto";
 package command;
 
 // The telemetry service definition
-service Telemeter {
+service FillStationTelemeter {
     // Sends telemetry
-    rpc StreamTelemetry (TelemetryRequest) returns (stream Telemetry) {}
+    rpc StreamTelemetry (TelemetryRequest) returns (stream FillStationTelemetry) {}
+}
+
+// The telemetry service definition
+service RocketTelemeter {
+    // Sends telemetry
+    rpc StreamTelemetry (TelemetryRequest) returns (stream RocketTelemetry) {}
 }
 
 // The commanding service definition
@@ -40,12 +46,6 @@ message CommandReply {}
 
 // The telemetry request message
 message TelemetryRequest {}
-
-enum SensorStatus {
-    OFF = 0;
-    VALID = 1;
-    INVALID = 2;
-}
 
 enum FlightMode {
     STARTUP = 0;
@@ -82,21 +82,26 @@ message Events {
 
 message RocketMetadata {
     bool alt_armed = 1;
-    bool gps_valid = 2;
-    bool sd_init = 3;
-    SensorStatus therm_status = 4;
-    SensorStatus acc_status = 5;
-    SensorStatus imu_status = 6;
-    SensorStatus gps_status = 7;
-    SensorStatus alt_status = 8;
-    SensorStatus fram_status = 9;
-    FlightMode flight_mode = 10;
+    bool alt_valid = 2;
+    bool gps_valid = 3;
+    bool imu_valid = 4;
+    bool acc_valid = 5;
+    bool therm_valid = 6;
+    bool voltage_valid = 7;
+    bool adc_valid = 8;
+    bool fram_valid = 9;
+    bool sd_valid = 10;
+    bool gps_msg_valid = 11;
+    bool mav_state = 12;
+    bool sv_state = 13;
+    FlightMode flight_mode = 14;
 }
 
 message GPSTelemetry {
     int32 latitude = 1;
     int32 longitude = 2;
     uint32 num_satellites = 3;
+    uint32 utc_time = 4;
 }
 
 message AccelerometerTelemetry {
@@ -120,23 +125,40 @@ message IMUTelemetry {
     float grav_z = 12;
 }
 
-message RocketTelemetry {
-    uint32 timestamp = 1;
-    RocketMetadata metadata = 2;
+message RocketLoRaTelemetry {
+    RocketMetadata metadata = 1;
+    uint32 ms_since_boot = 2;
     Events events = 3;
     float altitude = 4;
     GPSTelemetry gps_telem = 5;
-    AccelerometerTelemetry accel_telem = 6;
-    IMUTelemetry imu_telem = 7;
+    IMUTelemetry imu_telem = 6;
+    AccelerometerTelemetry accel_telem = 7;
     float temp = 8;
     float voltage = 9;
-    float current = 10;
-    float pt3 = 11;
-    int32 blims_state = 12;
+    float pt3 = 10;
+    float pt4 = 11;
+    float blims_state = 12;
+}
+
+message RocketUmbTelemetry {
+    RocketMetadata metadata = 1;
+    uint32 ms_since_boot = 2;
+    Events events = 3;
+    bool radio_state = 4;
+    bool transmit_state = 5;
+    float voltage = 6;
+    float pt3 = 7;
+    float pt4 = 8;
+    float rtd_temp = 9;
+}
+
+message RocketTelemetry{
+    optional RocketLoRaTelemetry lora_telem = 1;
+    optional RocketUmbTelemetry umb_telem = 2;
 }
 
 // The telemetry message
-message Telemetry {
+message FillStationTelemetry {
     uint32 timestamp = 1;
     float pt1 = 2;
     float pt2 = 3;
@@ -144,5 +166,4 @@ message Telemetry {
     float sv1_cont = 5;
     float ign1_cont = 6;
     float ign2_cont = 7;
-    RocketTelemetry rock_telem = 8;
 }

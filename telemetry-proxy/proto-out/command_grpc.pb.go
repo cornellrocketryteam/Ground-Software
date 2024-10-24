@@ -24,34 +24,34 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Telemeter_StreamTelemetry_FullMethodName = "/command.Telemeter/StreamTelemetry"
+	FillStationTelemeter_StreamTelemetry_FullMethodName = "/command.FillStationTelemeter/StreamTelemetry"
 )
 
-// TelemeterClient is the client API for Telemeter service.
+// FillStationTelemeterClient is the client API for FillStationTelemeter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // The telemetry service definition
-type TelemeterClient interface {
+type FillStationTelemeterClient interface {
 	// Sends telemetry
-	StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Telemetry], error)
+	StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FillStationTelemetry], error)
 }
 
-type telemeterClient struct {
+type fillStationTelemeterClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTelemeterClient(cc grpc.ClientConnInterface) TelemeterClient {
-	return &telemeterClient{cc}
+func NewFillStationTelemeterClient(cc grpc.ClientConnInterface) FillStationTelemeterClient {
+	return &fillStationTelemeterClient{cc}
 }
 
-func (c *telemeterClient) StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Telemetry], error) {
+func (c *fillStationTelemeterClient) StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[FillStationTelemetry], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &Telemeter_ServiceDesc.Streams[0], Telemeter_StreamTelemetry_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &FillStationTelemeter_ServiceDesc.Streams[0], FillStationTelemeter_StreamTelemetry_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[TelemetryRequest, Telemetry]{ClientStream: stream}
+	x := &grpc.GenericClientStream[TelemetryRequest, FillStationTelemetry]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -62,72 +62,183 @@ func (c *telemeterClient) StreamTelemetry(ctx context.Context, in *TelemetryRequ
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Telemeter_StreamTelemetryClient = grpc.ServerStreamingClient[Telemetry]
+type FillStationTelemeter_StreamTelemetryClient = grpc.ServerStreamingClient[FillStationTelemetry]
 
-// TelemeterServer is the server API for Telemeter service.
-// All implementations must embed UnimplementedTelemeterServer
+// FillStationTelemeterServer is the server API for FillStationTelemeter service.
+// All implementations must embed UnimplementedFillStationTelemeterServer
 // for forward compatibility.
 //
 // The telemetry service definition
-type TelemeterServer interface {
+type FillStationTelemeterServer interface {
 	// Sends telemetry
-	StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[Telemetry]) error
-	mustEmbedUnimplementedTelemeterServer()
+	StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[FillStationTelemetry]) error
+	mustEmbedUnimplementedFillStationTelemeterServer()
 }
 
-// UnimplementedTelemeterServer must be embedded to have
+// UnimplementedFillStationTelemeterServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedTelemeterServer struct{}
+type UnimplementedFillStationTelemeterServer struct{}
 
-func (UnimplementedTelemeterServer) StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[Telemetry]) error {
+func (UnimplementedFillStationTelemeterServer) StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[FillStationTelemetry]) error {
 	return status.Errorf(codes.Unimplemented, "method StreamTelemetry not implemented")
 }
-func (UnimplementedTelemeterServer) mustEmbedUnimplementedTelemeterServer() {}
-func (UnimplementedTelemeterServer) testEmbeddedByValue()                   {}
+func (UnimplementedFillStationTelemeterServer) mustEmbedUnimplementedFillStationTelemeterServer() {}
+func (UnimplementedFillStationTelemeterServer) testEmbeddedByValue()                              {}
 
-// UnsafeTelemeterServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TelemeterServer will
+// UnsafeFillStationTelemeterServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to FillStationTelemeterServer will
 // result in compilation errors.
-type UnsafeTelemeterServer interface {
-	mustEmbedUnimplementedTelemeterServer()
+type UnsafeFillStationTelemeterServer interface {
+	mustEmbedUnimplementedFillStationTelemeterServer()
 }
 
-func RegisterTelemeterServer(s grpc.ServiceRegistrar, srv TelemeterServer) {
-	// If the following call pancis, it indicates UnimplementedTelemeterServer was
+func RegisterFillStationTelemeterServer(s grpc.ServiceRegistrar, srv FillStationTelemeterServer) {
+	// If the following call pancis, it indicates UnimplementedFillStationTelemeterServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Telemeter_ServiceDesc, srv)
+	s.RegisterService(&FillStationTelemeter_ServiceDesc, srv)
 }
 
-func _Telemeter_StreamTelemetry_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _FillStationTelemeter_StreamTelemetry_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TelemetryRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(TelemeterServer).StreamTelemetry(m, &grpc.GenericServerStream[TelemetryRequest, Telemetry]{ServerStream: stream})
+	return srv.(FillStationTelemeterServer).StreamTelemetry(m, &grpc.GenericServerStream[TelemetryRequest, FillStationTelemetry]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Telemeter_StreamTelemetryServer = grpc.ServerStreamingServer[Telemetry]
+type FillStationTelemeter_StreamTelemetryServer = grpc.ServerStreamingServer[FillStationTelemetry]
 
-// Telemeter_ServiceDesc is the grpc.ServiceDesc for Telemeter service.
+// FillStationTelemeter_ServiceDesc is the grpc.ServiceDesc for FillStationTelemeter service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Telemeter_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "command.Telemeter",
-	HandlerType: (*TelemeterServer)(nil),
+var FillStationTelemeter_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "command.FillStationTelemeter",
+	HandlerType: (*FillStationTelemeterServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "StreamTelemetry",
-			Handler:       _Telemeter_StreamTelemetry_Handler,
+			Handler:       _FillStationTelemeter_StreamTelemetry_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "command.proto",
+}
+
+const (
+	RocketTelemeter_StreamTelemetry_FullMethodName = "/command.RocketTelemeter/StreamTelemetry"
+)
+
+// RocketTelemeterClient is the client API for RocketTelemeter service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// The telemetry service definition
+type RocketTelemeterClient interface {
+	// Sends telemetry
+	StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RocketTelemetry], error)
+}
+
+type rocketTelemeterClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewRocketTelemeterClient(cc grpc.ClientConnInterface) RocketTelemeterClient {
+	return &rocketTelemeterClient{cc}
+}
+
+func (c *rocketTelemeterClient) StreamTelemetry(ctx context.Context, in *TelemetryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[RocketTelemetry], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &RocketTelemeter_ServiceDesc.Streams[0], RocketTelemeter_StreamTelemetry_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TelemetryRequest, RocketTelemetry]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type RocketTelemeter_StreamTelemetryClient = grpc.ServerStreamingClient[RocketTelemetry]
+
+// RocketTelemeterServer is the server API for RocketTelemeter service.
+// All implementations must embed UnimplementedRocketTelemeterServer
+// for forward compatibility.
+//
+// The telemetry service definition
+type RocketTelemeterServer interface {
+	// Sends telemetry
+	StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[RocketTelemetry]) error
+	mustEmbedUnimplementedRocketTelemeterServer()
+}
+
+// UnimplementedRocketTelemeterServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedRocketTelemeterServer struct{}
+
+func (UnimplementedRocketTelemeterServer) StreamTelemetry(*TelemetryRequest, grpc.ServerStreamingServer[RocketTelemetry]) error {
+	return status.Errorf(codes.Unimplemented, "method StreamTelemetry not implemented")
+}
+func (UnimplementedRocketTelemeterServer) mustEmbedUnimplementedRocketTelemeterServer() {}
+func (UnimplementedRocketTelemeterServer) testEmbeddedByValue()                         {}
+
+// UnsafeRocketTelemeterServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to RocketTelemeterServer will
+// result in compilation errors.
+type UnsafeRocketTelemeterServer interface {
+	mustEmbedUnimplementedRocketTelemeterServer()
+}
+
+func RegisterRocketTelemeterServer(s grpc.ServiceRegistrar, srv RocketTelemeterServer) {
+	// If the following call pancis, it indicates UnimplementedRocketTelemeterServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&RocketTelemeter_ServiceDesc, srv)
+}
+
+func _RocketTelemeter_StreamTelemetry_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TelemetryRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RocketTelemeterServer).StreamTelemetry(m, &grpc.GenericServerStream[TelemetryRequest, RocketTelemetry]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type RocketTelemeter_StreamTelemetryServer = grpc.ServerStreamingServer[RocketTelemetry]
+
+// RocketTelemeter_ServiceDesc is the grpc.ServiceDesc for RocketTelemeter service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var RocketTelemeter_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "command.RocketTelemeter",
+	HandlerType: (*RocketTelemeterServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamTelemetry",
+			Handler:       _RocketTelemeter_StreamTelemetry_Handler,
 			ServerStreams: true,
 		},
 	},

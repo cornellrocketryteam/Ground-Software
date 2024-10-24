@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"slices"
-	"strconv"
 	"sync"
 	"time"
 
@@ -87,89 +86,18 @@ func (d *Datastore) Init(ctx context.Context) {
 }
 
 // Store parses a packet and writes it to InfluxDB
-func (d *Datastore) Store(packet *pb.Telemetry) {
-	// Convert Protobuf enums to strings for InfluxDB tags
-	flightModeStr := pb.FlightMode_name[int32(packet.RockTelem.Metadata.FlightMode)]
-	thermStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.ThermStatus)]
-	accStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.AccStatus)]
-	imuStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.ImuStatus)]
-	gpsStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.GpsStatus)]
-	altStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.AltStatus)]
-	framStatusStr := pb.SensorStatus_name[int32(packet.RockTelem.Metadata.FramStatus)]
-
+func (d *Datastore) Store(packet *pb.FillStationTelemetry) {
 	// Create tags map
-	tags := map[string]string{
-		"flight_mode":  flightModeStr,
-		"alt_armed":    strconv.FormatBool(packet.RockTelem.Metadata.AltArmed),
-		"gps_valid":    strconv.FormatBool(packet.RockTelem.Metadata.GpsValid),
-		"sd_init":      strconv.FormatBool(packet.RockTelem.Metadata.SdInit),
-		"therm_status": thermStatusStr,
-		"acc_status":   accStatusStr,
-		"imu_status":   imuStatusStr,
-		"gps_status":   gpsStatusStr,
-		"alt_status":   altStatusStr,
-		"fram_status":  framStatusStr,
-	}
+	tags := map[string]string{}
 
 	// Create fields map
 	fields := map[string]interface{}{
-		"rocket_time": packet.RockTelem.Timestamp,
-		"altitude":    packet.RockTelem.Altitude,
-		"temp":        packet.RockTelem.Temp,
-		"voltage":     packet.RockTelem.Voltage,
-		"current":     packet.RockTelem.Current,
-		"pt3":         packet.RockTelem.Pt3,
-		"blims_state": packet.RockTelem.BlimsState,
-
-		"latitude":       packet.RockTelem.GpsTelem.Latitude,
-		"longitude":      packet.RockTelem.GpsTelem.Longitude,
-		"num_satellites": packet.RockTelem.GpsTelem.NumSatellites,
-
-		"accel_x": packet.RockTelem.AccelTelem.AccelX,
-		"accel_y": packet.RockTelem.AccelTelem.AccelY,
-		"accel_z": packet.RockTelem.AccelTelem.AccelZ,
-
-		"gyro_x":      packet.RockTelem.ImuTelem.GyroX,
-		"gyro_y":      packet.RockTelem.ImuTelem.GyroY,
-		"gyro_z":      packet.RockTelem.ImuTelem.GyroZ,
-		"imu_accel_x": packet.RockTelem.ImuTelem.AccelX,
-		"imu_accel_y": packet.RockTelem.ImuTelem.AccelY,
-		"imu_accel_z": packet.RockTelem.ImuTelem.AccelZ,
-		"ori_x":       packet.RockTelem.ImuTelem.OriX,
-		"ori_y":       packet.RockTelem.ImuTelem.OriY,
-		"ori_z":       packet.RockTelem.ImuTelem.OriZ,
-		"grav_x":      packet.RockTelem.ImuTelem.GravX,
-		"grav_y":      packet.RockTelem.ImuTelem.GravY,
-		"grav_z":      packet.RockTelem.ImuTelem.GravZ,
-
 		"pt1":       packet.Pt1,
 		"pt2":       packet.Pt2,
 		"lc1":       packet.Lc1,
 		"sv1_cont":  packet.Sv1Cont,
 		"ign1_cont": packet.Ign1Cont,
 		"ign2_cont": packet.Ign2Cont,
-
-		"key_armed":                    packet.RockTelem.Events.KeyArmed,
-		"altitude_armed":               packet.RockTelem.Events.AltitudeArmed,
-		"altimeter_init_failed":        packet.RockTelem.Events.AltimeterInitFailed,
-		"altimeter_reading_failed":     packet.RockTelem.Events.AltimeterReadingFailed,
-		"altimeter_was_turned_off":     packet.RockTelem.Events.AltimeterWasTurnedOff,
-		"gps_init_failed":              packet.RockTelem.Events.GpsInitFailed,
-		"gps_reading_failed":           packet.RockTelem.Events.GpsReadingFailed,
-		"gps_was_turned_off":           packet.RockTelem.Events.GpsWasTurnedOff,
-		"imu_init_failed":              packet.RockTelem.Events.ImuInitFailed,
-		"imu_reading_failed":           packet.RockTelem.Events.ImuReadingFailed,
-		"imu_was_turned_off":           packet.RockTelem.Events.ImuWasTurnedOff,
-		"accelerometer_init_failed":    packet.RockTelem.Events.AccelerometerInitFailed,
-		"accelerometer_reading_failed": packet.RockTelem.Events.AccelerometerReadingFailed,
-		"accelerometer_was_turned_off": packet.RockTelem.Events.AccelerometerWasTurnedOff,
-		"thermometer_init_failed":      packet.RockTelem.Events.ThermometerInitFailed,
-		"thermometer_reading_failed":   packet.RockTelem.Events.ThermometerReadingFailed,
-		"thermometer_was_turned_off":   packet.RockTelem.Events.ThermometerWasTurnedOff,
-		"sd_init_failed":               packet.RockTelem.Events.SdInitFailed,
-		"sd_write_failed":              packet.RockTelem.Events.SdWriteFailed,
-		"rfm_init_failed":              packet.RockTelem.Events.RfmInitFailed,
-		"rfm_transmit_failed":          packet.RockTelem.Events.RfmTransmitFailed,
 	}
 
 	point := write.NewPoint("telemetry", tags, fields, time.Unix(int64(packet.Timestamp), 0))
@@ -347,14 +275,14 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	grpcClient := pb.NewTelemeterClient(conn)
+	grpcClient := pb.NewFillStationTelemeterClient(conn)
 
 	// telemetryChannel passes Protobuf telemetry messages to the WebSocket handler.
-	var telemetryChannel = make(chan *pb.Telemetry)
+	var telemetryChannel = make(chan *pb.FillStationTelemetry)
 
 	// Start gRPC stream in a separate Goroutine
 	// go receiveTelemetry(ctx, grpcClient)
-	go func(ctx context.Context, grpcClient pb.TelemeterClient) {
+	go func(ctx context.Context, grpcClient pb.FillStationTelemeterClient) {
 		for {
 
 			stream, err := grpcClient.StreamTelemetry(ctx, &pb.TelemetryRequest{})
@@ -397,9 +325,7 @@ func main() {
 
 // HandlePacket parses and processes a telemetry packet
 // then stores it to InfluxDB and sends it to all active websocket connections.
-func HandlePacket(ctx context.Context, packet *pb.Telemetry, w *WebClients) {
-	log.Printf("Received packet with temp: %.2f\n", packet.RockTelem.Temp)
-
+func HandlePacket(ctx context.Context, packet *pb.FillStationTelemetry, w *WebClients) {
 	// Write to InfluxDB
 	datastore.Store(packet)
 

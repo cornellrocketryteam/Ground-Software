@@ -14,7 +14,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { TelemetryChannel, type WidgetProps } from "@/lib/definitions";
+import { TelemetryChannel, type WidgetProps, type DataPoint } from "@/lib/definitions";
 
 function GetConfig(channel: TelemetryChannel) {
   const chartConfig = {
@@ -26,7 +26,7 @@ function GetConfig(channel: TelemetryChannel) {
   return chartConfig
 }
 
-function GenericHistoricalChart(duration: string, channel: TelemetryChannel) {
+function GenericHistoricalChart(duration: string, data: DataPoint[], channel: TelemetryChannel) {
   const color="hsl(var(--chart-1))"
 
   return (
@@ -37,7 +37,7 @@ function GenericHistoricalChart(duration: string, channel: TelemetryChannel) {
       <ChartContainer config={GetConfig(channel)} className="w-full h-full">
         <LineChart
           accessibilityLayer
-          data={channel.data.map((d) => ({ timestamp: d.timestamp.getTime(), value: d.value}))}
+          data={data.map((d) => ({ timestamp: d.timestamp.getTime(), value: d.value}))}
           margin={{ top: 0, right: 30, left: -10, bottom: 40 }}
         >
           <CartesianGrid vertical={false} />
@@ -85,13 +85,13 @@ function GenericHistoricalChart(duration: string, channel: TelemetryChannel) {
   );
 }
 
-export default function GraphWidget({ mode, channel }: WidgetProps) {
-  if (!channel.data || channel.data.length === 0) {
+export default function GraphWidget({ mode, channel, data }: WidgetProps) {
+  if (!data || data.length === 0) {
     return <div>No data</div>;
   }
 
   if (mode === "Value") {
-    const latestValue = channel.data[channel.data.length - 1].value;
+    const latestValue = data[data.length - 1].value;
 
     return (
       <p className="w-full h-full flex justify-center items-center font-semibold text-2xl">
@@ -101,11 +101,11 @@ export default function GraphWidget({ mode, channel }: WidgetProps) {
   }
 
   if (mode === "15m Chart") {
-    return GenericHistoricalChart("15", channel);
+    return GenericHistoricalChart("15", data, channel);
   }
 
   if (mode === "60m Chart") {
-    return GenericHistoricalChart("60", channel);
+    return GenericHistoricalChart("60", data, channel);
   }
 
   return <div>Unsupported mode</div>;

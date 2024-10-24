@@ -10,7 +10,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "temp",
     jsonField: "temp",
     modes: ["Value", "15m Chart", "60m Chart"],
-    data: [],
     component: GraphWidget,
   },
   {
@@ -19,7 +18,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "sv1_cont",
     jsonField: "sv1Cont",
     modes: ["Value", "15m Chart", "60m Chart"],
-    data: [],
     component: GraphWidget,
   },
 ];

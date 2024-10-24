@@ -15,9 +15,7 @@ import { type Widget, type DataPoint } from "@/lib/definitions";
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 export default function Home() {
-  const widgetsRef = useRef<Widget[]>([]);
   const [widgets, setWidgets] = useState<Widget[]>([]);
-  const widgetData = useRef<Record<string, DataPoint[]>>({});
   const wsRef = useRef<WebSocket | null>(null); // Store the WebSocket instance
 
   useEffect(() => {
@@ -30,74 +28,66 @@ export default function Home() {
 
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      const currentWidgets = widgetsRef.current;
 
-      if (message.historical) { // Historical data
-        console.log("Historical Message Received")
-        console.log(`There are ${currentWidgets.length} widgets.`)
+      if (message.historical) {
+        // Historical data
+        console.log("Historical Message Received");
 
-        currentWidgets.forEach(widget => {
-          if (widget.channel.dbField === message.data[0].field) {
-            console.log("Widget has matching field")
-            widget.channel.data = []
-            message.data.forEach((item: { field: string; timestamp: string; value: number; }) => {
-              widget.channel.data.push({
-                timestamp: new Date(item.timestamp),
-                value: item.value,
-              });
-            });
-          } else {
-            console.log(`Fields did not match ${widget.channel.dbField} and ${message.data[0].field}`)
-          }
-        });
-        setWidgets([...currentWidgets])
+        setWidgets((prevWidgets) =>
+          prevWidgets.map((widget) => {
+            if (widget.channel.dbField === message.field) {
+              console.log("Widget has matching field");
+              const widgetData: DataPoint[] = message.data.map(
+                (item: { timestamp: string; value: number }) => {
+                  return {
+                    timestamp: new Date(item.timestamp),
+                    value: item.value,
+                  };
+                }
+              );
+              return { ...widget, data: widgetData };
+            } else {
+              console.log(
+                `Fields did not match ${widget.channel.dbField} and ${message.field}`
+              );
+              return widget;
+            }
+          })
+        );
+      } else {
+        // Live data
 
-      } else { // Live data
-        currentWidgets.forEach(widget => {
+        setWidgets((prevWidgets) => prevWidgets.map((widget) => {
           const field = widget.channel.jsonField;
+          let newValue = null;
           if (field in message) {
-            console.log('%s in message.', field)
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message[field],
-            });
+            console.log("%s in message.", field);
+            newValue = message[field];
           } else if (field in message.rockTelem) {
-            console.log('%s in message.rockTelem.', field)
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem[field],
-            });
+            console.log("%s in message.rockTelem.", field);
+            newValue = message.rockTelem[field];
           } else if (field in message.rockTelem.accelTelem) {
-            console.log('%s in message.rockTelem.accelTelem.', field)
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem.accelTelem[field],
-            });
+            console.log("%s in message.rockTelem.accelTelem.", field);
+            newValue = message.rockTelem.accelTelem[field];
           } else if (field in message.rockTelem.events) {
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem.events[field],
-            });
+            newValue = message.rockTelem.events[field];
           } else if (field in message.rockTelem.gpsTelem) {
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem.gpsTelem[field],
-            });
+            newValue = message.rockTelem.gpsTelem[field];
           } else if (field in message.rockTelem.imuTelem) {
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem.imuTelem[field],
-            });
+            newValue = message.rockTelem.imuTelem[field];
           } else if (field in message.rockTelem.metadata) {
-            widget.channel.data.push({
-              timestamp: new Date(),
-              value: message.rockTelem.metadata[field],
-            });
+            newValue = message.rockTelem.metadata[field];
           } else {
-            console.log('%s not in message.', field)
+            console.log("%s not in message.", field);
           }
-        });
-        setWidgets([...currentWidgets])
+
+          if (newValue) {
+            console.log(widget);
+            return { ...widget, data: [...widget.data, { timestamp: new Date(), value: newValue }] };
+          }
+          
+          return widget
+        }));
       }
     };
 
@@ -120,14 +110,15 @@ export default function Home() {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   const onLayoutChange = (layout: Layout[]) => {
-    const currentWidgets = widgetsRef.current;
-    currentWidgets.forEach((widget) => {
-      const updatedLayout = layout.find((l) => l.i === widget.layout.i);
-      if (updatedLayout) {
-        widget.layout = updatedLayout
-      }
-    })
-    setWidgets(widgetsRef.current);
+    setWidgets((prevWidgets) =>
+      prevWidgets.map((widget) => {
+        const updatedLayout = layout.find((l) => l.i === widget.layout.i);
+        if (updatedLayout) {
+          return { ...widget, layout: updatedLayout };
+        }
+        return widget;
+      })
+    );
   };
 
   const onWidgetModeChange = (widgetId: string, newMode: string) => {
@@ -143,7 +134,9 @@ export default function Home() {
               })
             );
           } else {
-            console.error("WebSocket not connected. Cannot request historical data.");
+            console.error(
+              "WebSocket not connected. Cannot request historical data."
+            );
           }
           return { ...widget, mode: newMode };
         } else if (widget.layout.i === widgetId && newMode === "60m Chart") {
@@ -156,13 +149,15 @@ export default function Home() {
               })
             );
           } else {
-            console.error("WebSocket not connected. Cannot request historical data.");
+            console.error(
+              "WebSocket not connected. Cannot request historical data."
+            );
           }
           return { ...widget, mode: newMode };
-        } else if (widget.layout.i === widgetId){
-          return {...widget, mode: newMode};
+        } else if (widget.layout.i === widgetId) {
+          return { ...widget, mode: newMode };
         }
-        
+
         return widget;
       })
     );
@@ -170,16 +165,15 @@ export default function Home() {
 
   // TODO for performance improvement, find a way that widgets does not rely on layout (then we can memoize the children and avoid re-rendering)
   const children = widgets.map((widget) => {
-    const deleteWidget = () => {
-      widgetsRef.current = widgetsRef.current.filter((w) => w.layout.i !== widget.layout.i)
-      setWidgets(widgetsRef.current)
-    }
+    const deleteWidget = () =>
+      setWidgets((prevWidgets) =>
+        prevWidgets.filter((w) => w.layout.i !== widget.layout.i)
+      );
 
     return (
       <DashboardWidget
         key={widget.layout.i}
         widget={widget}
-        data={widgetData.current[widget.id]}
         deleteWidget={deleteWidget}
         onModeChange={onWidgetModeChange}
       />
@@ -203,7 +197,7 @@ export default function Home() {
         {children}
       </ResponsiveReactGridLayout>
       <div className="fixed bottom-10 right-10 z-50">
-        <TelemetryAdder setWidgets={setWidgets} widgetsRef={widgetsRef}></TelemetryAdder>
+        <TelemetryAdder setWidgets={setWidgets}></TelemetryAdder>
       </div>
     </div>
   );

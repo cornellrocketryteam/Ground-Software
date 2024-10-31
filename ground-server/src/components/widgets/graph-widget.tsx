@@ -1,10 +1,4 @@
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { format } from "date-fns"; // Import date-fns
 
 import {
@@ -14,7 +8,11 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { TelemetryChannel, type WidgetProps, type DataPoint } from "@/lib/definitions";
+import {
+  TelemetryChannel,
+  type WidgetProps,
+  type DataPoint,
+} from "@/lib/definitions";
 
 function GetConfig(channel: TelemetryChannel) {
   const chartConfig = {
@@ -23,11 +21,15 @@ function GetConfig(channel: TelemetryChannel) {
       color: "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
-  return chartConfig
+  return chartConfig;
 }
 
-function GenericHistoricalChart(duration: string, data: DataPoint[], channel: TelemetryChannel) {
-  const color="hsl(var(--chart-1))"
+function GenericHistoricalChart(
+  duration: string,
+  data: DataPoint[],
+  channel: TelemetryChannel
+) {
+  const color = "hsl(var(--chart-1))";
 
   return (
     <div className="flex flex-col h-full">
@@ -37,32 +39,35 @@ function GenericHistoricalChart(duration: string, data: DataPoint[], channel: Te
       <ChartContainer config={GetConfig(channel)} className="w-full h-full">
         <LineChart
           accessibilityLayer
-          data={data.map((d) => ({ timestamp: d.timestamp.getTime(), value: d.value}))}
+          data={data.map((d) => ({
+            timestamp: d.timestamp.getTime(),
+            value: d.value,
+          }))}
           margin={{ top: 0, right: 30, left: -10, bottom: 40 }}
         >
           <CartesianGrid vertical={false} />
           <XAxis
             interval="preserveStartEnd"
             dataKey="timestamp"
-            tickFormatter={(tick) => format(new Date(tick), 'HH:mm')}
+            tickFormatter={(tick) => format(new Date(tick), "HH:mm")}
             tickLine={false}
             axisLine={false}
             tickMargin={8}
             type="number"
-            domain={['dataMin', 'dataMax']}
+            domain={["dataMin", "dataMax"]}
             label={{
               value: `Time`,
-              style: { textAnchor: 'middle' },
-              position: 'bottom',
+              style: { textAnchor: "middle" },
+              position: "bottom",
               offset: 0,
             }}
           />
           <YAxis
             label={{
-              value: `${channel.label} (${channel.unit || ''})`, // Use unit if provided
-              style: { textAnchor: 'middle' },
+              value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
+              style: { textAnchor: "middle" },
               angle: -90,
-              position: 'left',
+              position: "left",
               offset: -25,
             }}
           />
@@ -95,7 +100,7 @@ export default function GraphWidget({ mode, channel, data }: WidgetProps) {
 
     return (
       <p className="w-full h-full flex justify-center items-center font-semibold text-2xl">
-        {latestValue} {channel.unit || ''}
+        {latestValue} {channel.unit || ""}
       </p>
     );
   }

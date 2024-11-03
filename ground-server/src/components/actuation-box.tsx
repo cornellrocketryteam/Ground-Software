@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,35 +11,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { sendCommand } from "@/lib/grpcClient";
+import { type Command } from "@/proto-out/command";
 
 interface ActuationBoxProps {
   title: string;
-  offButtonLabel: string;
-  onButtonLabel: string; 
+  onButtonLabel: string;
   onStateLabel: string;
+  onCommand: Command;
+  offButtonLabel: string;
   offStateLabel: string;
+  offCommand: Command;
   initialStateLabel: string;
 }
 
-export default function ActuationBox({ 
-  title, 
-  offButtonLabel, 
-  onButtonLabel, 
-  onStateLabel, 
-  offStateLabel, 
-  initialStateLabel 
+export default function ActuationBox({
+  title,
+  onButtonLabel,
+  onStateLabel,
+  onCommand,
+  offButtonLabel,
+  offStateLabel,
+  offCommand,
+  initialStateLabel,
 }: ActuationBoxProps) {
-  const [currentState, setCurrentState] = useState<string | null>(null); 
+  const [currentState, setCurrentState] = useState<string | null>(null);
 
   const handleTurnOn = () => {
     setCurrentState(onStateLabel); // Set state to onStateLabel
+    sendCommand(onCommand)
+      .then((res) => {
+        console.log("Command Acknowledged!", res);
+      })
+      .catch((error) => {
+        console.error("Error sending command", error);
+      });
   };
 
   const handleTurnOff = () => {
     setCurrentState(offStateLabel); // Set state to offStateLabel
+    sendCommand(offCommand)
+      .then((res) => {
+        console.log("Command Acknowledged!", res);
+      })
+      .catch((error) => {
+        console.error("Error sending command", error);
+      });
   };
 
   return (
@@ -52,16 +71,15 @@ export default function ActuationBox({
         <div className="flex flex-col items-center space-y-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                variant="default" 
-                className="h-12 w-52 text-lg"
-              >
+              <Button variant="default" className="h-12 w-52 text-lg">
                 {onButtonLabel}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="max-w-lg p-4">
               <AlertDialogHeader>
-                <AlertDialogTitle>{onButtonLabel} {title} </AlertDialogTitle>
+                <AlertDialogTitle>
+                  {onButtonLabel} {title}{" "}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   Are you sure you want to {onButtonLabel} the {title}?
                 </AlertDialogDescription>
@@ -77,16 +95,15 @@ export default function ActuationBox({
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                variant="default" 
-                className="h-12 w-52 text-lg"
-              >
+              <Button variant="default" className="h-12 w-52 text-lg">
                 {offButtonLabel}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="max-w-lg p-4">
               <AlertDialogHeader>
-                <AlertDialogTitle>{offButtonLabel} {title}</AlertDialogTitle>
+                <AlertDialogTitle>
+                  {offButtonLabel} {title}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   Are you sure you want to {offButtonLabel} the {title}?
                 </AlertDialogDescription>
@@ -103,16 +120,18 @@ export default function ActuationBox({
 
         {/* State Section */}
         <div>
-          <h4 className="text-sm font-medium mb-2 text-center">Current State</h4>
-          <div 
+          <h4 className="text-sm font-medium mb-2 text-center">
+            Current State
+          </h4>
+          <div
             className={`h-[100px] w-[150px] flex items-center justify-center text-lg font-bold ${
               currentState === onStateLabel
-                ? 'bg-green-500 text-white'
+                ? "bg-green-500 text-white"
                 : currentState === offStateLabel
-                ? 'bg-red-500 text-white'
-                : 'bg-gray-300 dark:bg-gray-800'
+                ? "bg-red-500 text-white"
+                : "bg-gray-300 dark:bg-gray-800"
             }`}
-          > 
+          >
             {currentState || initialStateLabel}
           </div>
         </div>

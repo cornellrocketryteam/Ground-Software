@@ -30,14 +30,14 @@ service Commander {
 // The telemetry message
 // TODO(Zach) add parameters for commanding
 message Command {
-    bool sv1_open = 1;
-    bool bv1_open = 2;
-    bool bv1_off = 3;
-    bool qd_retract = 4;
-    bool ignite = 5;
-    bool sv2_close = 6;
-    bool mav_open = 7;
-    bool fire = 8;
+    optional bool sv1_open = 1;
+    optional bool bv1_open = 2;
+    optional bool bv1_off = 3;
+    optional bool qd_retract = 4;
+    optional bool ignite = 5;
+    optional bool sv2_close = 6;
+    optional bool mav_open = 7;
+    optional bool fire = 8;
 }
 
 // The response message containing an ack

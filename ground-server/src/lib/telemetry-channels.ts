@@ -8,7 +8,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "Solenoid Valve 1 Continuity",
     requiresAuth: false,
     dbField: "sv1_cont",
-    jsonField: "sv1Cont",
     modes: ["Value", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },

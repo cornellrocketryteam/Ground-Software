@@ -134,25 +134,11 @@ export default function Home() {
                 (channel) => channel.id === data.id
               )!.channel;
 
-              const field = channel.jsonField;
+              const field = channel.dbField;
               let newValue = null;
               if (field in message) {
                 console.log("%s in message.", field);
                 newValue = message[field];
-              } else if (field in message.rockTelem) {
-                console.log("%s in message.rockTelem.", field);
-                newValue = message.rockTelem[field];
-              } else if (field in message.rockTelem.accelTelem) {
-                console.log("%s in message.rockTelem.accelTelem.", field);
-                newValue = message.rockTelem.accelTelem[field];
-              } else if (field in message.rockTelem.events) {
-                newValue = message.rockTelem.events[field];
-              } else if (field in message.rockTelem.gpsTelem) {
-                newValue = message.rockTelem.gpsTelem[field];
-              } else if (field in message.rockTelem.imuTelem) {
-                newValue = message.rockTelem.imuTelem[field];
-              } else if (field in message.rockTelem.metadata) {
-                newValue = message.rockTelem.metadata[field];
               } else {
                 console.log("%s not in message.", field);
               }

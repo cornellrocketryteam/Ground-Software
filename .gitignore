@@ -20,4 +20,5 @@ bazel_wrapper.bazelrc
 .env*
 
 # Go artifacts
-telemetry-proxy/telemetry_proxy
+go-proxies/fill-telem-proxy/main
+go-proxies/websocket-proxy/main

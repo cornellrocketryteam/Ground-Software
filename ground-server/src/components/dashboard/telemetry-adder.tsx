@@ -99,7 +99,7 @@ function TelemetryChannelList({
     setLayouts((prevLayouts) => [
       ...prevLayouts,
       {
-        id: id,
+        id,
         layout: {
           i: id,
           x: 0,

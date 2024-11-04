@@ -12,6 +12,7 @@ export type WidgetProps = {
 };
 
 export type TelemetryChannel = {
+  id: string;
   label: string;
   unit?: string;
   requiresAuth: boolean;

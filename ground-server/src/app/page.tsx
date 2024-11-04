@@ -6,6 +6,8 @@ import "react-resizable/css/styles.css";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
+import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
+
 import { WidgetHandle } from "@/components/dashboard/widget-handle";
 import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
 import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
@@ -36,6 +38,31 @@ export default function Home() {
   >([]);
   const wsRef = useRef<WebSocket | null>(null); // Store the WebSocket instance
 
+  // Load layouts and channels from localStorage on mount
+  useEffect(() => {
+    const storedLayouts = localStorage.getItem("layouts");
+    const storedChannels = localStorage.getItem("channels");
+
+    if (storedLayouts && storedChannels) {
+      const parsedLayouts = JSON.parse(storedLayouts);
+      setLayouts(parsedLayouts);
+
+      const parsedChannels = JSON.parse(storedChannels);
+      const channels = parsedChannels.map((channel: { id: string, channel_id: string }) => ({
+        id: channel.id,
+        channel: TELEMETRY_CHANNELS.find((c) => c.id === channel.channel_id)!,
+      }));
+      setChannels(channels);
+
+      // Initialize data for each channel
+      const initialData = parsedChannels.map((channel: { id: string; }) => ({
+        id: channel.id,
+        data: [],
+      }));
+      setData(initialData);
+    }
+  }, []);
+
   useEffect(() => {
     wsRef.current = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
 
@@ -45,12 +72,10 @@ export default function Home() {
 
     wsRef.current.onclose = () => {
       console.log("WebSocket connection closed");
-      wsRef.current = null; // Clear the WebSocket instance
     };
 
     wsRef.current.onerror = (error) => {
       console.error("WebSocket error:", error);
-      wsRef.current = null; // Clear the WebSocket instance
     };
 
     // Clean up on unmount
@@ -151,18 +176,30 @@ export default function Home() {
   }, [channels]);
 
   const onLayoutChange = (layout: Layout[]) => {
-    setLayouts((prevLayouts) =>
-      prevLayouts.map((prevLayout) => {
-        const updatedLayout = layout.find((l) => l.i === prevLayout.id);
-        if (updatedLayout) {
+    setLayouts((prevLayouts) => {
+        const newLayout = prevLayouts.map((prevLayout) => {
+          const updatedLayout = layout.find((l) => l.i === prevLayout.id);
+          if (updatedLayout) {
+            return {
+              id: prevLayout.id,
+              layout: updatedLayout,
+            };
+          }
+          return prevLayout;
+        });
+
+        localStorage.setItem("layouts", JSON.stringify(newLayout));
+        localStorage.setItem("channels", JSON.stringify(channels.map((c) => {
           return {
-            id: prevLayout.id,
-            layout: updatedLayout,
-          };
-        }
-        return prevLayout;
-      })
+            id: c.id,
+            channel_id: c.channel.id
+          }
+        }))); 
+
+        return newLayout;
+      }
     );
+
   };
 
   const children = useMemo(() => {

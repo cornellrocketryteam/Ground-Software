@@ -62,7 +62,7 @@ export default function ActuationBox({
   };
 
   return (
-    <div className="border border-gray-300 p-8 rounded-lg bg-white dark:bg-black flex flex-col items-center">
+    <div className="border border-gray-300 p-8 rounded-lg flex flex-col items-center">
       {/* Title */}
       <h2 className="text-lg font-bold mb-10 text-center">{title}</h2>
 

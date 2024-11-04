@@ -1,5 +1,4 @@
 import { type ComponentType } from "react";
-import { type Layout } from "react-grid-layout";
 
 export type DataPoint = {
   timestamp: Date;
@@ -20,13 +19,6 @@ export type TelemetryChannel = {
   jsonField: string;
   modes: string[];
   component: ComponentType<WidgetProps>;
-};
-
-export type Widget = {
-  channel: TelemetryChannel;
-  layout: Layout;
-  id: string;
-  data: DataPoint[];
 };
 
 export type Preset = {

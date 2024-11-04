@@ -26,13 +26,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type TelemetryChannel, type Widget } from "@/lib/definitions";
 import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 
+import { type DataPoint, type TelemetryChannel } from "@/lib/definitions";
+import { type Layout } from "react-grid-layout";
+
 export function TelemetryAdder({
-  setWidgets,
+  setChannels,
+  setLayouts,
+  setData
 }: {
-  setWidgets: Dispatch<SetStateAction<Widget[]>>;
+  setChannels: Dispatch<SetStateAction<{ id: string; channel: TelemetryChannel }[]>>;
+  setLayouts: Dispatch<SetStateAction<{ id: string; layout: Layout }[]>>;
+  setData: Dispatch<SetStateAction<{ id: string; data: DataPoint[] }[]>>;
 }) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -46,7 +52,7 @@ export function TelemetryAdder({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
-          <TelemetryChannelList setOpen={setOpen} setWidgets={setWidgets} />
+          <TelemetryChannelList setOpen={setOpen} setChannels={setChannels} setLayouts={setLayouts} setData={setData} />
         </PopoverContent>
       </Popover>
     );
@@ -67,7 +73,7 @@ export function TelemetryAdder({
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">
-          <TelemetryChannelList setOpen={setOpen} setWidgets={setWidgets} />
+          <TelemetryChannelList setOpen={setOpen} setChannels={setChannels} setLayouts={setLayouts} setData={setData} />
         </div>
       </DrawerContent>
     </Drawer>
@@ -76,30 +82,36 @@ export function TelemetryAdder({
 
 function TelemetryChannelList({
   setOpen,
-  setWidgets,
+  setChannels,
+  setLayouts,
+  setData
 }: {
   setOpen: (open: boolean) => void;
-  setWidgets: Dispatch<SetStateAction<Widget[]>>;
+  setChannels: Dispatch<SetStateAction<{ id: string; channel: TelemetryChannel }[]>>;
+  setLayouts: Dispatch<SetStateAction<{ id: string; layout: Layout }[]>>;
+  setData: Dispatch<SetStateAction<{ id: string; data: DataPoint[] }[]>>;
 }) {
   const addWidget = (channel: TelemetryChannel) => {
     const id = Date.now().toString();
     console.log(`Adding widget with id: ${id}`);
-    const newWidget = {
-      channel: channel,
-      layout: {
-        i: id,
-        x: 0,
-        y: 0,
-        w: 3,
-        h: 3,
-        minW: 3,
-        minH: 3,
+    
+    setChannels((prevChannels) => [...prevChannels, { id, channel }]);
+    setLayouts((prevLayouts) => [
+      ...prevLayouts,
+      {
+        id: id,
+        layout: {
+          i: id,
+          x: 0,
+          y: 0,
+          w: 3,
+          h: 3,
+          minW: 3,
+          minH: 3,
+        },
       },
-      id: id,
-      data: [],
-    };
-
-    setWidgets((prevWidgets) => [...prevWidgets, newWidget]);
+    ]);
+    setData((prevData) => [...prevData, { id, data: [] }]);
     setOpen(false);
   };
 

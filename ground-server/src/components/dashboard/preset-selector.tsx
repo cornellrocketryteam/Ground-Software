@@ -26,13 +26,25 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type Preset, type Widget } from "@/lib/definitions";
 import { PRESETS } from "@/lib/dashboard-presets";
 
+import {
+  type DataPoint,
+  type TelemetryChannel,
+  type Preset,
+} from "@/lib/definitions";
+import { type Layout } from "react-grid-layout";
+
 export function PresetSelector({
-  setWidgets,
+  setChannels,
+  setLayouts,
+  setData,
 }: {
-  setWidgets: Dispatch<SetStateAction<Widget[]>>;
+  setChannels: Dispatch<
+    SetStateAction<{ id: string; channel: TelemetryChannel }[]>
+  >;
+  setLayouts: Dispatch<SetStateAction<{ id: string; layout: Layout }[]>>;
+  setData: Dispatch<SetStateAction<{ id: string; data: DataPoint[] }[]>>;
 }) {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -46,7 +58,12 @@ export function PresetSelector({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
-          <PresetList setOpen={setOpen} setWidgets={setWidgets} />
+          <PresetList
+            setOpen={setOpen}
+            setChannels={setChannels}
+            setLayouts={setLayouts}
+            setData={setData}
+          />
         </PopoverContent>
       </Popover>
     );
@@ -67,7 +84,12 @@ export function PresetSelector({
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">
-          <PresetList setOpen={setOpen} setWidgets={setWidgets} />
+          <PresetList
+            setOpen={setOpen}
+            setChannels={setChannels}
+            setLayouts={setLayouts}
+            setData={setData}
+          />
         </div>
       </DrawerContent>
     </Drawer>
@@ -76,14 +98,22 @@ export function PresetSelector({
 
 function PresetList({
   setOpen,
-  setWidgets,
+  setChannels,
+  setLayouts,
+  setData,
 }: {
   setOpen: (open: boolean) => void;
-  setWidgets: Dispatch<SetStateAction<Widget[]>>;
+  setChannels: Dispatch<
+    SetStateAction<{ id: string; channel: TelemetryChannel }[]>
+  >;
+  setLayouts: Dispatch<SetStateAction<{ id: string; layout: Layout }[]>>;
+  setData: Dispatch<SetStateAction<{ id: string; data: DataPoint[] }[]>>;
 }) {
   const selectPreset = (preset: Preset) => {
     console.log("Selected preset:", preset);
-    setWidgets([]);
+    setChannels([]);
+    setLayouts([]);
+    setData([]);
     setOpen(false);
   };
 

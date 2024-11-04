@@ -1,5 +1,4 @@
 #include "steppermotor.h"
-#include <wiringPi.h>
 
 StepperMotor::StepperMotor(int Coil1, int Coil3, bool IsHalfStep)
 {

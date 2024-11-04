@@ -10,7 +10,7 @@ export default async function Controls() {
 
   return (
     <div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 p-5">
         <ActuationBox
           title="Quick Disconnect Motor"
           onButtonLabel="Connect"

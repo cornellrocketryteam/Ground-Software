@@ -28,3 +28,7 @@ export type Widget = {
   id: string;
   data: DataPoint[];
 };
+
+export type Preset = {
+  label: string;
+};

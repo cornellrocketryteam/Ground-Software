@@ -8,7 +8,8 @@ import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
 import { WidgetHandle } from "@/components/dashboard/widget-handle";
 import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
-import TelemetryAdder from "@/components/telemetry-adder";
+import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
+import { PresetSelector } from "@/components/dashboard/preset-selector";
 
 import { type Widget, type DataPoint } from "@/lib/definitions";
 
@@ -57,37 +58,45 @@ export default function Home() {
       } else {
         // Live data
 
-        setWidgets((prevWidgets) => prevWidgets.map((widget) => {
-          const field = widget.channel.jsonField;
-          let newValue = null;
-          if (field in message) {
-            console.log("%s in message.", field);
-            newValue = message[field];
-          } else if (field in message.rockTelem) {
-            console.log("%s in message.rockTelem.", field);
-            newValue = message.rockTelem[field];
-          } else if (field in message.rockTelem.accelTelem) {
-            console.log("%s in message.rockTelem.accelTelem.", field);
-            newValue = message.rockTelem.accelTelem[field];
-          } else if (field in message.rockTelem.events) {
-            newValue = message.rockTelem.events[field];
-          } else if (field in message.rockTelem.gpsTelem) {
-            newValue = message.rockTelem.gpsTelem[field];
-          } else if (field in message.rockTelem.imuTelem) {
-            newValue = message.rockTelem.imuTelem[field];
-          } else if (field in message.rockTelem.metadata) {
-            newValue = message.rockTelem.metadata[field];
-          } else {
-            console.log("%s not in message.", field);
-          }
+        setWidgets((prevWidgets) =>
+          prevWidgets.map((widget) => {
+            const field = widget.channel.jsonField;
+            let newValue = null;
+            if (field in message) {
+              console.log("%s in message.", field);
+              newValue = message[field];
+            } else if (field in message.rockTelem) {
+              console.log("%s in message.rockTelem.", field);
+              newValue = message.rockTelem[field];
+            } else if (field in message.rockTelem.accelTelem) {
+              console.log("%s in message.rockTelem.accelTelem.", field);
+              newValue = message.rockTelem.accelTelem[field];
+            } else if (field in message.rockTelem.events) {
+              newValue = message.rockTelem.events[field];
+            } else if (field in message.rockTelem.gpsTelem) {
+              newValue = message.rockTelem.gpsTelem[field];
+            } else if (field in message.rockTelem.imuTelem) {
+              newValue = message.rockTelem.imuTelem[field];
+            } else if (field in message.rockTelem.metadata) {
+              newValue = message.rockTelem.metadata[field];
+            } else {
+              console.log("%s not in message.", field);
+            }
 
-          if (newValue) {
-            console.log(widget);
-            return { ...widget, data: [...widget.data, { timestamp: new Date(), value: newValue }] };
-          }
-          
-          return widget
-        }));
+            if (newValue) {
+              console.log(widget);
+              return {
+                ...widget,
+                data: [
+                  ...widget.data,
+                  { timestamp: new Date(), value: newValue },
+                ],
+              };
+            }
+
+            return widget;
+          })
+        );
       }
     };
 
@@ -196,7 +205,8 @@ export default function Home() {
       >
         {children}
       </ResponsiveReactGridLayout>
-      <div className="fixed bottom-10 right-10 z-50">
+      <div className="fixed bottom-10 right-10 z-50 flex gap-2">
+        <PresetSelector setWidgets={setWidgets} />
         <TelemetryAdder setWidgets={setWidgets}></TelemetryAdder>
       </div>
     </div>

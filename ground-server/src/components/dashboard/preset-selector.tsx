@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { ChevronUpIcon } from "@radix-ui/react-icons";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type TelemetryChannel, type Widget } from "@/lib/definitions";
-import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
+import { type Preset, type Widget } from "@/lib/definitions";
+import { PRESETS } from "@/lib/dashboard-presets";
 
-export default function TelemetryAdder({
+export function PresetSelector({
   setWidgets,
 }: {
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
@@ -41,12 +41,12 @@ export default function TelemetryAdder({
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button className="px-4 py-2 md:py-3 md:px-5 lg:py-5 lg:text-lg">
-            <PlusIcon className="h-4 w-4 xl:h-5 xl:w-5 mr-2" /> Add Channel
+          <Button variant="outline" size="icon" className="h-10 w-10">
+            <ChevronUpIcon className="h-4 w-4 xl:h-5 xl:w-5" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
-          <StatusList setOpen={setOpen} setWidgets={setWidgets} />
+          <PresetList setOpen={setOpen} setWidgets={setWidgets} />
         </PopoverContent>
       </Popover>
     );
@@ -55,67 +55,51 @@ export default function TelemetryAdder({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button className="px-4 py-2 md:py-3 md:px-5 lg:py-5 lg:text-lg">
-          <PlusIcon className="h-4 w-4 xl:h-5 xl:w-5 mr-2" /> Add Channel
+        <Button variant="outline" size="icon" className="h-10 w-10">
+          <ChevronUpIcon className="h-4 w-4 xl:h-5 xl:w-5" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader hidden>
-          <DrawerTitle hidden>Add telemetry</DrawerTitle>
+          <DrawerTitle hidden>Set preset</DrawerTitle>
           <DrawerDescription hidden>
-            Select what telemetry channel to add to the dashboard
+            Select what telemetry preset to use for the dashboard
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">
-          <StatusList setOpen={setOpen} setWidgets={setWidgets} />
+          <PresetList setOpen={setOpen} setWidgets={setWidgets} />
         </div>
       </DrawerContent>
     </Drawer>
   );
 }
 
-function StatusList({
+function PresetList({
   setOpen,
   setWidgets,
 }: {
   setOpen: (open: boolean) => void;
   setWidgets: Dispatch<SetStateAction<Widget[]>>;
 }) {
-  const addWidget = (channel: TelemetryChannel) => {
-    const id = Date.now().toString()
-    console.log(`Adding widget with id: ${id}`)
-    const newWidget = {
-      channel: channel,
-      layout: {
-        i: id,
-        x: 0,
-        y: 0,
-        w: 3,
-        h: 3,
-        minW: 3,
-        minH: 3,
-      },
-      id: id,
-      data: [],
-    }
-
-    setWidgets((prevWidgets) => [...prevWidgets, newWidget]);
+  const selectPreset = (preset: Preset) => {
+    console.log("Selected preset:", preset);
+    setWidgets([]);
     setOpen(false);
   };
 
   return (
     <Command>
-      <CommandInput placeholder="Filter channels..." />
+      <CommandInput placeholder="Filter presets..." />
       <CommandList>
-        <CommandEmpty>No channels found.</CommandEmpty>
+        <CommandEmpty>No presets found.</CommandEmpty>
         <CommandGroup>
-          {TELEMETRY_CHANNELS.map((channel) => (
+          {PRESETS.map((preset) => (
             <CommandItem
-              key={channel.label}
-              value={channel.label}
-              onSelect={() => addWidget(channel)}
+              key={preset.label}
+              value={preset.label}
+              onSelect={() => selectPreset(preset)}
             >
-              {channel.label}
+              {preset.label}
             </CommandItem>
           ))}
         </CommandGroup>

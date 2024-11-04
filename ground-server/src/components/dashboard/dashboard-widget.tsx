@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
-import { type Widget } from "@/lib/definitions";
+import { type TelemetryChannel, type DataPoint } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
-  widget: Widget;
+  id: string;
+  channel: TelemetryChannel;
+  data: DataPoint[];
   deleteWidget: () => void;
   style?: CSSProperties;
   className?: string;
@@ -37,7 +39,9 @@ interface DashboardWidgetProps {
 export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
   (
     {
-      widget,
+      id,
+      channel,
+      data,
       deleteWidget,
       style,
       className,
@@ -49,14 +53,14 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     },
     ref
   ) => {
-    const WidgetComponent = widget.channel.component;
+    const WidgetComponent = channel.component;
 
-    const [mode, setMode] = useState(widget.channel.modes[0] ?? "");
+    const [mode, setMode] = useState(channel.modes[0] ?? "");
 
     const handleModeChange = (newMode: string) => {
       setMode(newMode);
-      onModeChange(widget.layout.i, newMode);
-    }
+      onModeChange(id, newMode);
+    };
 
     return (
       <div
@@ -67,21 +71,24 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <WidgetComponent mode={mode} channel={widget.channel} data={widget.data} />
+        <WidgetComponent mode={mode} channel={channel} data={data} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <DotsVerticalIcon className="drag-ignore absolute top-2 right-1 h-4 cursor-pointer" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-34 drag-ignore">
-            <DropdownMenuRadioGroup value={mode} onValueChange={handleModeChange}>
-              {widget.channel.modes.map((m) => (
+            <DropdownMenuRadioGroup
+              value={mode}
+              onValueChange={handleModeChange}
+            >
+              {channel.modes.map((m) => (
                 <DropdownMenuRadioItem key={m} value={m}>
                   {m}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
-            {widget.channel.modes.length > 0 && <DropdownMenuSeparator />}
+            {channel.modes.length > 0 && <DropdownMenuSeparator />}
             <DropdownMenuItem
               inset
               className="text-red-600"

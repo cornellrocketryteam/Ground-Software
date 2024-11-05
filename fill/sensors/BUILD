@@ -1,7 +1,7 @@
 cc_library(
     name = "sensor",
     hdrs = ["sensor.h"],
-    deps = ["//fill/lib/Adafruit_ADS1X15_RPi:adcdriver"],
+    deps = [],
     visibility = [
         "//fill:__subpackages__",
         ],

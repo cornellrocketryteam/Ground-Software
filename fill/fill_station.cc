@@ -7,8 +7,6 @@
 #include <cstdlib>
 #include <random>
 
-#include "telemetry_reader.h"
-
 #include "actuators/qd.h"
 #include "wiringPi.h"
 

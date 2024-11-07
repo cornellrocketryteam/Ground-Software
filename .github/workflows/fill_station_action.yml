@@ -43,7 +43,7 @@ jobs:
           if [[ "${{ matrix.arch }}" == "amd64" ]]; then
             bazel build //fill/lib/MockWiringPi:mock_wiringpi
             ./fill/setup_mock_wiringpi.sh
-            bazel test //fill:all
+            bazel build //fill:all
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             sudo apt-get install g++-11-arm-linux-gnueabihf
             sudo apt install gcc-11-arm-linux-gnueabihf

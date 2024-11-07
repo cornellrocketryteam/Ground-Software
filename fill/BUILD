@@ -1,28 +1,7 @@
-cc_library(
-    name = "telemetry_reader",
-    srcs = ["telemetry_reader.cc"],
-    hdrs = ["telemetry_reader.h"],
-    deps = [
-        "//protos:command_cc_proto",
-        "//fill/sensors:sensor"],
-)
-
-cc_test(
-    name = "telemetry_reader_test",
-    size = "small",
-    srcs = ["telemetry_reader_test.cc"],
-    deps = [
-        ":telemetry_reader",
-        "//fill/sensors:mock_sensor",
-        "@googletest//:gtest_main",
-    ],
-)
-
 cc_binary(
     name = "fill_station",
     srcs = ["fill_station.cc"],
     deps = [
-        ":telemetry_reader",
         "//protos:command_cc_grpc",
         "//fill/sensors:ptd",
         "//fill/actuators:qd",

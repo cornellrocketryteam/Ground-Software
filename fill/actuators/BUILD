@@ -19,9 +19,11 @@ cc_library(
 
 cc_library(
     name = "ball_valve",
-    srcs = ["ball_valve.cc"],
     hdrs = ["ball_valve.h"],
-    deps = [":actuator"],
+    srcs  = ["ball_valve.cc"], 
+    deps = ["//fill/lib/MockWiringPi:mock_wiringpi"],
+    includes = ["."],
+    linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],

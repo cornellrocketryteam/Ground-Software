@@ -8,6 +8,8 @@
 #include <random>
 
 #include "actuators/qd.h"
+#include "actuators/ball_valve.h"
+
 #include "wiringPi.h"
 
 #include "absl/flags/flag.h"
@@ -35,7 +37,9 @@ using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
 
+/* Actuators */
 QD qd; 
+BallValve ball_valve;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -69,6 +73,32 @@ class CommanderServiceImpl final : public Commander::Service
     {
         if (request->qd_retract()) {
              qd.Actuate();
+        }
+
+        if (request->has_bv1_open()){ // ensure request contains bv1_open
+            if (request->bv1_open()){
+                ball_valve.open();
+            } else {
+                ball_valve.close();
+            }
+        }
+
+        if (request->has_bv1_off()){ // ensure request contains bv1_off
+            if (request->bv1_off()){
+                ball_valve.powerOff();
+            } else {
+                ball_valve.powerOn();
+            }
+        }
+
+        if (request->sv2_close()){
+            // send TCP command to rocket_controller 
+        }
+        if (request->mav_open()){
+            // send TCP command to rocket_controller 
+        }
+        if (request->fire()){
+            // send TCP command to rocket_controller 
         }
         return Status::OK;
     }

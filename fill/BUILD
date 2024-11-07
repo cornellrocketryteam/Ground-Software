@@ -3,8 +3,8 @@ cc_binary(
     srcs = ["fill_station.cc"],
     deps = [
         "//protos:command_cc_grpc",
-        "//fill/sensors:ptd",
         "//fill/actuators:qd",
+        "//fill/actuators:ball_valve",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

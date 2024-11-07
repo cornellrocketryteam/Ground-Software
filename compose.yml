@@ -11,18 +11,26 @@ services:
       - influxdb
     ports:
       - 80:80
-  telemetry-proxy:
-    image: ghcr.io/cornellrocketryteam/telemetry-proxy:latest
+  fill-telem-proxy:
+    image: ghcr.io/cornellrocketryteam/fill-telem-proxy:latest
+    depends_on:
+      - influxdb
+      - fill-station
+    networks:
+      - ground-network
+    env_file:
+      - ./.env.fill-telem-proxy
+  websocket-proxy:
+    image: ghcr.io/cornellrocketryteam/websocket-proxy:latest
     depends_on:
       - influxdb
       - webserver
-      - fill-station
     networks:
       - ground-network
     ports:
       - 8080:8080
     env_file:
-      - ./.env.proxy
+      - ./.env.websocket-proxy
   influxdb:
     image: influxdb:2.7.10
     networks:

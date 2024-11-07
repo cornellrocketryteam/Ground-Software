@@ -96,7 +96,7 @@ export default function GraphWidget({ mode, channel, data }: WidgetProps) {
   }
 
   if (mode === "Value") {
-    const latestValue = data[data.length - 1].value;
+    const latestValue = data[data.length - 1].value.toFixed(3);
 
     return (
       <p className="w-full h-full flex justify-center items-center font-semibold text-2xl">

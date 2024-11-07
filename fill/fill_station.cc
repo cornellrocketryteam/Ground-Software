@@ -8,8 +8,6 @@
 #include <random>
 
 #include "telemetry_reader.h"
-// #include "sensors/ptd.h"
-// #include "sensors/load_cell.h"
 
 #include "actuators/qd.h"
 #include "wiringPi.h"
@@ -39,7 +37,7 @@ using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
 
-// Adafruit_ADS1015 adc;
+QD qd; 
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -71,6 +69,9 @@ class CommanderServiceImpl final : public Commander::Service
     Status SendCommand(ServerContext *context, const Command *request,
                        CommandReply *reply) override
     {
+        if (request->qd_retract()) {
+             qd.Actuate();
+        }
         return Status::OK;
     }
 };
@@ -122,41 +123,16 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
 /*
 MAIN
 */
-
-void turnMotor(StepperMotor* stepperMotor){
-    stepperMotor->Enable(); // enable sensor motor 
-    stepperMotor->Rotate(stepperMotor->CLOCKWISE, 100000, 50); // Rotate the motor clockwise, 50ms time delay
-
-    usleep(60000000); 
-
-    stepperMotor->StopRotation(); // Holds in current location 
-    stepperMotor->Disable();
-    return;
-}
-
 // Start server and client services
 int main(int argc, char **argv)
 {
-    // begin the ADC
-    // adc.begin();
-
     absl::ParseCommandLine(argc, argv);
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);
-    // std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
-    // server->Shutdown();
-
-    wiringPiSetup();
-
-    QD qd; 
-
-    qd.Actuate();
-
-    while(true){
-
-    }
+    server->Shutdown();
 
     return 0;
 }

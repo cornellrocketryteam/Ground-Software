@@ -2,10 +2,10 @@
 #define QD_H
 
 //TODO: Update COIL based on specs 
-#define COIL1 22
-#define COIL2 23
-#define COIL3 24
-#define COIL4 25
+#define COIL1 5
+#define COIL2 6
+#define COIL3 22
+#define COIL4 26
 
 #include "steppermotor.h"
 #include "actuator.h"

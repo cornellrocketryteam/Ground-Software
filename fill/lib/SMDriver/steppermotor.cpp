@@ -26,6 +26,8 @@ StepperMotor::StepperMotor(int Coil1, int Coil3, bool IsHalfStep)
 
 StepperMotor::StepperMotor(int Coil1, int Coil2, int Coil3, int Coil4, bool IsHalfStep)
 {
+	wiringPiSetupGpio(); 
+	
 	this->_Coil_1 = Coil1;
 	this->_Coil_2 = Coil2;
 	this->_Coil_3 = Coil3;

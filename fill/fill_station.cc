@@ -12,6 +12,7 @@
 #include "actuators/sol_valve.h"
 
 #include "sensors/pt.h"
+#include "umbilical/proto_build.h"
 
 #include "wiringPi.h"
 
@@ -31,7 +32,10 @@ using command::Commander;
 using command::FillStationTelemeter;
 using command::CommandReply;
 using command::FillStationTelemetry;
-using command::TelemetryRequest;
+using command::FillStationTelemetryRequest;
+using command::RocketTelemetryRequest;
+using command::RocketTelemetry;
+using command::RocketTelemeter;
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
@@ -48,6 +52,8 @@ SolValve sv1;
 /* Sensors */
 PT pt1 = PT(0x48, 3);
 PT pt2 = PT(0x48, 2);
+/* Umblical Tools */
+RocketTelemetryProtoBuilder protoBuild;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -131,7 +137,7 @@ class CommanderServiceImpl final : public Commander::Service
 // Fill Station service to stream telemetry.
 class TelemeterServiceImpl final : public FillStationTelemeter::Service
 {
-    Status StreamTelemetry(ServerContext *context, const TelemetryRequest *request,
+    Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
                        ServerWriter<FillStationTelemetry> *writer) override
     {
         while (true) {
@@ -147,12 +153,29 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     }
 };
 
+class RocketTelemeterServiceImpl final : public RocketTelemeter::Service 
+{
+    Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
+                       ServerWriter<RocketTelemetry> *writer) override
+    {
+        while (true) {
+            auto now = std::chrono::high_resolution_clock::now();
+            RocketTelemetry t = protoBuild.buildProto();
+            if (!writer->Write(t)) {
+                // Broken stream
+                return Status::CANCELLED; 
+            }
+        }
+    }
+};
+
 // Server startup function
 void RunServer(uint16_t port, std::shared_ptr<Server> server)
 {
     std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
     CommanderServiceImpl commander_service;
     TelemeterServiceImpl telemeter_service;
+    RocketTelemeterServiceImpl rocket_telemeter_service; 
 
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
@@ -162,6 +185,7 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     // Register services.
     builder.RegisterService(&commander_service);
     builder.RegisterService(&telemeter_service);
+    builder.RegisterService(&rocket_telemeter_service);
     // Finally assemble the server.
     server = builder.BuildAndStart();
     // std::unique_ptr<Server> server(builder.BuildAndStart());

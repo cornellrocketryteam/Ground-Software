@@ -12,13 +12,13 @@ package command;
 // The telemetry service definition
 service FillStationTelemeter {
     // Sends telemetry
-    rpc StreamTelemetry (TelemetryRequest) returns (stream FillStationTelemetry) {}
+    rpc StreamTelemetry (FillStationTelemetryRequest) returns (stream FillStationTelemetry) {}
 }
 
 // The telemetry service definition
 service RocketTelemeter {
     // Sends telemetry
-    rpc StreamTelemetry (TelemetryRequest) returns (stream RocketTelemetry) {}
+    rpc StreamTelemetry (RocketTelemetryRequest) returns (stream RocketTelemetry) {}
 }
 
 // The commanding service definition
@@ -45,7 +45,12 @@ message Command {
 message CommandReply {}
 
 // The telemetry request message
-message TelemetryRequest {}
+message FillStationTelemetryRequest {}
+
+// Rocket Telemetry Request 
+message RocketTelemetryRequest {
+    bool isRocketTelemetryRequest = 1;
+}
 
 enum FlightMode {
     STARTUP = 0;

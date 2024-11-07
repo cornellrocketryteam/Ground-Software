@@ -5,6 +5,7 @@ cc_binary(
         "//protos:command_cc_grpc",
         "//fill/actuators:qd",
         "//fill/actuators:ball_valve",
+        "//fill/umbilical:rocket_proto_builder",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

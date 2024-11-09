@@ -1,6 +1,23 @@
 # Ground-Software
 Ground Support Equipment Software for the Cornell Rocketry Team including fill station and ground server
 
+## Updating and Running
+
+The docker containers are kept running by systemctl. This means the latest containers are run every time the computer restarts.
+
+This means to update our software we should pull new containers then restart the system:
+
+### Ground Server
+```shell
+docker compose -f /home/crt/Ground-Software/compose_prod.yml pull
+sudo systemctl restart ground.service
+```
+### Fill Station Pi 5
+```shell
+docker compose -f /home/crt/Ground-Software/compose_fill.yml pull
+sudo systemctl restart fill-station.service
+```
+
 ## Ground Server Docker Image
 
 First, install Docker for your specific computer. Then, to start the ground server run:

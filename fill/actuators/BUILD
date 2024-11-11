@@ -33,7 +33,9 @@ cc_library(
     name = "sol_valve",
     srcs = ["sol_valve.cc"],
     hdrs = ["sol_valve.h"],
-    deps = [":actuator"],
+    deps = ["//fill/lib/MockWiringPi:mock_wiringpi"],
+    includes = ["."],
+    linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],

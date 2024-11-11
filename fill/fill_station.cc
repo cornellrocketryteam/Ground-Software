@@ -9,6 +9,7 @@
 
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
+#include "actuators/sol_valve.h"
 
 #include "wiringPi.h"
 
@@ -40,6 +41,7 @@ using grpc::Status;
 /* Actuators */
 QD qd; 
 BallValve ball_valve;
+SolValve sv1;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
@@ -90,7 +92,13 @@ class CommanderServiceImpl final : public Commander::Service
                 ball_valve.powerOn();
             }
         }
-
+        if(request->has_sv1_open()){
+            if(request->sv1_open()){
+                sv1.openAsync();
+            } else{
+                sv1.close();
+            }
+        }
         if (request->sv2_close()){
             // send TCP command to rocket_controller 
         }

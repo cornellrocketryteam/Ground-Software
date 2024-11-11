@@ -8,6 +8,9 @@
 [MOCK] pinMode called, pin: 23, mode: 1
 [MOCK] digitalWrite called, pin: 24, value: 0
 [MOCK] digitalWrite called, pin: 23, value: 0
+[MOCK] wiringPiSetupGpio called
+[MOCK] pinMode called, pin: 13, mode: 1
+[MOCK] digitalWrite called, pin: 13, value: 0
 Server listening on 0.0.0.0:50051
 [MOCK] digitalWrite called, pin: 5, value: 0
 [MOCK] digitalWrite called, pin: 22, value: 1

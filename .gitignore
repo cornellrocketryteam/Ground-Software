@@ -22,3 +22,6 @@ bazel_wrapper.bazelrc
 # Go artifacts
 go-proxies/fill-telem-proxy/main
 go-proxies/websocket-proxy/main
+
+# Test Output
+fill_station_output.txt

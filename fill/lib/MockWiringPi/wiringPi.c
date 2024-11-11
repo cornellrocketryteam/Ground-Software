@@ -35,6 +35,10 @@ int digitalRead(int pin) {
     return 0;
 }
 
+void pwmWrite(int pin, int value) {
+    printf("[MOCK] pwmWrite called, pin: %d and value: %d\n", pin, value);
+}
+
 void pullUpDnControl(int pin, int pud) {
     printf("[MOCK] pullUpDnControl called, pin: %d, pud: %d\n", pin, pud);
 }

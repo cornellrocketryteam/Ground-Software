@@ -15,7 +15,10 @@ Server listening on 0.0.0.0:50051
 [MOCK] pinMode called, pin: 13, mode: 1
 [MOCK] digitalWrite called, pin: 13, value: 1
 [MOCK] delay called, howLong: 150 (usleep used in mock)
-[MOCK] pinMode called, pin: 13, mode: 2
-[MOCK] pwmWrite called, pin: 13 and value: 430
+[MOCK] pwmSetMode called, mode: 0
+[MOCK] pwmSetClock called, divisor: 2
+[MOCK] pwmSetRange called, mode: 4096
+[MOCK] pinMode called, pin: 13, mode: 8
+[MOCK] pwmWrite called, pin: 13 and value: 1707
 [MOCK] pinMode called, pin: 13, mode: 1
 [MOCK] digitalWrite called, pin: 13, value: 0

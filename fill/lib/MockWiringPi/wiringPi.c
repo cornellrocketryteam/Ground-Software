@@ -39,6 +39,21 @@ void pwmWrite(int pin, int value) {
     printf("[MOCK] pwmWrite called, pin: %d and value: %d\n", pin, value);
 }
 
+void pwmSetMode(int mode) {
+    printf("[MOCK] pwmSetMode called, mode: %d\n", mode);
+    return;
+}
+
+void pwmSetRange(unsigned int range) {
+    printf("[MOCK] pwmSetRange called, mode: %d\n", range);
+    return;
+}
+
+void pwmSetClock(int divisor) {
+    printf("[MOCK] pwmSetClock called, divisor: %d\n", divisor);
+    return;
+}
+
 void pullUpDnControl(int pin, int pud) {
     printf("[MOCK] pullUpDnControl called, pin: %d, pud: %d\n", pin, pud);
 }

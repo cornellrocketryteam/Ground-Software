@@ -6,6 +6,7 @@
 #include <thread>
 #include <cstdlib>
 #include <random>
+#include <cstdio>
 
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
@@ -93,9 +94,12 @@ class CommanderServiceImpl final : public Commander::Service
             }
         }
         if(request->has_sv1_open()){
+            printf("SV1");
             if(request->sv1_open()){
+                printf("Opening SV1");
                 sv1.openAsync();
             } else{
+                printf("Closing SV1");
                 sv1.close();
             }
         }

@@ -7,6 +7,8 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/navbar";
 
+import { Toaster } from "@/components/ui/toaster"
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -43,6 +45,7 @@ export default function RootLayout({
           <SessionProvider>
             <Navbar />
             <main>{children}</main>
+            <Toaster /> {/* Place Toaster here within the first return statement */}
           </SessionProvider>
         </ThemeProvider>
       </body>

@@ -18,10 +18,13 @@ cc_library(
 )
 
 cc_library(
-    name = "ptd",
-    srcs = ["ptd.cc"],
-    hdrs = ["ptd.h"],
-    deps = [":sensor"],
+    name = "pt",
+    srcs = ["pt.cc"],
+    hdrs = ["pt.h"],
+    deps = [
+        ":sensor",
+        "//fill/lib/ADCDriver:adc_driver",
+        ],
     visibility = [
         "//fill:__subpackages__",
         ],

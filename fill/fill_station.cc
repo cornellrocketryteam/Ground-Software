@@ -11,6 +11,8 @@
 #include "actuators/ball_valve.h"
 #include "actuators/sol_valve.h"
 
+#include "sensors/pt.h"
+
 #include "wiringPi.h"
 
 #include "absl/flags/flag.h"
@@ -43,6 +45,10 @@ QD qd;
 BallValve ball_valve;
 SolValve sv1;
 
+/* Sensors */
+PT pt1 = PT(0x48, 3);
+PT pt2 = PT(0x48, 2);
+
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 
 FillStationTelemetry generateRandomTelemetry() {
@@ -65,6 +71,16 @@ FillStationTelemetry generateRandomTelemetry() {
     telemetry.set_ign2_cont(float_dist(gen));
 
     return telemetry;
+}
+
+FillStationTelemetry readTelemetry() {
+    // Temporarily fill in others with random values
+    FillStationTelemetry t = generateRandomTelemetry();
+
+    // Fill in real values
+    t.set_pt1(pt1.Read());
+    t.set_pt2(pt2.Read());
+    return t;
 }
 
 // Fill Station service to accept commands.
@@ -120,7 +136,7 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     {
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
-            FillStationTelemetry t = generateRandomTelemetry();
+            FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
                 // Broken stream
                 return Status::CANCELLED; 

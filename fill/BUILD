@@ -6,6 +6,7 @@ cc_binary(
         "//fill/actuators:qd",
         "//fill/actuators:ball_valve",
         "//fill/actuators:sol_valve",
+        "//fill/sensors:pt",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

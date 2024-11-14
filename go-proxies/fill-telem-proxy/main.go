@@ -37,7 +37,7 @@ func main() {
 	go func(ctx context.Context, grpcClient pb.FillStationTelemeterClient) {
 		for {
 
-			stream, err := grpcClient.StreamTelemetry(ctx, &pb.TelemetryRequest{})
+			stream, err := grpcClient.StreamTelemetry(ctx, &pb.FillStationTelemetryRequest{})
 			if err != nil {
 				log.Printf("could not receive stream: %v, retrying in 5 seconds...", err)
 				time.Sleep(5 * time.Second)
@@ -52,7 +52,7 @@ func main() {
 				}
 
 				// Store packet
-				datastore.Store(packet)
+				datastore.FillStationTelemetryStore(packet)
 			}
 		}
 	}(ctx, grpcClient)

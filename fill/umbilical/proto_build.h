@@ -13,7 +13,7 @@ using command::RocketUmbTelemetry;
 
 class RocketTelemetryProtoBuilder {
     private:
-        const char* usb_port = "PUT NAME HERE";
+        const char* usb_port = "/dev/ttyACM0";
 
         std::ifstream serial_data;
     public: 

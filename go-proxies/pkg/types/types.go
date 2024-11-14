@@ -78,7 +78,7 @@ func (d *Datastore) Init(ctx context.Context) {
 }
 
 // Store parses a packet and writes it to InfluxDB
-func (d *Datastore) Store(packet *pb.FillStationTelemetry) {
+func (d *Datastore) FillStationTelemetryStore(packet *pb.FillStationTelemetry) {
 	// Create tags map
 	tags := map[string]string{}
 
@@ -97,6 +97,85 @@ func (d *Datastore) Store(packet *pb.FillStationTelemetry) {
 	defer writeCancel()
 	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {
 		log.Println(err)
+	}
+}
+// Stores RocketTelemetry to InfluxDB 
+func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
+	// Create tags map
+	tags := map[string]string{}
+
+	// Create fields map
+	fields := map[string]interface{}{}
+
+    // Access Umb telemetry data if available
+    if packet.UmbTelem != nil {
+        umbTelem := packet.UmbTelem
+		fields["ms_since_boot"] = umbTelem.MsSinceBoot
+		fields["radio_state"] = umbTelem.RadioState
+        fields["transmit_state"] = umbTelem.TransmitState
+        fields["voltage"] = umbTelem.Voltage
+        fields["pt3"] = umbTelem.Pt3
+        fields["pt4"] = umbTelem.Pt4
+        fields["rtd_temp"] = umbTelem.RtdTemp
+
+		if umbTelem.Metadata != nil {
+			metaData := umbTelem.Metadata 
+			
+			// Tags have to be of type [string][string]
+			tags["alt_armed"] = fmt.Sprintf("%v", metaData.AltArmed)
+			tags["alt_valid"] = fmt.Sprintf("%v", metaData.AltValid)
+			tags["gps_valid"] = fmt.Sprintf("%v", metaData.GpsValid)
+			tags["imu_valid"] = fmt.Sprintf("%v", metaData.ImuValid)
+			tags["acc_valid"] = fmt.Sprintf("%v", metaData.AccValid)
+			tags["therm_valid"] = fmt.Sprintf("%v", metaData.ThermValid)
+			tags["voltage_valid"] = fmt.Sprintf("%v", metaData.VoltageValid)
+			tags["adc_valid"] = fmt.Sprintf("%v", metaData.AdcValid)
+			tags["fram_valid"] = fmt.Sprintf("%v", metaData.FramValid)
+			tags["sd_valid"] = fmt.Sprintf("%v", metaData.SdValid)
+			tags["gps_msg_valid"] = fmt.Sprintf("%v", metaData.GpsMsgValid)
+			tags["mav_state"] = fmt.Sprintf("%v", metaData.MavState)
+			tags["sv_state"] = fmt.Sprintf("%v", metaData.SvState)
+			tags["flight_mode"] = metaData.FlightMode.String()
+		}
+
+		if umbTelem.Events != nil {
+			events := umbTelem.Events 
+			fields["altitude_armed"] = events.AltitudeArmed
+			fields["altimeter_init_failed"] = events.AltimeterInitFailed
+			fields["altimeter_reading_failed"] = events.AltimeterReadingFailed
+			fields["gps_init_failed"] = events.GpsInitFailed
+			fields["gps_reading_failed"] = events.GpsReadingFailed
+			fields["imu_init_failed"] = events.ImuInitFailed
+			fields["imu_reading_failed"] = events.ImuReadingFailed
+			fields["accelerometer_init_failed"] = events.AccelerometerInitFailed
+			fields["accelerometer_reading_failed"] = events.AccelerometerReadingFailed
+			fields["thermometer_init_failed"] = events.ThermometerInitFailed
+			fields["thermometer_reading_failed"] = events.ThermometerReadingFailed
+			fields["voltage_init_failed"] = events.VoltageInitFailed
+			fields["voltage_reading_failed"] = events.VoltageReadingFailed
+			fields["adc_init_failed"] = events.AdcInitFailed
+			fields["adc_reading_failed"] = events.AdcReadingFailed
+			fields["fram_init_failed"] = events.FramInitFailed
+			fields["fram_write_failed"] = events.FramWriteFailed
+			fields["sd_init_failed"] = events.SdInitFailed
+			fields["sd_write_failed"] = events.SdWriteFailed
+			fields["mav_was_actuated"] = events.MavWasActuated
+			fields["sv_was_actuated"] = events.SvWasActuated
+			fields["main_deploy_wait_end"] = events.MainDeployWaitEnd
+			fields["main_log_shutoff"] = events.MainLogShutoff
+			fields["cycle_overflow"] = events.CycleOverflow
+			fields["invalid_command"] = events.InvalidCommand
+		}
+    }
+
+	if msSinceBoot, ok := fields["ms_since_boot"].(uint64); ok {
+		point := write.NewPoint("telemetry", tags, fields, time.Unix(int64(msSinceBoot), 0))
+		writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
+		defer writeCancel()
+	
+		if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {
+			log.Println(err)
+		}
 	}
 }
 

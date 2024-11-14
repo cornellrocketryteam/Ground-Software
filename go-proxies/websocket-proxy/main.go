@@ -155,7 +155,7 @@ func main() {
 // then stores it to InfluxDB and sends it to all active websocket connections.
 func HandlePacket(ctx context.Context, packet *pb.FillStationTelemetry, w *WebClients) {
 	// Write to InfluxDB
-	datastore.Store(packet)
+	datastore.FillStationTelemetryStore(packet)
 
 	marshaler := protojson.MarshalOptions{
 		EmitUnpopulated: true, // Include fields with zero values

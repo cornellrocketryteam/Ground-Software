@@ -1,5 +1,6 @@
 import FuelWidget from "@/components/widgets/fuel-widget";
 import GraphWidget from "@/components/widgets/graph-widget";
+import MonkeyWidget from "@/components/widgets/monkey-widget";
 
 import type { TelemetryChannel } from "@/lib/definitions";
 
@@ -19,5 +20,13 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "fuel",
     modes: ["3D Illustration"],
     component: FuelWidget,
+  },
+  {
+    id: "blims",
+    label: "BLiMS",
+    requiresAuth: false,
+    dbField: "blims",
+    modes: ["3D Illustration"],
+    component: MonkeyWidget,
   },
 ];

@@ -1,3 +1,4 @@
+import FuelWidget from "@/components/widgets/fuel-widget";
 import GraphWidget from "@/components/widgets/graph-widget";
 
 import type { TelemetryChannel } from "@/lib/definitions";
@@ -10,5 +11,13 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "sv1_cont",
     modes: ["Value", "15m Chart", "60m Chart"],
     component: GraphWidget,
+  },
+  {
+    id: "fuel",
+    label: "Fuel",
+    requiresAuth: false,
+    dbField: "fuel",
+    modes: ["3D Illustration"],
+    component: FuelWidget,
   },
 ];

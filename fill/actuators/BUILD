@@ -2,6 +2,7 @@ cc_library(
     name = "actuator",
     hdrs = ["actuator.h"],
     deps = [],
+    includes = ["/usr/local/lib"],
     visibility = [
         "//fill:__subpackages__",
         ],

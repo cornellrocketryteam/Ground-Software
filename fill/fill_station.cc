@@ -55,7 +55,7 @@ PT pt2 = PT(0x48, 2);
 /* Umblical Tools */
 RocketTelemetryProtoBuilder protoBuild;
 
-ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
+ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the fill station telemetry");
 
 FillStationTelemetry generateRandomTelemetry() {
     std::random_device rd;
@@ -121,15 +121,9 @@ class CommanderServiceImpl final : public Commander::Service
                 sv1.close();
             }
         }
-        if (request->sv2_close()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->mav_open()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->fire()){
-            // send TCP command to rocket_controller 
-        }
+        
+        protoBuild.sendCommand(request);
+
         return Status::OK;
     }
 };
@@ -140,6 +134,7 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
                        ServerWriter<FillStationTelemetry> *writer) override
     {
+        printf("Received initial connection point for the fill-station telemetry.\n");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
             FillStationTelemetry t = readTelemetry();
@@ -147,7 +142,6 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
                 // Broken stream
                 return Status::CANCELLED; 
             }
-            std::this_thread::sleep_until(now + std::chrono::milliseconds(1000));
         }
         return Status::OK;
     }
@@ -158,6 +152,7 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
                        ServerWriter<RocketTelemetry> *writer) override
     {
+        printf("Received initial connection point for the rocket telemetry.\n");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
             RocketTelemetry t = protoBuild.buildProto();
@@ -166,6 +161,7 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                 return Status::CANCELLED; 
             }
         }
+        return Status::OK;
     }
 };
 

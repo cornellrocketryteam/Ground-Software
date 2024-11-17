@@ -1,4 +1,4 @@
-// The telemetry_proxy program receives telemetry from the fill station over gRPC and serves it to web clients via WebSocket.
+// The telemetry_proxy program receives telemetry from the rocket umbilical from the fill station over gRPC and serves it to web clients via WebSocket.
 package main
 
 import (

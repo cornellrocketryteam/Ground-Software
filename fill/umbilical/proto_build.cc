@@ -1,19 +1,43 @@
 #include "proto_build.h"
+#include <iostream>
 
-RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(): serial_data(usb_port, std::ios::binary){}
+RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(): serial_data(usb_port, std::ios::in | std::ios::out | std::ios::binary){}
 
 RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
     serial_data.close();
 }
 
+void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
+    if (com->has_sv2_close()){
+        if (com->sv2_close()) {
+            serial_data << (uint8_t)CLOSE_SV << std::flush; 
+        } else {
+            serial_data << (uint8_t)OPEN_SV << std::flush; 
+        }
+    }
+
+    if (com->has_mav_open()){
+        if (com->mav_open()){
+            serial_data << (uint8_t)OPEN_MAV << std::flush; 
+        } else {
+            serial_data << (uint8_t)CLOSE_MAV << std::flush;
+        }
+    }
+
+    if (com->launch()){
+        serial_data << (uint8_t)LAUNCH << std::flush; 
+    }
+    // if (com->clear_sd()){
+    //     serial_data << (uint8_t)CLEAR_SD << std::flush;
+    // }
+}
+
 RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
-
-    if (!serial_data){
+     if (serial_data.is_open()){
         RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
         RocketMetadata* rocketMetadata = rocketUmbTelemetry->mutable_metadata();
         Events* events = rocketUmbTelemetry->mutable_events();
-        
 
         uint16_t metadata;
         uint32_t ms_since_boot; 
@@ -27,17 +51,20 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         float pt4; 
         float temp;
 
-        serial_data.read(reinterpret_cast<char*>(&metadata), sizeof(metadata));
-        serial_data.read(reinterpret_cast<char*>(&ms_since_boot), sizeof(ms_since_boot));
-        serial_data.read(reinterpret_cast<char*>(&events_val), sizeof(events_val));
+        char packet[28]; 
+        serial_data.getline(packet, UMB_PACKET_SIZE);
 
-        serial_data.read(reinterpret_cast<char*>(&radio_state), sizeof(radio_state));
-        serial_data.read(reinterpret_cast<char*>(&transmit_state), sizeof(transmit_state));
+        memcpy(&metadata, packet, sizeof(metadata));
+        memcpy(&ms_since_boot, packet + 2, sizeof(ms_since_boot));
+        memcpy(&events_val, packet + 6, sizeof(events_val));
 
-        serial_data.read(reinterpret_cast<char*>(&voltage), sizeof(voltage));
-        serial_data.read(reinterpret_cast<char*>(&pt3), sizeof(pt3));
-        serial_data.read(reinterpret_cast<char*>(&pt4), sizeof(pt4));
-        serial_data.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+        memcpy(&radio_state, packet + 10, sizeof(radio_state));
+        memcpy(&transmit_state, packet + 11, sizeof(transmit_state));
+
+        memcpy(&voltage, packet + 12, sizeof(voltage));
+        memcpy(&pt3, packet + 16, sizeof(pt3));
+        memcpy(&pt4, packet + 20, sizeof(pt4));
+        memcpy(&temp, packet + 24, sizeof(temp));
 
         rocketMetadata->set_alt_armed(static_cast<bool>(metadata & 0x1)); 
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata & 0x2) >> 1)); 
@@ -109,7 +136,7 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_rtd_temp(temp);
 
     } else {
-        printf("Serial port is not open.");
+        std::cout << "Serial port is not open.\n"; 
     }
     return rocketTelemetry;
 }

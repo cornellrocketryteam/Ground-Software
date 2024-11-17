@@ -64,27 +64,41 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    wsRef.current = new WebSocket("ws://localhost:8080/ws"); // Replace with your WebSocket server URL
+    const primaryUrl = "ws://localhost:8080/ws";
+    const fallbackUrl = "ws://10.48.59.182:8080/ws";
 
-    wsRef.current.onopen = () => {
-      console.log("WebSocket connection opened");
+    const connect = (url: string) => {
+      wsRef.current = new WebSocket(url);
+
+      wsRef.current.onopen = () => {
+        console.log("WebSocket connection opened:", url);
+      };
+
+      wsRef.current.onclose = (event) => {
+        console.log("WebSocket connection closed:", event.reason, event.code);
+      };
+
+      wsRef.current.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        if (url === primaryUrl) {
+          console.log(`Attempting fallback to ${fallbackUrl}`);
+          connect(fallbackUrl);
+
+        } else {
+          console.error("WebSocket connection failed permanently.")
+        }
+      };
     };
 
-    wsRef.current.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+    connect(primaryUrl);
 
-    wsRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    // Clean up on unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
     };
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
   useEffect(() => {
     if (wsRef.current) {

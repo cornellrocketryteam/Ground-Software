@@ -37,7 +37,8 @@ message Command {
     optional bool ignite = 5;
     optional bool sv2_close = 6;
     optional bool mav_open = 7;
-    optional bool fire = 8;
+    optional bool launch = 8;
+    // optional bool clear_sd = 9;
 }
 
 // The response message containing an ack

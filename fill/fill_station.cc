@@ -121,15 +121,9 @@ class CommanderServiceImpl final : public Commander::Service
                 sv1.close();
             }
         }
-        if (request->sv2_close()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->mav_open()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->fire()){
-            // send TCP command to rocket_controller 
-        }
+        
+        protoBuild.sendCommand(request);
+
         return Status::OK;
     }
 };

@@ -23,7 +23,7 @@ int wiringPiI2CReadReg8(int fd, int reg) {
 
 int wiringPiI2CReadReg16(int fd, int reg) {
     printf("[MOCK] wiringPiI2CReadReg16 called with fd: %d, reg: %d\n", fd, reg);
-    return 12345; // Example "correct" value
+    return 1234; // Example "correct" value
 }
 
 int wiringPiI2CReadBlockData(int fd, int reg, uint8_t *values, uint8_t size) {

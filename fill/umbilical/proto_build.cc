@@ -1,31 +1,60 @@
 #include "proto_build.h"
 #include <iostream>
 
-RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(): serial_data(usb_port, std::ios::in | std::ios::out | std::ios::binary){}
+RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(){
+    serial_data = open(usb_port, O_RDWR | O_NOCTTY | O_NDELAY);
+
+    struct termios options;
+    memset(&options, 0, sizeof(options)); // Clear the struct for safety
+    tcgetattr(serial_data, &options); // Get current port settings
+
+    // Set baud rate
+    cfsetispeed(&options, B9600); // Input baud rate
+    cfsetospeed(&options, B9600); // Output baud rate
+
+    // Configure other settings
+    options.c_cflag = (options.c_cflag & ~CSIZE) | CS8; // 8 data bits
+    options.c_cflag |= (CLOCAL | CREAD);               // Enable receiver
+    options.c_cflag &= ~(PARENB | PARODD);             // No parity
+    options.c_cflag &= ~CSTOPB;                        // 1 stop bit
+    options.c_cflag &= ~CRTSCTS;                       // Disable hardware flow control
+
+    options.c_iflag = IGNPAR;  // Ignore framing and parity errors
+    options.c_oflag = 0;       // Raw output
+    options.c_lflag = 0;       // Raw input
+
+    tcsetattr(serial_data, TCSANOW, &options); // Apply settings
+
+}
 
 RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
-    serial_data.close();
+    //serial_data.close();
 }
 
 void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     if (com->has_sv2_close()){
         if (com->sv2_close()) {
-            serial_data << (uint8_t)CLOSE_SV << std::flush; 
+            //serial_data << (uint8_t)CLOSE_SV << std::flush; 
+            char temp = CLOSE_SV;
+            write(serial_data, &temp, 1);
         } else {
-            serial_data << (uint8_t)OPEN_SV << std::flush; 
+            //serial_data << (uint8_t)OPEN_SV << std::flush; 
         }
     }
 
     if (com->has_mav_open()){
         if (com->mav_open()){
-            serial_data << (uint8_t)OPEN_MAV << std::flush; 
+            //serial_data << (uint8_t)OPEN_MAV << std::flush; 
         } else {
-            serial_data << (uint8_t)CLOSE_MAV << std::flush;
+            //serial_data << (uint8_t)CLOSE_MAV << std::flush;
         }
     }
 
     if (com->launch()){
-        serial_data << (uint8_t)LAUNCH << std::flush; 
+        //serial_data << (uint8_t)LAUNCH << std::flush; 
+        char temp = LAUNCH;
+        std::cout << "Launch command received. Character printed: " << temp << "\n";
+        write(serial_data, &temp, 1);
     }
     // if (com->clear_sd()){
     //     serial_data << (uint8_t)CLEAR_SD << std::flush;
@@ -34,7 +63,7 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
 
 RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
-     if (serial_data.is_open()){
+     //if (serial_data.is_open()){
         RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
         RocketMetadata* rocketMetadata = rocketUmbTelemetry->mutable_metadata();
         Events* events = rocketUmbTelemetry->mutable_events();
@@ -52,7 +81,8 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         float temp;
 
         char packet[28]; 
-        serial_data.getline(packet, UMB_PACKET_SIZE);
+        //serial_data.getline(packet, UMB_PACKET_SIZE);
+        read(serial_data, &packet, 28);
 
         memcpy(&metadata, packet, sizeof(metadata));
         memcpy(&ms_since_boot, packet + 2, sizeof(ms_since_boot));
@@ -135,8 +165,8 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(temp);
 
-    } else {
-        std::cout << "Serial port is not open.\n"; 
-    }
+    // } else {
+    //     std::cout << "Serial port is not open.\n"; 
+    // }
     return rocketTelemetry;
 }

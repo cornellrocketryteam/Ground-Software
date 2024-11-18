@@ -10,10 +10,12 @@
 
 #define UMB_PACKET_SIZE 28
 
-#include <fstream>
 #include "protos/command.grpc.pb.h"
 #include <iostream>
-
+#include <termios.h>    // POSIX terminal control definitions
+#include <unistd.h>     // UNIX standard function definitions
+#include <cstring>      // For memset
+#include <fcntl.h>      // File control definitions
 using command::RocketTelemetry;
 using command::RocketMetadata;
 using command::Events;
@@ -25,7 +27,7 @@ class RocketTelemetryProtoBuilder {
     private:
         const char* usb_port = "/dev/rocket";
 
-        std::fstream serial_data;
+        int serial_data;
     public: 
         // Establish serial connection 
         RocketTelemetryProtoBuilder();

@@ -1,4 +1,4 @@
-FROM node
+FROM node:22.11
 
 # Set destination for COPY
 WORKDIR /ground-server

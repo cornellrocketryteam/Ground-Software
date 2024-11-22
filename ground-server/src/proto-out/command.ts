@@ -176,13 +176,13 @@ export interface IMUTelemetry {
 }
 
 export interface RocketLoRaTelemetry {
-  metadata?: RocketMetadata | undefined;
+  metadata: RocketMetadata | undefined;
   msSinceBoot: number;
-  events?: Events | undefined;
+  events: Events | undefined;
   altitude: number;
-  gpsTelem?: GPSTelemetry | undefined;
-  imuTelem?: IMUTelemetry | undefined;
-  accelTelem?: AccelerometerTelemetry | undefined;
+  gpsTelem: GPSTelemetry | undefined;
+  imuTelem: IMUTelemetry | undefined;
+  accelTelem: AccelerometerTelemetry | undefined;
   temp: number;
   voltage: number;
   pt3: number;
@@ -191,9 +191,9 @@ export interface RocketLoRaTelemetry {
 }
 
 export interface RocketUmbTelemetry {
-  metadata?: RocketMetadata | undefined;
+  metadata: RocketMetadata | undefined;
   msSinceBoot: number;
-  events?: Events | undefined;
+  events: Events | undefined;
   radioState: boolean;
   transmitState: boolean;
   voltage: number;

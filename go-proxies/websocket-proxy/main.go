@@ -47,6 +47,7 @@ func (w *WebClients) Send(data []byte) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	for c := range w.clients {
+		log.Println("Writing data to all websocket connections.")
 		if err := c.WriteMessage(websocket.TextMessage, data); err != nil {
 			log.Println("Error writing message to WebSocket client:", err)
 			// Remove the connection from the map if there's an error

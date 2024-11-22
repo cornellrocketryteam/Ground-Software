@@ -18,7 +18,7 @@ void SolValve::open(){
     digitalWrite(SV_SIGNAL, HIGH);
     delay(150);
     pwmSetMode(PWM_MODE_MS);
-    pwmSetClock(2);
+    pwmSetClock(5);
     pwmSetRange(4096);
     pinMode(SV_SIGNAL, PWM_MS_OUTPUT);
     pwmWrite(SV_SIGNAL, 1707); 

@@ -11,12 +11,12 @@
 [MOCK] wiringPiSetupGpio called
 [MOCK] pinMode called, pin: 13, mode: 1
 [MOCK] digitalWrite called, pin: 13, value: 0
-setting up ADS with m_i2cAddress = 72
-[MOCK] wiringPiI2CSetup called with devId: 72
-m_i2cFd = 72
-setting up ADS with m_i2cAddress = 72
-[MOCK] wiringPiI2CSetup called with devId: 72
-m_i2cFd = 72
+setting up ADS with m_i2cAddress = 75
+[MOCK] wiringPiI2CSetup called with devId: 75
+m_i2cFd = 75
+setting up ADS with m_i2cAddress = 75
+[MOCK] wiringPiI2CSetup called with devId: 75
+m_i2cFd = 75
 Server listening on 0.0.0.0:50051
 [MOCK] pinMode called, pin: 13, mode: 1
 [MOCK] digitalWrite called, pin: 13, value: 1

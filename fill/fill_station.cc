@@ -46,8 +46,8 @@ BallValve ball_valve;
 SolValve sv1;
 
 /* Sensors */
-PT pt1 = PT(0x48, 3);
-PT pt2 = PT(0x48, 2);
+PT pt1 = PT(/*i2c_address=*/0x4b, /*adc_channel=*/3);
+PT pt2 = PT(/*i2c_address=*/0x4b, /*adc_channel=*/2);
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
 

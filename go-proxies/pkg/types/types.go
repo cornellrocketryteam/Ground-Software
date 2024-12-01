@@ -153,8 +153,10 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 func (d *Datastore) GetLastPoint() ([]byte, error) {
 	query := `from(bucket: "telemetry")
 		|> range(start: -2s, stop: 0s)
+		|> filter(fn: (r) => r["_measurement"] == "telemetry")
+		|> filter(fn: (r) => r["_field"] == "ign1_cont" or r["_field"] == "ign2_cont" or r["_field"] == "lc1" or r["_field"] == "pt1" or r["_field"] == "pt2" or r["_field"] == "pt3" or r["_field"] == "pt4" or r["_field"] == "rtd_temp" or r["_field"] == "sv1_cont")
 		|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
-	  	|> drop(columns: ["table", "_measurement", "_start", "_stop", "_time"])
+		|> drop(columns: ["table", "_measurement", "_start", "_stop", "_time"])
 		|> yield(name: "mean")`
 
 	results, err := d.queryAPI.Query(d.ctx, query)

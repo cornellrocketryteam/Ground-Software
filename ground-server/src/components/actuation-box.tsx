@@ -29,10 +29,13 @@ interface ActuationBoxProps {
   title: string;
   buttons: ButtonConfig[];
   initialStateLabel: string;
-  useSwitch?: boolean; // Introduced the useSwitch prop
+  useSwitch?: boolean;
   switchLabel?: string;
   switchOnCommand?: Command;
   switchOffCommand?: Command;
+  small?: boolean;   // For small size (vertical layout)
+  medium?: boolean;  // For medium size (scaled 0.75 internally)
+  compactLayout?: boolean; // Compact layout adjustments
 }
 
 export default function ActuationBox({
@@ -43,17 +46,18 @@ export default function ActuationBox({
   switchLabel = "",
   switchOnCommand,
   switchOffCommand,
+  small = false,
+  medium = false,
+  compactLayout = false,
 }: ActuationBoxProps) {
   const [currentState, setCurrentState] = useState<string | null>(null);
-  const [isOnState, setIsOnState] = useState<boolean | null>(null); // Track whether the current state is "on" or "off"
+  const [isOnState, setIsOnState] = useState<boolean | null>(null);
   const { toast } = useToast();
-  const [isSwitchOn, setIsSwitchOn] = useState<boolean>(true); // State for the switch
+  const [isSwitchOn, setIsSwitchOn] = useState<boolean>(true);
 
   const handleButtonClick = (button: ButtonConfig) => {
-    // Removed the check for switch state here
-
-    setCurrentState(button.stateLabel); // Update to the button's stateLabel
-    setIsOnState(button.isOn); // Set whether it's an "on" or "off" state
+    setCurrentState(button.stateLabel);
+    setIsOnState(button.isOn);
 
     sendCommand(button.command)
       .then((res) => {
@@ -61,11 +65,9 @@ export default function ActuationBox({
       })
       .catch((error) => {
         console.error("Error sending command", error);
-
         toast({
           title: "Command Error",
-          description:
-            "There was an error sending the command to the Fill Station. Please try again.",
+          description: "There was an error sending the command. Please try again.",
           variant: "destructive",
         });
       });
@@ -85,91 +87,187 @@ export default function ActuationBox({
           console.error("Error sending switch command", error);
           toast({
             title: "Command Error",
-            description:
-              "There was an error sending the command. Please try again.",
+            description: "There was an error sending the command. Please try again.",
             variant: "destructive",
           });
         });
     }
   };
 
+  const isSmall = small === true;
+  const isMedium = !isSmall && medium === true;
+  // const isDefault = !isSmall && !isMedium; // Not used directly, but could be for clarity
+
+  // Container classes
+  const containerClasses = isSmall
+    ? "border border-gray-300 p-4 rounded-lg flex flex-col items-center"
+    : isMedium
+    ? "border border-gray-300 p-8 rounded-lg flex flex-col items-center"
+    : "border border-gray-300 p-8 rounded-lg flex flex-col items-center";
+
+  // Title classes
+  const titleClasses = isSmall
+    ? "text-base font-bold mb-5 text-center"
+    : "text-lg font-bold mb-10 text-center";
+
+  // Layout classes
+  const layoutClasses = compactLayout
+    ? "flex items-center justify-between w-full space-x-4"
+    : isSmall
+    ? "flex flex-col items-center w-full space-y-3"
+    : "flex items-center justify-around w-full space-x-10";
+
+  // Button container classes
+  const buttonContainerClasses = compactLayout
+    ? "flex flex-col items-start space-y-2 w-1/2"
+    : isSmall
+    ? "flex flex-col items-center space-y-3"
+    : "flex flex-col items-center space-y-6";
+
+  // Button sizes
+  const buttonClasses = isSmall
+    ? "h-6 w-[6.5rem] text-base"
+    : "h-12 w-52 text-lg";
+
+  // State box classes
+  const stateBoxClasses = compactLayout
+    ? "h-[60px] w-[80px] text-sm font-bold flex items-center justify-center border"
+    : isSmall
+    ? "h-[50px] w-[75px] flex items-center justify-center text-base font-bold"
+    : "h-[100px] w-[150px] flex items-center justify-center text-lg font-bold";
+
+  // Switch wrapper classes
+  const switchWrapperClasses = compactLayout
+    ? "flex items-center space-x-2 mt-2"
+    : isSmall
+    ? "flex items-center space-x-1 mt-2 transform scale-75"
+    : "flex items-center space-x-2 mt-4";
+
+  // Switch label classes
+  const switchLabelClasses = isSmall ? "text-xs font-medium" : "text-sm font-medium";
+
+  // For medium layout scaling of interior elements only (not border)
+  const contentWrapperStart = isMedium ? <div className="transform scale-75 origin-center"> : <></>;
+  const contentWrapperEnd = isMedium ? </div> : <></>;
+
   return (
-    <div className="border border-gray-300 p-8 rounded-lg flex flex-col items-center">
+    <div className={containerClasses}>
+      {contentWrapperStart}
       {/* Title */}
-      <h2 className="text-lg font-bold mb-10 text-center">{title}</h2>
+      <h2 className={titleClasses}>{title}</h2>
 
-      <div className="flex items-center justify-around w-full space-x-10">
-        {/* Buttons and Switch Section */}
-        <div className="flex flex-col items-center space-y-6">
-          {/* Buttons Section */}
-          {buttons.map((button, index) => (
-            <AlertDialog key={index}>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="default"
-                  className="h-12 w-52 text-lg"
-                  // Removed the disabled prop
-                >
-                  {button.label}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="max-w-lg p-4">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {button.label} {title}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to {button.label} the {title}?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => handleButtonClick(button)}
-                  >
-                    Yes, {button.label}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ))}
+      {isSmall ? (
+        // Vertical layout for small
+        <div className={layoutClasses}>
+          {/* Buttons */}
+          <div className={buttonContainerClasses}>
+            {buttons.map((button, index) => (
+              <AlertDialog key={index}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" className={buttonClasses}>
+                    {button.label}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="max-w-lg p-4">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {button.label} {title}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to {button.label} the {title}?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleButtonClick(button)}>
+                      Yes, {button.label}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ))}
+          </div>
 
-          {/* Render the switch if useSwitch is false */}
-          {useSwitch === false && (
-            <div className="flex items-center space-x-2 mt-4">
-              <Switch
-                id={`switch-${title}`}
-                checked={isSwitchOn}
-                onCheckedChange={handleSwitchChange}
-              />
-              <label htmlFor={`switch-${title}`} className="text-sm font-medium">
-                {switchLabel}
-              </label>
+          {/* State below buttons */}
+          <div className="flex flex-col items-center">
+            <h4 className="text-xs font-medium mb-1 text-center">Current State</h4>
+            <div
+              className={`${stateBoxClasses} ${
+                isOnState === true
+                  ? "bg-green-500 text-white"
+                  : isOnState === false
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-300 dark:bg-gray-800"
+              }`}
+            >
+              {currentState || initialStateLabel}
             </div>
-          )}
-        </div>
-
-        {/* State Section */}
-        <div>
-          <h4 className="text-sm font-medium mb-2 text-center">
-            Current State
-          </h4>
-          <div
-            className={`h-[100px] w-[150px] flex items-center justify-center text-lg font-bold ${
-              isOnState === true
-                ? "bg-green-500 text-white"
-                : isOnState === false
-                ? "bg-red-500 text-white"
-                : "bg-gray-300 dark:bg-gray-800"
-            }`}
-          >
-            {currentState || initialStateLabel}
           </div>
         </div>
-      </div>
+      ) : (
+        // Horizontal layout for medium/default
+        <div className={layoutClasses}>
+          {/* Buttons */}
+          <div className={buttonContainerClasses}>
+            {buttons.map((button, index) => (
+              <AlertDialog key={index}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default" className={buttonClasses}>
+                    {button.label}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="max-w-lg p-4">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {button.label} {title}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to {button.label} the {title}?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleButtonClick(button)}>
+                      Yes, {button.label}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ))}
+          </div>
 
-      {/* Extra Spacing at the bottom */}
-      <div className="mt-8"></div>
+          {/* Current State */}
+          <div>
+            <h4 className="text-sm font-medium mb-2 text-center">Current State</h4>
+            <div
+              className={`${stateBoxClasses} ${
+                isOnState === true
+                  ? "bg-green-500 text-white"
+                  : isOnState === false
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-300 dark:bg-gray-800"
+              }`}
+            >
+              {currentState || initialStateLabel}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Optional Switch */}
+      {useSwitch && (
+        <div className={switchWrapperClasses}>
+          <Switch
+            id={`switch-${title}`}
+            checked={isSwitchOn}
+            onCheckedChange={handleSwitchChange}
+          />
+          <span className={switchLabelClasses}>{switchLabel}</span>
+        </div>
+      )}
+
+      {/* Extra Spacing */}
+      <div className={isSmall ? "mt-4" : "mt-8"}></div>
     </div>
   );
 }

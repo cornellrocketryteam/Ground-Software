@@ -24,6 +24,7 @@ export default async function Controls() {
               },
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
 
           <ActuationBox
@@ -37,6 +38,7 @@ export default async function Controls() {
               },
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
 
           <ActuationBox
@@ -56,6 +58,7 @@ export default async function Controls() {
               },
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
 
           <ActuationBox
@@ -63,19 +66,19 @@ export default async function Controls() {
             buttons={[
               {
                 label: "Open",
-                stateLabel: "Opened",
+                stateLabel: "Opening",
                 command: { bv1Open: true },
                 isOn: true,
               },
               {
                 label: "Close",
-                stateLabel: "Closed",
+                stateLabel: "Closing",
                 command: { bv1Open: false },
                 isOn: false,
               },
             ]}
             initialStateLabel="No Data"
-            useSwitch={false}
+            useSwitch={true}
             switchLabel="Ball Valve On/Off"
             switchOnCommand={{ bv1Off: false }}
             switchOffCommand={{ bv1Off: true }}
@@ -99,6 +102,7 @@ export default async function Controls() {
               },
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
 
           <ActuationBox
@@ -118,6 +122,7 @@ export default async function Controls() {
               },
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
 
           <ActuationBox
@@ -137,6 +142,7 @@ export default async function Controls() {
               }
             ]}
             initialStateLabel="No Data"
+            useSwitch={false}
           />
         </div>
       </div>

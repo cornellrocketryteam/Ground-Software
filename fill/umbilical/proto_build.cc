@@ -1,19 +1,116 @@
 #include "proto_build.h"
+#include <iostream>
 
-RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(): serial_data(usb_port, std::ios::binary){}
+bool RocketTelemetryProtoBuilder::is_fd_open(int fd) {
+    int flags = fcntl(fd, F_GETFL);
+    return (flags != -1 || errno != EBADF);
+}
+
+ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t max_size) {
+    size_t index = 0;  // Current position in the packet
+    char byte;         // Single byte buffer
+    ssize_t bytesRead;
+
+    while (index < max_size) {  
+        bytesRead = read(fd, &byte, 1);  // Read one byte at a time
+
+        if (bytesRead < 0) {
+            return -1;
+        }
+
+        if (bytesRead == 0) {
+            // End of file reached
+            break;
+        }
+
+        // Append the byte to the packet
+        packet[index++] = byte;
+
+        // Stop if newline is found
+        if (byte == '\n') {
+            break;
+        }
+    }
+
+    return index;  // Return the number of bytes read
+}
+
+RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(){
+    if ((serial_data = open ("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
+        //std::cout << "Error opening /dev/rocket." << std::endl;
+    }
+
+    fcntl (serial_data, F_SETFL, O_RDWR) ;
+
+    struct termios tty;
+    memset(&tty, 0, sizeof(tty));
+
+    // if (tcgetattr(serial_data, &tty) != 0) {
+    //     std::cerr << "Error getting termios attributes." << std::endl;
+    //     close(serial_data);
+    // }
+
+    cfsetospeed(&tty, B9600); // Baud Rate
+    cfsetispeed(&tty, B9600);
+
+    tty.c_cflag &= ~PARENB;
+    tty.c_cflag &= ~CSTOPB;
+    tty.c_cflag &= ~CSIZE;
+    tty.c_cflag |= CS8;
+    tty.c_cflag &= ~CRTSCTS;
+    tty.c_cflag |= CREAD | CLOCAL;
+
+    tty.c_lflag &= ~ICANON;
+    tty.c_lflag &= ~ECHO;
+    tty.c_lflag &= ~ECHOE;
+    tty.c_lflag &= ~ECHONL;
+    tty.c_lflag &= ~ISIG;
+
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY);
+    tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL);
+
+    tty.c_oflag &= ~OPOST;
+
+    tty.c_cc[VMIN] = 0;
+    tty.c_cc[VTIME] = 10;
+
+    usleep(10); 
+}
 
 RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
-    serial_data.close();
+    close(serial_data);
+}
+
+void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
+    if (com->has_sv2_close()){
+        if (com->sv2_close()) {
+            write(serial_data, (const void *)CLOSE_SV, 1);
+        } else {
+            write(serial_data, (const void *)OPEN_SV, 1);
+        }
+    }
+
+    if (com->has_mav_open()){
+        if (com->mav_open()){
+            write(serial_data, (const void *)OPEN_MAV, 1);
+        } else {     
+            write(serial_data, (const void *)CLOSE_SV, 1);
+        }
+    }
+
+    if (com->launch()){
+        write(serial_data, (const void *)LAUNCH, 1);
+    }
+
+    // TODO: Implement com->clear_sd() case when ground server is done implementing it     
 }
 
 RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
-
-    if (!serial_data){
+     if (is_fd_open(serial_data)){
         RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
         RocketMetadata* rocketMetadata = rocketUmbTelemetry->mutable_metadata();
         Events* events = rocketUmbTelemetry->mutable_events();
-        
 
         uint16_t metadata;
         uint32_t ms_since_boot; 
@@ -27,17 +124,28 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         float pt4; 
         float temp;
 
-        serial_data.read(reinterpret_cast<char*>(&metadata), sizeof(metadata));
-        serial_data.read(reinterpret_cast<char*>(&ms_since_boot), sizeof(ms_since_boot));
-        serial_data.read(reinterpret_cast<char*>(&events_val), sizeof(events_val));
+        char packet[UMB_PACKET_SIZE]; 
 
-        serial_data.read(reinterpret_cast<char*>(&radio_state), sizeof(radio_state));
-        serial_data.read(reinterpret_cast<char*>(&transmit_state), sizeof(transmit_state));
+        int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
+        if (status == -1 || status < UMB_PACKET_SIZE - 1){
+            // This means we did not read enough bytes 
 
-        serial_data.read(reinterpret_cast<char*>(&voltage), sizeof(voltage));
-        serial_data.read(reinterpret_cast<char*>(&pt3), sizeof(pt3));
-        serial_data.read(reinterpret_cast<char*>(&pt4), sizeof(pt4));
-        serial_data.read(reinterpret_cast<char*>(&temp), sizeof(temp));
+            return rocketTelemetry; // Is this correct?? 
+        }
+        // For Debugging 
+        std::cout << "Packet: \n" << packet << std::endl;
+
+        memcpy(&metadata, packet, sizeof(metadata));
+        memcpy(&ms_since_boot, packet + 2, sizeof(ms_since_boot));
+        memcpy(&events_val, packet + 6, sizeof(events_val));
+
+        memcpy(&radio_state, packet + 10, sizeof(radio_state));
+        memcpy(&transmit_state, packet + 11, sizeof(transmit_state));
+
+        memcpy(&voltage, packet + 12, sizeof(voltage));
+        memcpy(&pt3, packet + 16, sizeof(pt3));
+        memcpy(&pt4, packet + 20, sizeof(pt4));
+        memcpy(&temp, packet + 24, sizeof(temp));
 
         rocketMetadata->set_alt_armed(static_cast<bool>(metadata & 0x1)); 
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata & 0x2) >> 1)); 
@@ -109,7 +217,7 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_rtd_temp(temp);
 
     } else {
-        printf("Serial port is not open.");
+        std::cout << "Serial port is not open.\n"; 
     }
     return rocketTelemetry;
 }

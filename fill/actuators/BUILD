@@ -6,6 +6,7 @@ cc_library(
     visibility = [
         "//fill:__subpackages__",
         ],
+    linkopts = ["-L/usr/local/lib"],
 )
 
 cc_library(

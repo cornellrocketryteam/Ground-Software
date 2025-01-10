@@ -1,4 +1,4 @@
-""" Toolchain for cross-compiling x86 linux (e.g. WSL) to arm linux (e.g. Raspi) """
+""" Toolchain for cross-compiling from aarch64 osx to arm linux (e.g. Raspi) """
 
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
@@ -19,7 +19,7 @@ def _impl(ctx):
     tool_paths = [
         tool_path(
             name = "gcc",
-            path = "/usr/bin/arm-linux-gnueabihf-gcc-11",
+            path = "/opt/homebrew/bin/aarch64-unknown-linux-gnu-gcc-13.3.0",
         ),
         tool_path(
             name = "ld",
@@ -27,7 +27,7 @@ def _impl(ctx):
         ),
         tool_path(
             name = "ar",
-            path = "/usr/bin/arm-linux-gnueabihf-gcc-ar-11",
+            path = "/opt/homebrew/bin/aarch64-unknown-linux-gnu-gcc-ar",
         ),
         tool_path(
             name = "cpp",
@@ -74,16 +74,18 @@ def _impl(ctx):
         ctx = ctx,
         features = features,
         cxx_builtin_include_directories = [
-            "/usr/lib/gcc-cross/arm-linux-gnueabihf/11/include",
-            "/usr/arm-linux-gnueabihf/include",
+            "/opt/homebrew/Cellar/aarch64-unknown-linux-gnu/13.3.0/toolchain/aarch64-unknown-linux-gnu/sysroot/usr/include/",
+            "/opt/homebrew/Cellar/aarch64-unknown-linux-gnu/13.3.0/toolchain/lib/gcc/aarch64-unknown-linux-gnu/13.3.0/include/",
+            "/opt/homebrew/Cellar/aarch64-unknown-linux-gnu/13.3.0/toolchain/aarch64-unknown-linux-gnu/include/c++/13.3.0", 
             "/usr/include",
+            "/opt/homebrew/include", 
         ],
         toolchain_identifier = "local",
         host_system_name = "local",
         target_system_name = "local",
         target_cpu = "aarch64",
         target_libc = "unknown",
-        compiler = "arm-linux-gnueabihf-gcc-11",
+        compiler = "aarch64-unknown-linux-gnu-gcc-13.3.0",
         abi_version = "unknown",
         abi_libc_version = "unknown",
         tool_paths = tool_paths,

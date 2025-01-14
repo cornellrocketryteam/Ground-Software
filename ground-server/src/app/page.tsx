@@ -64,33 +64,21 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const primaryUrl = "ws://localhost:8080/ws";
-    const fallbackUrl = "ws://10.48.59.182:8080/ws";
+    const url = process.env.NODE_ENV === "production" ? "ws://10.48.59.182:8080/ws" : "ws://localhost:8080/ws"
 
-    const connect = (url: string) => {
-      wsRef.current = new WebSocket(url);
+    wsRef.current = new WebSocket(url);
 
-      wsRef.current.onopen = () => {
-        console.log("WebSocket connection opened:", url);
-      };
-
-      wsRef.current.onclose = (event) => {
-        console.log("WebSocket connection closed:", event.reason, event.code);
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        if (url === primaryUrl) {
-          console.log(`Attempting fallback to ${fallbackUrl}`);
-          connect(fallbackUrl);
-
-        } else {
-          console.error("WebSocket connection failed permanently.")
-        }
-      };
+    wsRef.current.onopen = () => {
+      console.log("WebSocket connection opened:", url);
     };
 
-    connect(primaryUrl);
+    wsRef.current.onclose = (event) => {
+      console.log("WebSocket connection closed:", event.reason, event.code);
+    };
+
+    wsRef.current.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
 
     return () => {
       if (wsRef.current) {

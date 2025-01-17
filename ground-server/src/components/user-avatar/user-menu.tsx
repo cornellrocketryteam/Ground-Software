@@ -35,7 +35,7 @@ export default function UserMenu() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-34">
-        <DropdownMenuLabel>{session?.user?.name}</DropdownMenuLabel>
+        <DropdownMenuLabel>{session!.user!.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Settings</DropdownMenuItem>
         <DropdownMenuItem className="text-red-600" onClick={signOutClicked}>

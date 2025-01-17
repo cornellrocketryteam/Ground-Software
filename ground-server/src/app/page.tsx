@@ -188,6 +188,10 @@ export default function Home() {
           return prevLayout;
         });
 
+        // 1. Better error handling
+        // 2. Ties into telemetry right away
+        // 3. Store mode
+
         localStorage.setItem("layouts", JSON.stringify(newLayout));
         localStorage.setItem("channels", JSON.stringify(channels.map((c) => {
           return {

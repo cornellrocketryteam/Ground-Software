@@ -8,6 +8,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "pt1_pressure",
     label: "Pressure Transducer 1",
+    unit: "psi",
     requiresAuth: false,
     dbField: "pt1",
     modes: ["Value", "15m Chart", "60m Chart"],
@@ -16,6 +17,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "pt2_pressure",
     label: "Pressure Transducer 2",
+    unit: "psi",
     requiresAuth: false,
     dbField: "pt2",
     modes: ["Value", "15m Chart", "60m Chart"],
@@ -24,13 +26,14 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "lc1",
     label: "Load Cell 1",
+    unit: "lbf",
     requiresAuth: false,
     dbField: "lc1",
     modes: ["Value", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
-    id: "ign1Cont",
+    id: "ign1_cont",
     label: "Igniter 1 Continuity",
     requiresAuth: false,
     dbField: "ign1Cont",
@@ -38,7 +41,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     component: GraphWidget,
   },
   {
-    id: "ign2Cont",
+    id: "ign2_cont",
     label: "Igniter 2 Continuity",
     requiresAuth: false,
     dbField: "ign2Cont",
@@ -48,6 +51,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "pt3_pressure",
     label: "Pressure Transducer 3",
+    unit: "psi",
     requiresAuth: false,
     dbField: "pt3",
     modes: ["Value", "15m Chart", "60m Chart"],
@@ -56,6 +60,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "pt4_pressure",
     label: "Pressure Transducer 4",
+    unit: "psi",
     requiresAuth: false,
     dbField: "pt4",
     modes: ["Value", "15m Chart", "60m Chart"],
@@ -64,6 +69,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "rtd_temp",
     label: "RTD Temp",
+    unit: "C",
     requiresAuth: false,
     dbField: "rtdTemp",
     modes: ["Value", "15m Chart", "60m Chart"],
@@ -84,5 +90,29 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "blims",
     modes: ["3D Illustration"],
     component: MonkeyWidget,
+  },
+  {
+    id: "flight_mode",
+    label: "Flight Mode",
+    requiresAuth: false,
+    dbField: "flightMode",
+    modes: ["Value"],
+    component: GraphWidget,
+  },
+  {
+    id: "mav_state",
+    label: "MAV State",
+    requiresAuth: false,
+    dbField: "mavState",
+    modes: ["Value"],
+    component: GraphWidget,
+  },
+  {
+    id: "sv2_state",
+    label: "SV2 State",
+    requiresAuth: false,
+    dbField: "sv2State",
+    modes: ["Value"],
+    component: GraphWidget,
   },
 ];

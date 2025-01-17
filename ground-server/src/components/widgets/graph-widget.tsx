@@ -99,9 +99,10 @@ export default function GraphWidget({ mode, channel, data }: WidgetProps) {
     const latestValue = data[data.length - 1].value.toFixed(3);
 
     return (
-      <p className="w-full h-full flex justify-center items-center font-semibold text-2xl">
-        {latestValue} {channel.unit || ""}
-      </p>
+      <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+        <p className="font-semibold text-lg">{channel.label}</p>
+        <p className="font-normal text-2xl">{latestValue} {channel.unit || ""}</p>
+      </div>
     );
   }
 

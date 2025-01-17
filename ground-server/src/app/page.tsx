@@ -3,7 +3,7 @@
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { WidthProvider, Responsive, type Layout } from "react-grid-layout";
 
 import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
@@ -13,6 +13,7 @@ import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
 import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
 import { PresetSelector } from "@/components/dashboard/preset-selector";
 
+import { useWebSocket } from "@/contexts/websocket-context";
 import { type DataPoint, type TelemetryChannel } from "@/lib/definitions";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
@@ -36,7 +37,7 @@ export default function Home() {
       data: DataPoint[];
     }[]
   >([]);
-  const wsRef = useRef<WebSocket | null>(null); // Store the WebSocket instance
+  const ws = useWebSocket();
 
   // Load layouts and channels from localStorage on mount
   useEffect(() => {
@@ -48,14 +49,16 @@ export default function Home() {
       setLayouts(parsedLayouts);
 
       const parsedChannels = JSON.parse(storedChannels);
-      const channels = parsedChannels.map((channel: { id: string, channel_id: string }) => ({
-        id: channel.id,
-        channel: TELEMETRY_CHANNELS.find((c) => c.id === channel.channel_id)!,
-      }));
+      const channels = parsedChannels.map(
+        (channel: { id: string; channel_id: string }) => ({
+          id: channel.id,
+          channel: TELEMETRY_CHANNELS.find((c) => c.id === channel.channel_id)!,
+        })
+      );
       setChannels(channels);
 
       // Initialize data for each channel
-      const initialData = parsedChannels.map((channel: { id: string; }) => ({
+      const initialData = parsedChannels.map((channel: { id: string }) => ({
         id: channel.id,
         data: [],
       }));
@@ -64,34 +67,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const url = process.env.NODE_ENV === "production" ? "ws://10.48.59.182:8080/ws" : "ws://localhost:8080/ws"
-
-    wsRef.current = new WebSocket(url);
-
-    wsRef.current.onopen = () => {
-      console.log("WebSocket connection opened:", url);
-    };
-
-    wsRef.current.onclose = (event) => {
-      console.log("WebSocket connection closed:", event.reason, event.code);
-    };
-
-    wsRef.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (wsRef.current) {
-      wsRef.current.onmessage = (event) => {
+    if (ws.ws) {
+      ws.ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
+        console.log(message);
 
         if (message.historical) {
           // Historical data
@@ -161,45 +140,48 @@ export default function Home() {
         }
       };
     }
-  }, [channels]);
+  }, [ws.ws, channels]);
 
   const onLayoutChange = (layout: Layout[]) => {
     setLayouts((prevLayouts) => {
-        const newLayout = prevLayouts.map((prevLayout) => {
-          const updatedLayout = layout.find((l) => l.i === prevLayout.id);
-          if (updatedLayout) {
-            return {
-              id: prevLayout.id,
-              layout: updatedLayout,
-            };
-          }
-          return prevLayout;
-        });
-
-        // 1. Better error handling
-        // 2. Ties into telemetry right away
-        // 3. Store mode
-
-        localStorage.setItem("layouts", JSON.stringify(newLayout));
-        localStorage.setItem("channels", JSON.stringify(channels.map((c) => {
+      const newLayout = prevLayouts.map((prevLayout) => {
+        const updatedLayout = layout.find((l) => l.i === prevLayout.id);
+        if (updatedLayout) {
           return {
-            id: c.id,
-            channel_id: c.channel.id
-          }
-        }))); 
+            id: prevLayout.id,
+            layout: updatedLayout,
+          };
+        }
+        return prevLayout;
+      });
 
-        return newLayout;
-      }
-    );
+      // 1. Better error handling
+      // 2. Ties into telemetry right away
+      // 3. Store mode
 
+      localStorage.setItem("layouts", JSON.stringify(newLayout));
+      localStorage.setItem(
+        "channels",
+        JSON.stringify(
+          channels.map((c) => {
+            return {
+              id: c.id,
+              channel_id: c.channel.id,
+            };
+          })
+        )
+      );
+
+      return newLayout;
+    });
   };
 
   const children = useMemo(() => {
     const onWidgetModeChange = (widgetId: string, newMode: string) => {
       const channel = channels.find((channel) => channel.id === widgetId)!;
       if (channel.id === widgetId && newMode === "15m Chart") {
-        if (wsRef.current) {
-          wsRef.current.send(
+        if (ws.ws) {
+          ws.ws.send(
             JSON.stringify({
               start: -15,
               stop: 0,
@@ -212,8 +194,8 @@ export default function Home() {
           );
         }
       } else if (channel.id === widgetId && newMode === "60m Chart") {
-        if (wsRef.current) {
-          wsRef.current.send(
+        if (ws.ws) {
+          ws.ws.send(
             JSON.stringify({
               start: -60,
               stop: 0,
@@ -251,7 +233,7 @@ export default function Home() {
         />
       );
     });
-  }, [channels, data]);
+  }, [ws.ws, channels, data]);
 
   return (
     <div>

@@ -22,7 +22,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   // Create the WebSocket connection once on mount
   useEffect(() => {
     // Adjust your WebSocket URL as needed
-    const url = "ws://10.48.59.182:8080/ws";
+    const url = "ws://192.168.1.200:8080/ws";
 
     // Create and store the WebSocket instance
     const socket = new WebSocket(url);

@@ -3,7 +3,7 @@ FROM ubuntu:22.04 AS run
 
 ARG TARGETARCH
 
-# Install necessary 32-bit libraries (replace with actual dependencies)
+# Install necessary 32-bit libraries
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
         dpkg --add-architecture armhf && apt-get update && apt-get install -y \
             libc6:armhf \

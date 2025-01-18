@@ -12,13 +12,13 @@ package command;
 // The telemetry service definition
 service FillStationTelemeter {
     // Sends telemetry
-    rpc StreamTelemetry (TelemetryRequest) returns (stream FillStationTelemetry) {}
+    rpc StreamTelemetry (FillStationTelemetryRequest) returns (stream FillStationTelemetry) {}
 }
 
 // The telemetry service definition
 service RocketTelemeter {
     // Sends telemetry
-    rpc StreamTelemetry (TelemetryRequest) returns (stream RocketTelemetry) {}
+    rpc StreamTelemetry (RocketTelemetryRequest) returns (stream RocketTelemetry) {}
 }
 
 // The commanding service definition
@@ -37,7 +37,8 @@ message Command {
     optional bool ignite = 5;
     optional bool sv2_close = 6;
     optional bool mav_open = 7;
-    optional bool fire = 8;
+    optional bool launch = 8;
+    // optional bool clear_sd = 9;
 }
 
 // The response message containing an ack
@@ -45,7 +46,12 @@ message Command {
 message CommandReply {}
 
 // The telemetry request message
-message TelemetryRequest {}
+message FillStationTelemetryRequest {}
+
+// Rocket Telemetry Request 
+message RocketTelemetryRequest {
+    bool isRocketTelemetryRequest = 1;
+}
 
 enum FlightMode {
     STARTUP = 0;
@@ -57,27 +63,31 @@ enum FlightMode {
 }
 
 message Events {
-    bool key_armed = 1;
-    bool altitude_armed = 2;
-    bool altimeter_init_failed = 3;
-    bool altimeter_reading_failed = 4;
-    bool altimeter_was_turned_off = 5;
-    bool gps_init_failed = 6;
-    bool gps_reading_failed = 7;
-    bool gps_was_turned_off = 8;
-    bool imu_init_failed = 9;
-    bool imu_reading_failed = 10;
-    bool imu_was_turned_off = 11;
-    bool accelerometer_init_failed = 12;
-    bool accelerometer_reading_failed = 13;
-    bool accelerometer_was_turned_off = 14;
-    bool thermometer_init_failed = 15;
-    bool thermometer_reading_failed = 16;
-    bool thermometer_was_turned_off = 17;
+    bool altitude_armed = 1;
+    bool altimeter_init_failed = 2;
+    bool altimeter_reading_failed = 3;
+    bool gps_init_failed = 4;
+    bool gps_reading_failed = 5;
+    bool imu_init_failed = 6;
+    bool imu_reading_failed = 7;
+    bool accelerometer_init_failed = 8;
+    bool accelerometer_reading_failed = 9;
+    bool thermometer_init_failed = 10;
+    bool thermometer_reading_failed = 11;
+    bool voltage_init_failed = 12;
+    bool voltage_reading_failed = 13;
+    bool adc_init_failed = 14;
+    bool adc_reading_failed = 15; 
+    bool fram_init_failed = 16;
+    bool fram_write_failed = 17; 
     bool sd_init_failed = 18;
     bool sd_write_failed = 19;
-    bool rfm_init_failed = 20;
-    bool rfm_transmit_failed = 21;
+    bool mav_was_actuated = 20; 
+    bool sv_was_actuated = 21; 
+    bool main_deploy_wait_end = 22;
+    bool main_log_shutoff = 23;
+    bool cycle_overflow = 24; 
+    bool invalid_command = 25; 
 }
 
 message RocketMetadata {

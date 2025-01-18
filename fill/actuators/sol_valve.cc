@@ -11,8 +11,6 @@ SolValve::SolValve(){
 
 SolValve::~SolValve(){}
 
-
-
 void SolValve::open(){
     pinMode(SV_SIGNAL, OUTPUT);
     digitalWrite(SV_SIGNAL, HIGH);
@@ -38,5 +36,3 @@ void SolValve::close(){
     digitalWrite(SV_SIGNAL, LOW);
     isOpen=false;
 }
-
-

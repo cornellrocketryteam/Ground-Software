@@ -14,7 +14,7 @@ COPY . .
 RUN bazelisk build //fill:all
 
 # Stage 2: Create lightweight runtime image
-FROM ubuntu
+FROM ubuntu:22.04
 
 # Set the working directory
 WORKDIR /app

@@ -12,6 +12,7 @@
 #include "actuators/sol_valve.h"
 
 #include "sensors/pt.h"
+#include "umbilical/proto_build.h"
 
 #include "wiringPi.h"
 
@@ -31,7 +32,10 @@ using command::Commander;
 using command::FillStationTelemeter;
 using command::CommandReply;
 using command::FillStationTelemetry;
-using command::TelemetryRequest;
+using command::FillStationTelemetryRequest;
+using command::RocketTelemetryRequest;
+using command::RocketTelemetry;
+using command::RocketTelemeter;
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Server;
@@ -48,8 +52,10 @@ SolValve sv1;
 /* Sensors */
 PT pt1 = PT(0x48, 3);
 PT pt2 = PT(0x48, 2);
+/* Umblical Tools */
+RocketTelemetryProtoBuilder protoBuild;
 
-ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the service");
+ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the fill station telemetry");
 
 FillStationTelemetry generateRandomTelemetry() {
     std::random_device rd;
@@ -115,15 +121,9 @@ class CommanderServiceImpl final : public Commander::Service
                 sv1.close();
             }
         }
-        if (request->sv2_close()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->mav_open()){
-            // send TCP command to rocket_controller 
-        }
-        if (request->fire()){
-            // send TCP command to rocket_controller 
-        }
+        
+        protoBuild.sendCommand(request);
+
         return Status::OK;
     }
 };
@@ -131,9 +131,10 @@ class CommanderServiceImpl final : public Commander::Service
 // Fill Station service to stream telemetry.
 class TelemeterServiceImpl final : public FillStationTelemeter::Service
 {
-    Status StreamTelemetry(ServerContext *context, const TelemetryRequest *request,
+    Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
                        ServerWriter<FillStationTelemetry> *writer) override
     {
+        printf("Received initial connection point for the fill-station telemetry.\n");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
             FillStationTelemetry t = readTelemetry();
@@ -141,7 +142,24 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
                 // Broken stream
                 return Status::CANCELLED; 
             }
-            std::this_thread::sleep_until(now + std::chrono::milliseconds(1000));
+        }
+        return Status::OK;
+    }
+};
+
+class RocketTelemeterServiceImpl final : public RocketTelemeter::Service 
+{
+    Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
+                       ServerWriter<RocketTelemetry> *writer) override
+    {
+        printf("Received initial connection point for the rocket telemetry.\n");
+        while (true) {
+            auto now = std::chrono::high_resolution_clock::now();
+            RocketTelemetry t = protoBuild.buildProto();
+            if (!writer->Write(t)) {
+                // Broken stream
+                return Status::CANCELLED; 
+            }
         }
         return Status::OK;
     }
@@ -153,6 +171,7 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
     CommanderServiceImpl commander_service;
     TelemeterServiceImpl telemeter_service;
+    RocketTelemeterServiceImpl rocket_telemeter_service; 
 
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
@@ -162,6 +181,7 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     // Register services.
     builder.RegisterService(&commander_service);
     builder.RegisterService(&telemeter_service);
+    builder.RegisterService(&rocket_telemeter_service);
     // Finally assemble the server.
     server = builder.BuildAndStart();
     // std::unique_ptr<Server> server(builder.BuildAndStart());

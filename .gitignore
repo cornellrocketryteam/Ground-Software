@@ -25,3 +25,6 @@ go-proxies/websocket-proxy/main
 
 # Test Output
 fill_station_output.txt
+
+# macOS
+**/.DS_Store

@@ -10,6 +10,7 @@
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
 #include "actuators/sol_valve.h"
+#include "actuators/ignitor.h"
 
 #include "sensors/pt.h"
 #include "umbilical/proto_build.h"
@@ -48,6 +49,7 @@ using grpc::Status;
 QD qd; 
 BallValve ball_valve;
 SolValve sv1;
+Ignitor ignitor; 
 
 /* Sensors */
 PT pt1 = PT(0x48, 3);
@@ -121,7 +123,12 @@ class CommanderServiceImpl final : public Commander::Service
                 sv1.close();
             }
         }
-        
+        if (request->has_ignite()){
+            if (request->ignite()){
+                ignitor.Actuate();
+            }
+        }
+    
         protoBuild.sendCommand(request);
 
         return Status::OK;

@@ -1,0 +1,33 @@
+[MOCK] wiringPiSetupGpio called
+[MOCK] pinMode called, pin: 5, mode: 1
+[MOCK] pinMode called, pin: 6, mode: 1
+[MOCK] pinMode called, pin: 22, mode: 1
+[MOCK] pinMode called, pin: 26, mode: 1
+[MOCK] wiringPiSetupGpio called
+[MOCK] pinMode called, pin: 24, mode: 1
+[MOCK] pinMode called, pin: 23, mode: 1
+[MOCK] digitalWrite called, pin: 24, value: 0
+[MOCK] digitalWrite called, pin: 23, value: 0
+[MOCK] wiringPiSetupGpio called
+[MOCK] pinMode called, pin: 13, mode: 1
+[MOCK] digitalWrite called, pin: 13, value: 0
+[MOCK] wiringPiSetupGpio called
+[MOCK] pinMode called, pin: 17, mode: 1
+[MOCK] pinMode called, pin: 27, mode: 1
+[MOCK] digitalWrite called, pin: 17, value: 0
+[MOCK] digitalWrite called, pin: 27, value: 0
+setting up ADS with m_i2cAddress = 72
+[MOCK] wiringPiI2CSetup called with devId: 72
+m_i2cFd = 72
+setting up ADS with m_i2cAddress = 72
+[MOCK] wiringPiI2CSetup called with devId: 72
+m_i2cFd = 72
+Error opening /dev/rocket.
+Error getting termios attributes.
+Error setting termios attributes.
+Server listening on 0.0.0.0:50051
+[MOCK] digitalWrite called, pin: 17, value: 1
+[MOCK] digitalWrite called, pin: 27, value: 1
+[MOCK] delay called, howLong: 1000 (usleep used in mock)
+[MOCK] digitalWrite called, pin: 17, value: 0
+[MOCK] digitalWrite called, pin: 27, value: 0

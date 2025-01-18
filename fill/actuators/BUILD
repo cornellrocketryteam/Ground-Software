@@ -41,3 +41,15 @@ cc_library(
         "//fill:__subpackages__",
         ],
 )
+
+cc_library(
+    name = "ignitor",
+    srcs = ["ignitor.cc"],
+    hdrs = ["ignitor.h"],
+    deps = [":actuator","//fill/lib/MockWiringPi:mock_wiringpi"],
+    includes = ["."],
+    linkopts = ["-lwiringPi"],
+    visibility = [
+        "//fill:__subpackages__",
+        ],
+)

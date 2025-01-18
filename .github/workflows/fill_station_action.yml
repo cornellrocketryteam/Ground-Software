@@ -44,7 +44,8 @@ jobs:
             bazel build //fill/lib/MockWiringPi:mock_wiringpi
             ./fill/setup_mock_wiringpi.sh
             bazel build //fill:all
-            #  ./fill/test/bv_test.sh
+            # ./fill/test/ignitor_test.sh
+            # ./fill/test/bv_test.sh
             # ./fill/test/qd_test.sh
             # ./fill/test/sv1_test.sh
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then

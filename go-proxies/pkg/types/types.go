@@ -93,6 +93,7 @@ func (d *Datastore) FillStationTelemetryStore(packet *pb.FillStationTelemetry) {
 	}
 
 	point := write.NewPoint("telemetry", tags, fields, time.Unix(int64(packet.Timestamp), 0))
+	log.Printf("Writing fill station telemetry to influxDB: %v", point)
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
 	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {
@@ -171,6 +172,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 	}
 
 	point := write.NewPoint("telemetry", tags, fields, timestamp)
+	log.Printf("Writing rocket telemetry to influxDB: %v", point)
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
 	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {

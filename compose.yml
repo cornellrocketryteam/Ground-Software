@@ -20,6 +20,15 @@ services:
       - ground-network
     env_file:
       - ./.env.fill-telem-proxy
+  rocket-telem-proxy:
+    image: ghcr.io/cornellrocketryteam/rocket-telem-proxy:latest
+    depends_on:
+      - influxdb
+      - fill-station
+    networks:
+      - ground-network
+    env_file:
+      - ./.env.rocket-telem-proxy
   websocket-proxy:
     image: ghcr.io/cornellrocketryteam/websocket-proxy:latest
     depends_on:

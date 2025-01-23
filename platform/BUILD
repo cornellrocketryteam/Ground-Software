@@ -1,6 +1,6 @@
-# Raspberry Pi 4 Platform
+# Raspberry Pi 5 Platform
 platform(
-    name = "rpi4",
+    name = "rpi5",
     constraint_values = [
         "@platforms//os:linux",
         "@platforms//cpu:arm64",

@@ -51,9 +51,9 @@ jobs:
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             sudo apt-get install g++-11-arm-linux-gnueabihf
             sudo apt install gcc-11-arm-linux-gnueabihf
-            bazel build //fill/lib/MockWiringPi:mock_wiringpi --platforms=platform:rpi4 --cpu="aarch64"
-            ./fill/setup_mock_wiringpi.sh "--platforms=platform:rpi4 --cpu="aarch64""
-            bazel build //fill:all --platforms=platform:rpi4 --cpu="aarch64"
+            bazel build //fill/lib/MockWiringPi:mock_wiringpi --platforms=platform:rpi5 --cpu="aarch64"
+            ./fill/setup_mock_wiringpi.sh "--platforms=platform:rpi5 --cpu="aarch64""
+            bazel build //fill:all --platforms=platform:rpi5 --cpu="aarch64"
           fi
           sudo mkdir -p ./fill/output
           sudo cp bazel-bin/fill/fill_station ./fill/output

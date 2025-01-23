@@ -12,7 +12,7 @@
 #include "actuators/sol_valve.h"
 #include "actuators/ignitor.h"
 
-#include "sensors/pt.h"
+#include "sensors/sensor.h"
 #include "umbilical/proto_build.h"
 
 #include "wiringPi.h"
@@ -26,7 +26,6 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "protos/command.grpc.pb.h"
-
 
 using command::Command;
 using command::Commander;
@@ -45,15 +44,16 @@ using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
 
+
 /* Actuators */
 QD qd; 
 BallValve ball_valve;
 SolValve sv1;
 Ignitor ignitor; 
 
-/* Sensors */
-PT pt1 = PT(0x48, 3);
-PT pt2 = PT(0x48, 2);
+/* Sensor Suite*/
+Sensor sensor_suite; 
+
 /* Umblical Tools */
 RocketTelemetryProtoBuilder protoBuild;
 
@@ -86,8 +86,12 @@ FillStationTelemetry readTelemetry() {
     FillStationTelemetry t = generateRandomTelemetry();
 
     // Fill in real values
-    t.set_pt1(pt1.Read());
-    t.set_pt2(pt2.Read());
+    t.set_timestamp(std::time(nullptr));
+
+    t.set_pt1(sensor_suite.Read(PT1_CHANNEL, true));
+    t.set_pt2(sensor_suite.Read(PT2_CHANNEL, true));
+
+    t.set_lc1(sensor_suite.Read(LC_CHANNEL, true));
     return t;
 }
 

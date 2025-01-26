@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/cornellrocketryteam/Ground-Software/go-proxies/pkg/types"
-	"github.com/gogo/protobuf/proto"
+	// "github.com/gogo/protobuf/proto"
 
 	pb "github.com/cornellrocketryteam/Ground-Software/go-proxies/proto-out"
 	"google.golang.org/grpc"
@@ -51,7 +51,7 @@ func main() {
 					log.Printf("ERROR: %v, retrying connection...\n", err)
 					break // Break out of the inner loop to retry the connection
 				} else {
-					log.Printf("Received Packet: %s", proto.MarshalTextString(packet))
+					// log.Printf("Received Packet: %s", proto.MarshalTextString(packet))
 				}
 
 				// Store packet

@@ -20,6 +20,5 @@ float Sensor::Read(uint8_t channel, bool isADC1){
         reading = adc2->readADC_SingleEnded(channel);
     }
     voltage = static_cast<float>(reading);
-    printf("Reading from channel [%u] with voltage value: %f\n", channel, voltage);
     return voltage;
 }

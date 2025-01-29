@@ -8,7 +8,7 @@ cc_binary(
         "//fill/umbilical:rocket_proto_builder",
         "//fill/actuators:sol_valve",
         "//fill/actuators:ignitor",
-        "//fill/sensors:pt",
+        "//fill/sensors:sensor",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

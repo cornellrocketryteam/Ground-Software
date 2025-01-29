@@ -9,7 +9,8 @@
 #define SAFE '5'
 #define CLEAR_SD '6'
 
-#define UMB_PACKET_SIZE 24
+// 26 to account for 24 byte packet, then /r/n characters
+#define UMB_PACKET_SIZE 26
 
 #include "protos/command.grpc.pb.h"
 #include <iostream>
@@ -40,13 +41,13 @@ class RocketTelemetryProtoBuilder {
 
         int serial_data;
 
-        bool is_fd_open(int fd);
-
         void openfile();
 
         ssize_t read_packet(int fd, char* packet, size_t max_size);
 
         void write_command(char com);
+
+        uint32_t recycle_count;
     public: 
         // Establish serial connection 
         RocketTelemetryProtoBuilder();

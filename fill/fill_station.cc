@@ -147,7 +147,6 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     {
         printf("Received initial connection point for the fill-station telemetry.\n");
         while (true) {
-            auto now = std::chrono::high_resolution_clock::now();
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
                 // Broken stream
@@ -165,7 +164,6 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     {
         printf("Received initial connection point for the rocket telemetry.\n");
         while (true) {
-            auto now = std::chrono::high_resolution_clock::now();
             RocketTelemetry t = protoBuild.buildProto();
             if (!writer->Write(t)) {
                 // Broken stream

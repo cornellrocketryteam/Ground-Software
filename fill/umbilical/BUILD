@@ -6,6 +6,7 @@ cc_library(
         "//protos:command_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",
+        "@abseil-cpp//absl/status:statusor",
     ],
     visibility = [
         "//fill:__subpackages__",

@@ -123,7 +123,7 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 }
 
-RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
+absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
      if (is_fd_open(serial_data)){
         RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
@@ -147,7 +147,7 @@ RocketTelemetry RocketTelemetryProtoBuilder::buildProto(){
         if (status == -1 || status < UMB_PACKET_SIZE - 1){
             // This means we did not read enough bytes 
 
-            return rocketTelemetry; // Is this correct?? 
+            return absl::InternalError("Not enough Bytes"); // Is this correct?? 
         }
         // For Debugging 
         std::cout << "Packet: \n" << packet << std::endl;

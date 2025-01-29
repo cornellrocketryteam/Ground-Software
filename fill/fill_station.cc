@@ -164,10 +164,18 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     {
         printf("Received initial connection point for the rocket telemetry.\n");
         while (true) {
-            RocketTelemetry t = protoBuild.buildProto();
-            if (!writer->Write(t)) {
-                // Broken stream
-                return Status::CANCELLED; 
+            auto now = std::chrono::high_resolution_clock::now();
+            absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
+            
+            if (t.ok()) {
+                // Operation was successful, access the value
+                if (!writer->Write(*t)) {
+                    // Broken stream
+                    return Status::CANCELLED; 
+                }
+            } else {
+                // An error occurred, handle it
+                std::cout << t.status();
             }
         }
         return Status::OK;
@@ -211,6 +219,7 @@ int main(int argc, char **argv)
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);
+    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
     server->Shutdown();
 

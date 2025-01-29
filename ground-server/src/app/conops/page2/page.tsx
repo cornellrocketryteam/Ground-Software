@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import PreviousButton from "@/components/previous-button"; 
 
 export default async function Page2() {
   const session = await auth();
@@ -86,6 +87,14 @@ export default async function Page2() {
           useSwitch={false}
         />
       </div>
+
+        {/* Previous Page Button */}
+        <PreviousButton
+        label="Previous Page"
+        confirmMessage="Are you sure you want to move to the previous page?"
+        href="/conops/page1" // Adjust to the correct previous page URL
+        className="left-6 right-auto"
+      />
 
       {/* Alert Dialog Button */}
       <AlertDialog>

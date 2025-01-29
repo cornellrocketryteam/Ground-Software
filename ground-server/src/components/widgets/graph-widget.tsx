@@ -92,7 +92,12 @@ function GenericHistoricalChart(
 
 export default function GraphWidget({ mode, channel, data }: WidgetProps) {
   if (!data || data.length === 0) {
-    return <div>No data</div>;
+    return (
+      <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+        <p className="font-semibold text-lg">{channel.label}</p>
+        <p className="font-normal text-lg">No data</p>
+      </div>
+    );
   }
 
   if (mode === "Value") {
@@ -101,7 +106,7 @@ export default function GraphWidget({ mode, channel, data }: WidgetProps) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center gap-2">
         <p className="font-semibold text-lg">{channel.label}</p>
-        <p className="font-normal text-2xl">{latestValue} {channel.unit || ""}</p>
+        <p className="font-normal text-lg">{latestValue} {channel.unit || ""}</p>
       </div>
     );
   }

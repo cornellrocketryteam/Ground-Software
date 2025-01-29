@@ -9,7 +9,7 @@ import * as grpc from "@grpc/grpc-js";
 import { auth } from "@/app/auth";
 
 const client = new CommanderClient(
-  process.env.NODE_ENV === "development" ? "10.49.90.110:50051" : "192.168.1.201:50051",
+  process.env.NODE_ENV === "development" ? "192.168.1.200:50051" : "fill-station:50051",
   grpc.credentials.createInsecure()
 );
 

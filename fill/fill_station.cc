@@ -211,7 +211,6 @@ int main(int argc, char **argv)
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);
-    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
     server->Shutdown();
 

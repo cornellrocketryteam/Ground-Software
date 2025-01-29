@@ -107,6 +107,8 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 	// Create tags map
 	tags := map[string]string{}
 
+	log.Printf("Timestamp: %s\n", timestamp.Format(time.RFC3339Nano))
+
 	// Create fields map
 	fields := map[string]interface{}{}
 
@@ -121,25 +123,27 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 		fields["pt4"] = umbTelem.Pt4
 		fields["rtd_temp"] = umbTelem.RtdTemp
 
-		if umbTelem.Metadata != nil {
-			metaData := umbTelem.Metadata
+		log.Printf("PT3 Value: %f\n\n\n", umbTelem.Pt3)
 
-			// Tags have to be of type [string][string]
-			tags["alt_armed"] = fmt.Sprintf("%v", metaData.AltArmed)
-			tags["alt_valid"] = fmt.Sprintf("%v", metaData.AltValid)
-			tags["gps_valid"] = fmt.Sprintf("%v", metaData.GpsValid)
-			tags["imu_valid"] = fmt.Sprintf("%v", metaData.ImuValid)
-			tags["acc_valid"] = fmt.Sprintf("%v", metaData.AccValid)
-			tags["therm_valid"] = fmt.Sprintf("%v", metaData.ThermValid)
-			tags["voltage_valid"] = fmt.Sprintf("%v", metaData.VoltageValid)
-			tags["adc_valid"] = fmt.Sprintf("%v", metaData.AdcValid)
-			tags["fram_valid"] = fmt.Sprintf("%v", metaData.FramValid)
-			tags["sd_valid"] = fmt.Sprintf("%v", metaData.SdValid)
-			tags["gps_msg_valid"] = fmt.Sprintf("%v", metaData.GpsMsgValid)
-			tags["mav_state"] = fmt.Sprintf("%v", metaData.MavState)
-			tags["sv_state"] = fmt.Sprintf("%v", metaData.SvState)
-			tags["flight_mode"] = metaData.FlightMode.String()
-		}
+		// if umbTelem.Metadata != nil {
+		// 	metaData := umbTelem.Metadata
+
+		// 	// Tags have to be of type [string][string]
+		// 	// tags["alt_armed"] = fmt.Sprintf("%v", metaData.AltArmed)
+		// 	// tags["alt_valid"] = fmt.Sprintf("%v", metaData.AltValid)
+		// 	// tags["gps_valid"] = fmt.Sprintf("%v", metaData.GpsValid)
+		// 	// tags["imu_valid"] = fmt.Sprintf("%v", metaData.ImuValid)
+		// 	// tags["acc_valid"] = fmt.Sprintf("%v", metaData.AccValid)
+		// 	// tags["therm_valid"] = fmt.Sprintf("%v", metaData.ThermValid)
+		// 	// tags["voltage_valid"] = fmt.Sprintf("%v", metaData.VoltageValid)
+		// 	// tags["adc_valid"] = fmt.Sprintf("%v", metaData.AdcValid)
+		// 	// tags["fram_valid"] = fmt.Sprintf("%v", metaData.FramValid)
+		// 	// tags["sd_valid"] = fmt.Sprintf("%v", metaData.SdValid)
+		// 	// tags["gps_msg_valid"] = fmt.Sprintf("%v", metaData.GpsMsgValid)
+		// 	// tags["mav_state"] = fmt.Sprintf("%v", metaData.MavState)
+		// 	// tags["sv_state"] = fmt.Sprintf("%v", metaData.SvState)
+		// 	// tags["flight_mode"] = metaData.FlightMode.String()
+		// }
 
 		if umbTelem.Events != nil {
 			events := umbTelem.Events
@@ -172,7 +176,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 	}
 
 	point := write.NewPoint("telemetry", tags, fields, timestamp)
-	log.Printf("Writing rocket telemetry to influxDB: %v", point)
+	// log.Printf("Writing rocket telemetry to influxDB: %v", point)
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
 	if err := d.writeAPI.WritePoint(writeCtx, point); err != nil {

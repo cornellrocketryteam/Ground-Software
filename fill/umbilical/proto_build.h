@@ -25,6 +25,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "absl/status/statusor.h"
 
 using command::RocketTelemetry;
 using command::RocketMetadata;
@@ -56,7 +57,7 @@ class RocketTelemetryProtoBuilder {
         // send the Safe command when ground server disconnects from the fill station
         void sendSafeCommand();
 
-        RocketTelemetry buildProto(); 
+        absl::StatusOr<RocketTelemetry> buildProto(); 
 };
 
-#endif 
+#endif

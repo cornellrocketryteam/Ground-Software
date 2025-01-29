@@ -135,17 +135,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				log.Println("Ticker fired at:", time.Now()) // Debugging line
-				jsonData, err := datastore.GetLastPoint()
-				if err == nil {
-					log.Println("Sending data to WebSockets at:", time.Now()) // Debugging line
-					webClients.Send(jsonData)
-				} else {
-					log.Println("GetLastPoint() returned an error:", err)
-				}
-			case <-ctx.Done():
-				log.Println("Function stopping due to context cancellation")
-				return
+				log.Println("Standalone ticker fired at:", time.Now())
 			}
 		}
 	}()

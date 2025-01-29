@@ -1,6 +1,7 @@
 import { auth } from "@/app/auth";
 import ActuationBox from "@/components/actuation-box";
 import { CameraBox } from "@/components/camera-box";
+import PreviousButton from "@/components/previous-button"; 
 
 export default async function Page7() {
   const session = await auth();
@@ -61,6 +62,15 @@ export default async function Page7() {
           />
         </div>
       </div>
+
+            {/* Previous Page Button */}
+            <PreviousButton
+        label="Previous Page"
+        confirmMessage="Are you sure you want to move to the previous page?"
+        href="/conops/page6" // Adjust to the correct previous page URL
+        className="left-6 right-auto"
+      />
+
     </div>
   );
 }

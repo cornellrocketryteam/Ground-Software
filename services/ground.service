@@ -1,5 +1,5 @@
 [Unit]
-Description=Ground Side Docker Compose to Start Proxies, Database, and Web Server
+Description=Docker Compose that starts the Proxies, Database, and Web Server
 Requires=docker.service
 After=docker.service
  
@@ -9,4 +9,4 @@ ExecStart=/usr/bin/docker compose -f /home/crt/Ground-Software/compose_prod.yml 
 ExecStop=/usr/bin/docker compose -f /home/crt/Ground-Software/compose_prod.yml down
  
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target

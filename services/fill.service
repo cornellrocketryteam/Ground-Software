@@ -1,13 +1,13 @@
 [Unit]
-Description=Start the fill station binary
+Description=Starts the fill station binary
 After=network.target
 
 [Service]
 Restart=always
-RestartSec=1
 User=root
 WorkingDirectory=/home/crt
 ExecStart=/home/crt/fill_station
+ExecStop=kill -SIGTERM $MAINPID
 
 [Install]
 WantedBy=multi-user.target

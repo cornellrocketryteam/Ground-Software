@@ -11,18 +11,25 @@
 #define PT2_CHANNEL 2
 #define LC_CHANNEL 0
 
+#define ADC1_INDEX 0
+#define ADC2_INDEX 1
+
 class Sensor {
   public:
-    // initializes the ADC
+    // initializes the ADCs
     Sensor();
     virtual ~Sensor() {}
 
-    float Read(uint8_t channel, bool isADC1);
+    float ReadPT1(); 
+    float ReadPT2(); 
+    float ReadLoadCell();
+
   protected:
     // cache for rolling averages
     std::vector<float> cache_;
 
-    Adafruit_ADS1015 *adc1;
-    Adafruit_ADS1015 *adc2;
+    float Read(uint8_t channel, uint8_t index);
+
+    std::vector<Adafruit_ADS1015*> ADC_vector; 
 };
 #endif

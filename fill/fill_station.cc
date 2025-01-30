@@ -175,7 +175,8 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                 }
             } else {
                 // An error occurred, handle it
-                std::cout << t.status();
+                printf("Error reading full packet\n");
+                //std::cout << t.status();
             }
         }
         return Status::OK;

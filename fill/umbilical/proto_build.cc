@@ -1,10 +1,13 @@
 #include "proto_build.h"
 #include <iostream>
 #include <unistd.h>
+#include <poll.h>
 
-bool RocketTelemetryProtoBuilder::is_fd_open(int fd) {
-    int flags = fcntl(fd, F_GETFL);
-    return (flags != -1 || errno != EBADF);
+bool is_fd_disconnected(int fd) {
+    struct pollfd pfd = {fd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0};
+    int ret = poll(&pfd, 1, 0); // Timeout = 0 (non-blocking check)
+
+    return (ret > 0 && (pfd.revents & (POLLHUP | POLLERR)));
 }
 
 ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t max_size) {
@@ -32,7 +35,7 @@ ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t ma
             break;
         }
     }
-
+    printf("Number of bytes read: %d\n", index);
     return index;  // Return the number of bytes read
 }
 
@@ -86,6 +89,7 @@ void RocketTelemetryProtoBuilder::openfile(){
 
 RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(){
     openfile();
+    recycle_count = 0;
 }
 
 RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
@@ -125,7 +129,15 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
 
 absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
-     if (is_fd_open(serial_data)){
+
+    recycle_count++;
+
+    if (recycle_count == 100){
+        recycle_count = 0;
+        openfile();
+    }
+
+     if (!is_fd_disconnected(serial_data)){
         RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
         RocketMetadata* rocketMetadata = rocketUmbTelemetry->mutable_metadata();
         Events* events = rocketUmbTelemetry->mutable_events();
@@ -146,7 +158,6 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
         if (status == -1 || status < UMB_PACKET_SIZE - 1){
             // This means we did not read enough bytes 
-
             return absl::InternalError("Not enough Bytes"); // Is this correct?? 
         }
         // For Debugging 

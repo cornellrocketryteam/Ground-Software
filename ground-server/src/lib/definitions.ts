@@ -8,7 +8,6 @@ export type DataPoint = {
 export type WidgetProps = {
   mode: string;
   channel: TelemetryChannel;
-  data: DataPoint[];
 };
 
 export type TelemetryChannel = {

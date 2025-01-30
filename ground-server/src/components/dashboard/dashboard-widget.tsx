@@ -20,12 +20,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
-import { type TelemetryChannel, type DataPoint } from "@/lib/definitions";
+import { type TelemetryChannel } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
   id: string;
   channel: TelemetryChannel;
-  data: DataPoint[];
   deleteWidget: () => void;
   style?: CSSProperties;
   className?: string;
@@ -41,7 +40,6 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     {
       id,
       channel,
-      data,
       deleteWidget,
       style,
       className,
@@ -71,7 +69,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <WidgetComponent mode={mode} channel={channel} data={data} />
+        <WidgetComponent mode={mode} channel={channel} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

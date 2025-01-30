@@ -1,6 +1,6 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
-import { LiveValueBox } from "@/components/live-value-box";
+import ActuationBox from "@/components/conops/actuation-box";
+import { LiveValueBox } from "@/components/conops/live-value-box";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button"; 
 
 export default async function Page3() {
   const session = await auth();

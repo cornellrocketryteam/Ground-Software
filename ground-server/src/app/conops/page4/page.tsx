@@ -1,7 +1,7 @@
 import { auth } from "@/app/auth";
-import { LiveValueWithHistoricalGraph } from "@/components/live-value-with-historical-graph";
-import { CameraBox } from "@/components/camera-box";
-import ActuationBox from "@/components/actuation-box";
+import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
+import { CameraBox } from "@/components/conops/camera-box";
+import ActuationBox from "@/components/conops/actuation-box";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button"; 
 
 export default async function Page4() {
   const session = await auth();
@@ -34,22 +34,22 @@ export default async function Page4() {
         <LiveValueWithHistoricalGraph
           label="RTD Temperature"
           dbField="rtdTemp"
-          chartMode="15m"
+          duration={15}
         />
         <LiveValueWithHistoricalGraph
           label="Load Cell 1 (LC1)"
           dbField="lc1"
-          chartMode="60m"
+          duration={60}
         />
         <LiveValueWithHistoricalGraph
           label="Pressure Transducer 4 (PT4)"
           dbField="pt4"
-          chartMode="15m"
+          duration={15}
         />
         <LiveValueWithHistoricalGraph
           label="Pressure Transducer 1 (PT1)"
           dbField="pt1"
-          chartMode="60m"
+          duration={60}
         />
       </div>
 

@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
+import ActuationBox from "@/components/conops/actuation-box";
 
 export default async function Controls() {
   const session = await auth();

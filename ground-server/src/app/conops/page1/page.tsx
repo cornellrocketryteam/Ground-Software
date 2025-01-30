@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import { LiveValueBox } from "@/components/live-value-box";
+import { LiveValueBox } from "@/components/conops/live-value-box";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

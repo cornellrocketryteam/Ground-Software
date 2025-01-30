@@ -88,10 +88,10 @@ FillStationTelemetry readTelemetry() {
     // Fill in real values
     t.set_timestamp(std::time(nullptr));
 
-    t.set_pt1(sensor_suite.Read(PT1_CHANNEL, true));
-    t.set_pt2(sensor_suite.Read(PT2_CHANNEL, true));
+    t.set_pt1(sensor_suite.ReadPT1());
+    t.set_pt2(sensor_suite.ReadPT2());
 
-    t.set_lc1(sensor_suite.Read(LC_CHANNEL, true));
+    t.set_lc1(sensor_suite.ReadLoadCell());
     return t;
 }
 

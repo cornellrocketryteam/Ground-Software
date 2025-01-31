@@ -237,6 +237,7 @@ func (d *Datastore) GetLastPoint() ([]byte, error) {
 	query := `from(bucket: "telemetry")
 		|> range(start: -2s, stop: 0s)
 		|> filter(fn: (r) => r["_measurement"] == "telemetry")
+		|> toFloat()
 		|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
 		|> drop(columns: ["table", "_measurement", "_start", "_stop", "_time"])
 		|> yield(name: "mean")`

@@ -141,7 +141,9 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["gps_msg_valid"] = metaData.GpsMsgValid
 			fields["mav_state"] = metaData.MavState
 			fields["sv_state"] = metaData.SvState
-			fields["flight_mode"] = metaData.FlightMode
+
+			// TODO: Fix the way we are storing or querying 
+			//fields["flight_mode"] = metaData.FlightMode
 		}
 
 		if umbTelem.Events != nil {

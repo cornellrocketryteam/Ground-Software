@@ -91,6 +91,9 @@ FillStationTelemetry readTelemetry() {
     t.set_pt1(sensor_suite.ReadPT1());
     t.set_pt2(sensor_suite.ReadPT2());
 
+    t.set_ign1_cont(sensor_suite.ReadIgnitorOneContinuity());
+    t.set_ign2_cont(sensor_suite.ReadIgnitorTwoContinuity());
+
     t.set_lc1(sensor_suite.ReadLoadCell());
     return t;
 }

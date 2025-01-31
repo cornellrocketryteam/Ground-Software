@@ -5,11 +5,13 @@
 #include "Adafruit_ADS1015.h"
 
 #define ADC1_ADDRESS 0x48
-#define ADC2_ADDRESS
+#define ADC2_ADDRESS 0x4A
 
 #define PT1_CHANNEL 3
 #define PT2_CHANNEL 2
 #define LC_CHANNEL 0
+#define IGN_1_CONT_CHANNEL 3 // change later
+#define IGN_2_CONT_CHANNEL 2
 
 #define ADC1_INDEX 0
 #define ADC2_INDEX 1
@@ -23,6 +25,9 @@ class Sensor {
     float ReadPT1(); 
     float ReadPT2(); 
     float ReadLoadCell();
+
+    float ReadIgnitorOneContinuity();
+    float ReadIgnitorTwoContinuity();
 
   protected:
     // cache for rolling averages

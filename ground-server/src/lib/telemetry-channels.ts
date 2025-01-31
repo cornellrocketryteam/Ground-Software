@@ -92,31 +92,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     component: MonkeyWidget,
   },
   {
-    id: "flight_mode",
-    label: "Flight Mode",
-    requiresAuth: false,
-    dbField: "flightMode",
-    modes: ["Value"],
-    component: GraphWidget,
-  },
-  {
-    id: "mav_state",
-    label: "MAV State",
-    requiresAuth: false,
-    dbField: "mavState",
-    modes: ["Value"],
-    component: GraphWidget,
-  },
-  {
-    id: "sv2_state",
-    label: "SV2 State",
-    requiresAuth: false,
-    dbField: "sv2State",
-    modes: ["Value"],
-    component: GraphWidget,
-  },
-  // TODO: Add metadata fields in telemetry channels 
-  {
     id: "alt_armed",
     label: "Altimeter Armed",
     requiresAuth: false,

@@ -60,33 +60,9 @@ RocketTelemetryProtoBuilder protoBuild;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the fill station telemetry");
 
-FillStationTelemetry generateRandomTelemetry() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> float_dist(-100.0, 100.0);
-    std::uniform_int_distribution<> int_dist(-100000, 100000);
-    std::uniform_int_distribution<> uint_dist(0, 100000);
-    std::uniform_int_distribution<> bool_dist(0, 1);
-    std::uniform_int_distribution<> sensor_dist(0, 2);
-    std::uniform_int_distribution<> flight_dist(0, 5);
-
-    FillStationTelemetry telemetry;
-    telemetry.set_timestamp(std::time(0));
-    telemetry.set_pt1(float_dist(gen));
-    telemetry.set_pt2(float_dist(gen));
-    telemetry.set_lc1(float_dist(gen));
-    telemetry.set_sv1_cont(float_dist(gen));
-    telemetry.set_ign1_cont(float_dist(gen));
-    telemetry.set_ign2_cont(float_dist(gen));
-
-    return telemetry;
-}
-
 FillStationTelemetry readTelemetry() {
-    // Temporarily fill in others with random values
-    FillStationTelemetry t = generateRandomTelemetry();
+    FillStationTelemetry t;
 
-    // Fill in real values
     t.set_timestamp(std::time(nullptr));
 
     t.set_pt1(sensor_suite.ReadPT1());

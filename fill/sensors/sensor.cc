@@ -41,3 +41,16 @@ float Sensor::ReadLoadCell(){
     // TODO: Update after load cell calibration 
     return voltage; 
 }
+
+float Sensor::ReadIgnitorOneContinuity(){
+    // voltage < 10 implies no continuity, and >= 10 is continuity
+    float voltage = Read(IGN_1_CONT_CHANNEL, ADC2_INDEX);
+    return voltage; 
+}
+
+float Sensor::ReadIgnitorTwoContinuity(){
+    // voltage < 10 implies no continuity, and >= 10 is continuity
+    float voltage = Read(IGN_2_CONT_CHANNEL, ADC2_INDEX);
+
+    return voltage; 
+}

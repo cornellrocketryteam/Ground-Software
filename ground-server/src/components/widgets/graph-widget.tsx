@@ -1,5 +1,4 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { format } from "date-fns"; // Import date-fns
 
 import {
   ChartConfig,
@@ -15,7 +14,7 @@ import {
 } from "@/lib/definitions";
 import { useData } from "@/contexts/data-context";
 
-function GetConfig(channel: TelemetryChannel) {
+function getConfig(channel: TelemetryChannel) {
   const chartConfig = {
     config: {
       label: channel.label,
@@ -23,6 +22,14 @@ function GetConfig(channel: TelemetryChannel) {
     },
   } satisfies ChartConfig;
   return chartConfig;
+}
+
+function tickFormatter(tick: number) {
+  const date = new Date(tick);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const formattedTime = `${hours}:${minutes}`;
+  return formattedTime;
 }
 
 function GenericHistoricalChart(
@@ -37,7 +44,7 @@ function GenericHistoricalChart(
       <h3 className="text-center mb-2 font-semibold">
         {duration}-Minute {channel.label} History
       </h3>
-      <ChartContainer config={GetConfig(channel)} className="w-full h-full">
+      <ChartContainer config={getConfig(channel)} className="w-full h-full">
         <LineChart
           accessibilityLayer
           data={data.map((d) => ({
@@ -50,7 +57,7 @@ function GenericHistoricalChart(
           <XAxis
             interval="preserveStartEnd"
             dataKey="timestamp"
-            tickFormatter={(tick) => format(new Date(tick), "HH:mm")}
+            tickFormatter={tickFormatter}
             tickLine={false}
             axisLine={false}
             tickMargin={8}

@@ -1,7 +1,6 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-import { format } from "date-fns"; // Import date-fns
 import { useData } from "@/contexts/data-context";
 import {
   ChartConfig,
@@ -10,7 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-function GetConfig(label: string) {
+function getConfig(label: string) {
   const chartConfig = {
     config: {
       label: label,
@@ -18,6 +17,14 @@ function GetConfig(label: string) {
     },
   } satisfies ChartConfig;
   return chartConfig;
+}
+
+function tickFormatter(tick: number) {
+  const date = new Date(tick);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const formattedTime = `${hours}:${minutes}`;
+  return formattedTime;
 }
 
 interface LiveValueWithHistoricalGraphProps {
@@ -44,7 +51,7 @@ export function LiveValueWithHistoricalGraph({
       <h3 className="text-center mb-2 font-semibold">
         {duration}-Minute {label} History
       </h3>
-      <ChartContainer config={GetConfig(label)} className="w-full h-full">
+      <ChartContainer config={getConfig(label)} className="w-full h-full">
         <LineChart
           accessibilityLayer
           data={fieldData.map((d) => ({
@@ -57,7 +64,7 @@ export function LiveValueWithHistoricalGraph({
           <XAxis
             interval="preserveStartEnd"
             dataKey="timestamp"
-            tickFormatter={(tick) => format(new Date(tick), "HH:mm")}
+            tickFormatter={tickFormatter}
             tickLine={false}
             axisLine={false}
             tickMargin={8}

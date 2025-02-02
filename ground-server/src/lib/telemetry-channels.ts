@@ -71,7 +71,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "RTD Temp",
     unit: "C",
     requiresAuth: false,
-    dbField: "rtdTemp",
+    dbField: "rtd_temp",
     modes: ["Value", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },

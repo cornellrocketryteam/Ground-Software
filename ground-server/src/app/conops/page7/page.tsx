@@ -1,7 +1,7 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
-import { CameraBox } from "@/components/camera-box";
-import PreviousButton from "@/components/previous-button"; 
+import ActuationBox from "@/components/conops/actuation-box";
+import { CameraBox } from "@/components/conops/camera-box";
+import PreviousButton from "@/components/conops/previous-button"; 
 
 export default async function Page7() {
   const session = await auth();

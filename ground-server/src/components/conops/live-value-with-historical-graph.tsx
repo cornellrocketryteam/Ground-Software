@@ -1,6 +1,8 @@
+"use client";
+
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { format } from "date-fns"; // Import date-fns
-
+import { useData } from "@/contexts/data-context";
 import {
   ChartConfig,
   ChartContainer,
@@ -8,39 +10,44 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import {
-  TelemetryChannel,
-  type WidgetProps,
-  type DataPoint,
-} from "@/lib/definitions";
-import { useData } from "@/contexts/data-context";
-
-function GetConfig(channel: TelemetryChannel) {
+function GetConfig(label: string) {
   const chartConfig = {
     config: {
-      label: channel.label,
+      label: label,
       color: "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
   return chartConfig;
 }
 
-function GenericHistoricalChart(
-  duration: number,
-  data: DataPoint[],
-  channel: TelemetryChannel
-) {
-  const color = "hsl(var(--chart-1))";
+interface LiveValueWithHistoricalGraphProps {
+  label: string;
+  dbField: string;
+  duration: number;
+}
+
+export function LiveValueWithHistoricalGraph({
+  label,
+  dbField,
+  duration,
+}: LiveValueWithHistoricalGraphProps) {
+  const { data } = useData();
+  const fieldData = data[dbField];
+
+  if (!fieldData) {
+    return <p>No data</p>;
+  } else {
+    const color = "hsl(var(--chart-1))";
 
   return (
     <div className="flex flex-col h-full">
       <h3 className="text-center mb-2 font-semibold">
-        {duration}-Minute {channel.label} History
+        {duration}-Minute {label} History
       </h3>
-      <ChartContainer config={GetConfig(channel)} className="w-full h-full">
+      <ChartContainer config={GetConfig(label)} className="w-full h-full">
         <LineChart
           accessibilityLayer
-          data={data.map((d) => ({
+          data={fieldData.map((d) => ({
             timestamp: d.timestamp.getTime(),
             value: d.value,
           }))}
@@ -65,7 +72,8 @@ function GenericHistoricalChart(
           />
           <YAxis
             label={{
-              value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
+              // value: `${label} (${channel.unit || ""})`, // Use unit if provided
+              value: `${label}`, // TODO: Use unit if provided
               style: { textAnchor: "middle" },
               angle: -90,
               position: "left",
@@ -89,39 +97,5 @@ function GenericHistoricalChart(
       </ChartContainer>
     </div>
   );
-}
-
-export default function GraphWidget({ mode, channel }: WidgetProps) {
-  const { data } = useData();
-  const fieldData = data[channel.dbField];
-
-  if (!fieldData || fieldData.length === 0) {
-    return (
-      <div className="w-full h-full flex flex-col justify-center items-center gap-2">
-        <p className="font-semibold text-lg">{channel.label}</p>
-        <p className="font-normal text-lg">No data</p>
-      </div>
-    );
   }
-
-  if (mode === "Value") {
-    const latestValue = fieldData[fieldData.length - 1].value.toFixed(3);
-
-    return (
-      <div className="w-full h-full flex flex-col justify-center items-center gap-2">
-        <p className="font-semibold text-lg">{channel.label}</p>
-        <p className="font-normal text-lg">{latestValue} {channel.unit || ""}</p>
-      </div>
-    );
-  }
-
-  if (mode === "15m Chart") {
-    return GenericHistoricalChart(15, fieldData, channel);
-  }
-
-  if (mode === "60m Chart") {
-    return GenericHistoricalChart(60, fieldData, channel);
-  }
-
-  return <div>Unsupported mode</div>;
 }

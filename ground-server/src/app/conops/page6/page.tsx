@@ -1,6 +1,6 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
-import { LiveValueWithHistoricalGraph } from "@/components/live-value-with-historical-graph";
+import ActuationBox from "@/components/conops/actuation-box";
+import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/previous-button"; // Import the reusable component
+import PreviousButton from "@/components/conops/previous-button"; // Import the reusable component
 
 export default async function Page6() {
   const session = await auth();
@@ -33,7 +33,7 @@ export default async function Page6() {
         <LiveValueWithHistoricalGraph
           label="Igniter Current"
           dbField="igniterCurrent"
-          chartMode="15m"
+          duration={15}
         />
         <div className="flex justify-center">
           <ActuationBox

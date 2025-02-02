@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/navbar";
 
 import { Toaster } from "@/components/ui/toaster"
-import { WebSocketProvider } from "@/contexts/websocket-context";
+import { DataProvider } from "@/contexts/data-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -44,11 +44,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SessionProvider>
-            <WebSocketProvider>
+            <DataProvider>
               <Navbar />
               <main>{children}</main>
               <Toaster /> {/* Place Toaster here within the first return statement */}
-            </WebSocketProvider>
+            </DataProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

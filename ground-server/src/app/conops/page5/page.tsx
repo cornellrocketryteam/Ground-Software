@@ -1,7 +1,7 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
-import { LiveValueWithHistoricalGraph } from "@/components/live-value-with-historical-graph";
-import { CameraBox } from "@/components/camera-box";
+import ActuationBox from "@/components/conops/actuation-box";
+import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
+import { CameraBox } from "@/components/conops/camera-box";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button"; 
 
 export default async function Page5() {
   const session = await auth();
@@ -34,7 +34,7 @@ export default async function Page5() {
         <LiveValueWithHistoricalGraph
           label="Pressure Transducer 2 (PT2)"
           dbField="pt2"
-          chartMode="15m"
+          duration={15}
         />
         <CameraBox text="Camera pointing at QD" />
       </div>

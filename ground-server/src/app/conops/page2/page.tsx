@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import ActuationBox from "@/components/actuation-box";
+import ActuationBox from "@/components/conops/actuation-box";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button"; 
 
 export default async function Page2() {
   const session = await auth();

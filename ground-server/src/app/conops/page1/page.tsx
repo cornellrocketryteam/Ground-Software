@@ -28,7 +28,7 @@ export default async function Conops() {
         <LiveValueBox label="Pressure Transducer 1 (PT1)" dbField="pt1" />
         <LiveValueBox label="Pressure Transducer 2 (PT2)" dbField="pt2" />
         <LiveValueBox label="Load Cell 1 (LC1)" dbField="lc1" />
-        <LiveValueBox label="RTD Temperature (RTD)" dbField="rtdTemp" />
+        <LiveValueBox label="RTD Temperature (RTD)" dbField="rtd_temp" />
         <LiveValueBox label="Pressure Transducer 3 (PT3)" dbField="pt3" />
         <LiveValueBox label="Pressure Transducer 4 (PT4)" dbField="pt4" />
       </div>

@@ -33,7 +33,7 @@ export default async function Page4() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
         <LiveValueWithHistoricalGraph
           label="RTD Temperature"
-          dbField="rtdTemp"
+          dbField="rtd_temp"
           duration={15}
         />
         <LiveValueWithHistoricalGraph

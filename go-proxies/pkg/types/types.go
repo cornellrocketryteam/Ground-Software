@@ -141,9 +141,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["gps_msg_valid"] = metaData.GpsMsgValid
 			fields["mav_state"] = metaData.MavState
 			fields["sv_state"] = metaData.SvState
-
-			// TODO: Fix the way we are storing or querying 
-			//fields["flight_mode"] = metaData.FlightMode
+			fields["flight_mode"] = metaData.FlightMode
 		}
 
 		if umbTelem.Events != nil {
@@ -194,7 +192,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	}
 
 	if req.Aggregation == "" || !slices.Contains(legalAggregation, req.Aggregation) {
-		req.Aggregation = "mean" // Default to mean if not provided
+		req.Aggregation = "last" // Default to last if not provided
 	}
 
 	if req.Every == 0 {
@@ -213,7 +211,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	  |> filter(fn: (r) => r._field == "%s")
 	  |> aggregateWindow(every: %ds, fn: %s, createEmpty: false)
 	  |> drop(columns: ["table", "_measurement", "_start", "_stop"])
-	  |> yield(name: "mean")`, req.Start, req.Stop, req.Field, req.Every, req.Aggregation)
+	  |> yield(name: "last")`, req.Start, req.Stop, req.Field, req.Every, req.Aggregation)
 
 	// Process historical data request.
 	log.Printf("Querying with: %s", query)
@@ -237,12 +235,10 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 
 func (d *Datastore) GetLastPoint() ([]byte, error) {
 	query := `from(bucket: "telemetry")
-		|> range(start: -2s, stop: 0s)
+		|> range(start: -2s)
 		|> filter(fn: (r) => r["_measurement"] == "telemetry")
-		|> toFloat()
-		|> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
 		|> drop(columns: ["table", "_measurement", "_start", "_stop", "_time"])
-		|> yield(name: "mean")`
+		|> last()`
 
 	results, err := d.queryAPI.Query(d.ctx, query)
 	if err != nil {

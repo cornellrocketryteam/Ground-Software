@@ -102,7 +102,7 @@ export default function GraphWidget({ mode, channel }: WidgetProps) {
   const { data } = useData();
   const fieldData = data[channel.dbField];
 
-  if (!fieldData || fieldData.length === 0) {
+  if (fieldData === undefined || fieldData.length === 0) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center gap-2">
         <p className="font-semibold text-lg">{channel.label}</p>

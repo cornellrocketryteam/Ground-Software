@@ -1,6 +1,8 @@
 #include "sensor.h"
 
 Sensor::Sensor(){
+    spdlog::info("Initializing ADCs\n");
+
     Adafruit_ADS1015* adc1 = new Adafruit_ADS1015(ADC1_ADDRESS);
     adc1->begin();
     adc1->setGain(GAIN_ONE);
@@ -18,8 +20,12 @@ float Sensor::Read(uint8_t channel, uint8_t index){
     uint16_t reading; 
     float voltage;
 
+    spdlog::info("Reading from ADC {} on channel {}\n", index + 1, channel);
+
     reading = ADC_vector[index]->readADC_SingleEnded(channel);
     voltage = static_cast<float>(reading);
+
+    spdlog::info("Voltage read is {}\n", voltage);
     return voltage;
 }
 

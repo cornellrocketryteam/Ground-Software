@@ -11,6 +11,7 @@ QD::~QD(){
 }
 
 bool QD::Actuate(){
+    spdlog::info("Actuating the QD\n");
     if (actuating){
         return false; // cannot actuate a sensor that is already actuating 
     }

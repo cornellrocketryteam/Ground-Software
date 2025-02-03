@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "absl/status/statusor.h"
+#include <spdlog/spdlog.h>
 
 using command::RocketTelemetry;
 using command::RocketMetadata;

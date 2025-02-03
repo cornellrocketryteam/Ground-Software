@@ -9,6 +9,7 @@
 
 #include "steppermotor.h"
 #include "actuator.h"
+#include <spdlog/spdlog.h>
 
 #include <thread> 
 

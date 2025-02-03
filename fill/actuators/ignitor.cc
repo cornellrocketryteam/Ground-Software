@@ -13,6 +13,7 @@ Ignitor::Ignitor(){
 Ignitor::~Ignitor(){}
 
 bool Ignitor::Actuate(){
+    spdlog::info("Igniting\n");
     digitalWrite(IG_0, HIGH);
     digitalWrite(IG_1, HIGH);
     delay(1000);

@@ -5,6 +5,7 @@
 #define BV_ON_OFF 24
 
 #include "wiringPi.h"
+#include <spdlog/spdlog.h>
 
 class BallValve {
     private:

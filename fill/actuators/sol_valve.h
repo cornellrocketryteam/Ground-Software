@@ -5,6 +5,7 @@
 
 #include <thread>
 #include "wiringPi.h"
+#include <spdlog/spdlog.h>
 
 
 class SolValve {

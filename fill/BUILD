@@ -9,6 +9,7 @@ cc_binary(
         "//fill/actuators:sol_valve",
         "//fill/actuators:ignitor",
         "//fill/sensors:sensor",
+        "//fill/lib/spdlog:spdlog",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

@@ -14,6 +14,7 @@ import (
 	pb "github.com/cornellrocketryteam/Ground-Software/go-proxies/proto-out"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 )
 
 func main() {
@@ -26,7 +27,15 @@ func main() {
 
 	// Set up a connection to the grpc server
 	address := os.Getenv("FILL_HOSTNAME") + ":50051"
-	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(
+		address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
+			Timeout:             2 * time.Second,  // wait 2 seconds for ping ack before considering the connection dead
+			PermitWithoutStream: true,
+		}),
+	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

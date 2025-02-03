@@ -22,6 +22,8 @@ void SolValve::open(){
     pwmWrite(SV_SIGNAL, 1707); 
 }
 void SolValve::openAsync(){
+    spdlog::info("Opening the Solenoid Valve\n");
+
     if (isOpen){
      return; // cannot actuate a sensor that is already actuating 
     }
@@ -32,6 +34,8 @@ void SolValve::openAsync(){
     return;
 }
 void SolValve::close(){
+    spdlog::info("Closing the Solenoid Valve\n");
+
     pinMode(SV_SIGNAL, OUTPUT);
     digitalWrite(SV_SIGNAL, LOW);
     isOpen=false;

@@ -3,6 +3,7 @@ cc_library(
     hdrs = ["sensor.h"],
     srcs = ["sensor.cc"],
     deps = [ "//fill/lib/ADCDriver:adc_driver",
+            "//fill/lib/spdlog:spdlog", 
             ],
     visibility = [
         "//visibility:public",

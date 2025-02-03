@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Adafruit_ADS1015.h"
+#include <spdlog/spdlog.h>
 
 #define ADC1_ADDRESS 0x48
 #define ADC2_ADDRESS 0x4A

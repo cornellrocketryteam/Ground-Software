@@ -6,6 +6,7 @@
 #include <thread>
 #include <cstdlib>
 #include <random>
+#include <spdlog/spdlog.h>
 
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
@@ -148,7 +149,7 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
                        ServerWriter<FillStationTelemetry> *writer) override
     {
-        printf("Received initial connection point for the fill-station telemetry.\n");
+        spdlog::info("Received initial connection point for the fill-station telemetry service.\n");
         while (true) {
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
@@ -165,7 +166,7 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
                        ServerWriter<RocketTelemetry> *writer) override
     {
-        printf("Received initial connection point for the rocket telemetry.\n");
+        spdlog::info("Received initial connection point for the rocket telemetry service.\n");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
             absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
@@ -177,9 +178,8 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                     return Status::CANCELLED; 
                 }
             } else {
-                // An error occurred, handle it
-                printf("Error reading full packet\n");
-                //std::cout << t.status();
+                spdlog::error("Error reading the full packet with message:\n");      
+                std::cout << t.status() << std::endl;           
             }
         }
         return Status::OK;
@@ -205,8 +205,8 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     builder.RegisterService(&rocket_telemeter_service);
     // Finally assemble the server.
     server = builder.BuildAndStart();
-    // std::unique_ptr<Server> server(builder.BuildAndStart());
-    std::cout << "Server listening on " << server_address << std::endl;
+
+    spdlog::info("Server listening on {}\n", server_address); 
 
     // Wait for the server to shutdown. Note that some other thread must be
     // responsible for shutting down the server for this call to ever return.

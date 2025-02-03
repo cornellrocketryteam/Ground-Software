@@ -7,6 +7,7 @@ cc_library(
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",
         "@abseil-cpp//absl/status:statusor",
+        "//fill/lib/spdlog:spdlog",
     ],
     visibility = [
         "//fill:__subpackages__",

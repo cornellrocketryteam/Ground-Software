@@ -1,6 +1,7 @@
 import FuelWidget from "@/components/widgets/fuel-widget";
 import GraphWidget from "@/components/widgets/graph-widget";
 import MonkeyWidget from "@/components/widgets/monkey-widget";
+import ValueWidget from "@/components/widgets/value-widget";
 
 import type { TelemetryChannel } from "@/lib/definitions";
 
@@ -97,7 +98,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "alt_armed",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "alt_valid",
@@ -105,7 +106,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "alt_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "gps_valid",
@@ -113,7 +114,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "gps_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "imu_valid",
@@ -121,7 +122,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "imu_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "acc_valid",
@@ -129,7 +130,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "acc_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "therm_valid",
@@ -137,7 +138,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "therm_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "voltage_valid",
@@ -145,7 +146,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "voltage_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "adc_valid",
@@ -153,7 +154,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "adc_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "fram_valid",
@@ -161,7 +162,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "fram_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "sd_valid",
@@ -169,7 +170,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "sd_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "gps_msg_valid",
@@ -177,7 +178,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "gps_msg_valid",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "mav_state",
@@ -185,7 +186,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "mav_state",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "sv_state",
@@ -193,7 +194,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "sv_state",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
   {
     id: "flight_mode",
@@ -201,6 +202,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     requiresAuth: false,
     dbField: "flight_mode",
     modes: ["Value"],
-    component: GraphWidget,
+    component: ValueWidget,
   },
 ];

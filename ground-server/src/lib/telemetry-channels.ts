@@ -12,7 +12,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "psi",
     requiresAuth: false,
     dbField: "pt1",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -21,7 +21,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "psi",
     requiresAuth: false,
     dbField: "pt2",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -30,7 +30,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "lbf",
     requiresAuth: false,
     dbField: "lc1",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -38,7 +38,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "Igniter 1 Continuity",
     requiresAuth: false,
     dbField: "ign1Cont",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -46,7 +46,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "Igniter 2 Continuity",
     requiresAuth: false,
     dbField: "ign2Cont",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -55,7 +55,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "psi",
     requiresAuth: false,
     dbField: "pt3",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -64,7 +64,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "psi",
     requiresAuth: false,
     dbField: "pt4",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {
@@ -73,7 +73,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "C",
     requiresAuth: false,
     dbField: "rtd_temp",
-    modes: ["Value", "15m Chart", "60m Chart"],
+    modes: ["Value", "1m Chart", "15m Chart", "60m Chart"],
     component: GraphWidget,
   },
   {

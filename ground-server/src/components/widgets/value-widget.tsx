@@ -14,8 +14,7 @@ export default function ValueWidget({ channel }: WidgetProps) {
     );
   }
 
-  const latestValue = fieldData[fieldData.length - 1].value.toString();
-
+  const latestValue = (fieldData[fieldData.length - 1].value as object).toString();
   return (
     <div className="w-full h-full flex flex-col justify-center items-center gap-2">
       <p className="font-semibold text-lg">{channel.label}</p>

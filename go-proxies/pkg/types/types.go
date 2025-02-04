@@ -25,8 +25,8 @@ type HistoricalDataRequest struct {
 }
 
 type DataPoint struct {
-	Timestamp time.Time `json:"timestamp"`
-	Value     float64   `json:"value"`
+	Timestamp time.Time   `json:"timestamp"`
+	Value     interface{} `json:"value"`
 }
 
 type HistoricalDataResponse struct {
@@ -226,7 +226,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 			log.Println(results.Record())
 			response.Data = append(response.Data, DataPoint{
 				Timestamp: results.Record().Time(),
-				Value:     results.Record().Value().(float64),
+				Value:     results.Record().Value(),
 			})
 		}
 	}

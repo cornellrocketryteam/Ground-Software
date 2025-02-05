@@ -185,7 +185,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketMetadata->set_sd_valid(static_cast<bool>((metadata & 0x200) >> 9)); 
         rocketMetadata->set_gps_msg_valid(static_cast<bool>((metadata & 0x400) >> 10)); 
         rocketMetadata->set_mav_state(static_cast<bool>((metadata & 0x800) >> 11)); 
-        rocketMetadata->set_sv_state(static_cast<bool>((metadata & 0x1000) >> 12)); 
+        rocketMetadata->set_sv2_state(static_cast<bool>((metadata & 0x1000) >> 12)); 
 
         switch((metadata & 0xE000) >> 13) {
             case 0b000:

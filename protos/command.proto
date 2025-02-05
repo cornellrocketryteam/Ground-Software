@@ -103,7 +103,7 @@ message RocketMetadata {
     bool sd_valid = 10;
     bool gps_msg_valid = 11;
     bool mav_state = 12;
-    bool sv_state = 13;
+    bool sv2_state = 13;
     FlightMode flight_mode = 14;
 }
 

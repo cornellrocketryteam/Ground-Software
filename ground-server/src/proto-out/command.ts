@@ -91,8 +91,11 @@ export interface Command {
   qdRetract?: boolean | undefined;
   ignite?: boolean | undefined;
   sv2Close?: boolean | undefined;
-  mavOpen?: boolean | undefined;
-  fire?: boolean | undefined;
+  mavOpen?:
+    | boolean
+    | undefined;
+  /** optional bool clear_sd = 9; */
+  launch?: boolean | undefined;
 }
 
 /**
@@ -103,31 +106,40 @@ export interface CommandReply {
 }
 
 /** The telemetry request message */
-export interface TelemetryRequest {
+export interface FillStationTelemetryRequest {
+}
+
+/** Rocket Telemetry Request */
+export interface RocketTelemetryRequest {
+  isRocketTelemetryRequest: boolean;
 }
 
 export interface Events {
-  keyArmed: boolean;
   altitudeArmed: boolean;
   altimeterInitFailed: boolean;
   altimeterReadingFailed: boolean;
-  altimeterWasTurnedOff: boolean;
   gpsInitFailed: boolean;
   gpsReadingFailed: boolean;
-  gpsWasTurnedOff: boolean;
   imuInitFailed: boolean;
   imuReadingFailed: boolean;
-  imuWasTurnedOff: boolean;
   accelerometerInitFailed: boolean;
   accelerometerReadingFailed: boolean;
-  accelerometerWasTurnedOff: boolean;
   thermometerInitFailed: boolean;
   thermometerReadingFailed: boolean;
-  thermometerWasTurnedOff: boolean;
+  voltageInitFailed: boolean;
+  voltageReadingFailed: boolean;
+  adcInitFailed: boolean;
+  adcReadingFailed: boolean;
+  framInitFailed: boolean;
+  framWriteFailed: boolean;
   sdInitFailed: boolean;
   sdWriteFailed: boolean;
-  rfmInitFailed: boolean;
-  rfmTransmitFailed: boolean;
+  mavWasActuated: boolean;
+  svWasActuated: boolean;
+  mainDeployWaitEnd: boolean;
+  mainLogShutoff: boolean;
+  cycleOverflow: boolean;
+  invalidCommand: boolean;
 }
 
 export interface RocketMetadata {
@@ -143,7 +155,7 @@ export interface RocketMetadata {
   sdValid: boolean;
   gpsMsgValid: boolean;
   mavState: boolean;
-  svState: boolean;
+  sv2State: boolean;
   flightMode: FlightMode;
 }
 
@@ -227,7 +239,7 @@ function createBaseCommand(): Command {
     ignite: undefined,
     sv2Close: undefined,
     mavOpen: undefined,
-    fire: undefined,
+    launch: undefined,
   };
 }
 
@@ -254,8 +266,8 @@ export const Command: MessageFns<Command> = {
     if (message.mavOpen !== undefined) {
       writer.uint32(56).bool(message.mavOpen);
     }
-    if (message.fire !== undefined) {
-      writer.uint32(64).bool(message.fire);
+    if (message.launch !== undefined) {
+      writer.uint32(64).bool(message.launch);
     }
     return writer;
   },
@@ -328,7 +340,7 @@ export const Command: MessageFns<Command> = {
             break;
           }
 
-          message.fire = reader.bool();
+          message.launch = reader.bool();
           continue;
         }
       }
@@ -349,7 +361,7 @@ export const Command: MessageFns<Command> = {
       ignite: isSet(object.ignite) ? globalThis.Boolean(object.ignite) : undefined,
       sv2Close: isSet(object.sv2Close) ? globalThis.Boolean(object.sv2Close) : undefined,
       mavOpen: isSet(object.mavOpen) ? globalThis.Boolean(object.mavOpen) : undefined,
-      fire: isSet(object.fire) ? globalThis.Boolean(object.fire) : undefined,
+      launch: isSet(object.launch) ? globalThis.Boolean(object.launch) : undefined,
     };
   },
 
@@ -376,8 +388,8 @@ export const Command: MessageFns<Command> = {
     if (message.mavOpen !== undefined) {
       obj.mavOpen = message.mavOpen;
     }
-    if (message.fire !== undefined) {
-      obj.fire = message.fire;
+    if (message.launch !== undefined) {
+      obj.launch = message.launch;
     }
     return obj;
   },
@@ -394,7 +406,7 @@ export const Command: MessageFns<Command> = {
     message.ignite = object.ignite ?? undefined;
     message.sv2Close = object.sv2Close ?? undefined;
     message.mavOpen = object.mavOpen ?? undefined;
-    message.fire = object.fire ?? undefined;
+    message.launch = object.launch ?? undefined;
     return message;
   },
 };
@@ -442,19 +454,19 @@ export const CommandReply: MessageFns<CommandReply> = {
   },
 };
 
-function createBaseTelemetryRequest(): TelemetryRequest {
+function createBaseFillStationTelemetryRequest(): FillStationTelemetryRequest {
   return {};
 }
 
-export const TelemetryRequest: MessageFns<TelemetryRequest> = {
-  encode(_: TelemetryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+export const FillStationTelemetryRequest: MessageFns<FillStationTelemetryRequest> = {
+  encode(_: FillStationTelemetryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): TelemetryRequest {
+  decode(input: BinaryReader | Uint8Array, length?: number): FillStationTelemetryRequest {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseTelemetryRequest();
+    const message = createBaseFillStationTelemetryRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -467,102 +479,168 @@ export const TelemetryRequest: MessageFns<TelemetryRequest> = {
     return message;
   },
 
-  fromJSON(_: any): TelemetryRequest {
+  fromJSON(_: any): FillStationTelemetryRequest {
     return {};
   },
 
-  toJSON(_: TelemetryRequest): unknown {
+  toJSON(_: FillStationTelemetryRequest): unknown {
     const obj: any = {};
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<TelemetryRequest>, I>>(base?: I): TelemetryRequest {
-    return TelemetryRequest.fromPartial(base ?? ({} as any));
+  create<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(base?: I): FillStationTelemetryRequest {
+    return FillStationTelemetryRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<TelemetryRequest>, I>>(_: I): TelemetryRequest {
-    const message = createBaseTelemetryRequest();
+  fromPartial<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(_: I): FillStationTelemetryRequest {
+    const message = createBaseFillStationTelemetryRequest();
+    return message;
+  },
+};
+
+function createBaseRocketTelemetryRequest(): RocketTelemetryRequest {
+  return { isRocketTelemetryRequest: false };
+}
+
+export const RocketTelemetryRequest: MessageFns<RocketTelemetryRequest> = {
+  encode(message: RocketTelemetryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.isRocketTelemetryRequest !== false) {
+      writer.uint32(8).bool(message.isRocketTelemetryRequest);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RocketTelemetryRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRocketTelemetryRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.isRocketTelemetryRequest = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RocketTelemetryRequest {
+    return {
+      isRocketTelemetryRequest: isSet(object.isRocketTelemetryRequest)
+        ? globalThis.Boolean(object.isRocketTelemetryRequest)
+        : false,
+    };
+  },
+
+  toJSON(message: RocketTelemetryRequest): unknown {
+    const obj: any = {};
+    if (message.isRocketTelemetryRequest !== false) {
+      obj.isRocketTelemetryRequest = message.isRocketTelemetryRequest;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(base?: I): RocketTelemetryRequest {
+    return RocketTelemetryRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(object: I): RocketTelemetryRequest {
+    const message = createBaseRocketTelemetryRequest();
+    message.isRocketTelemetryRequest = object.isRocketTelemetryRequest ?? false;
     return message;
   },
 };
 
 function createBaseEvents(): Events {
   return {
-    keyArmed: false,
     altitudeArmed: false,
     altimeterInitFailed: false,
     altimeterReadingFailed: false,
-    altimeterWasTurnedOff: false,
     gpsInitFailed: false,
     gpsReadingFailed: false,
-    gpsWasTurnedOff: false,
     imuInitFailed: false,
     imuReadingFailed: false,
-    imuWasTurnedOff: false,
     accelerometerInitFailed: false,
     accelerometerReadingFailed: false,
-    accelerometerWasTurnedOff: false,
     thermometerInitFailed: false,
     thermometerReadingFailed: false,
-    thermometerWasTurnedOff: false,
+    voltageInitFailed: false,
+    voltageReadingFailed: false,
+    adcInitFailed: false,
+    adcReadingFailed: false,
+    framInitFailed: false,
+    framWriteFailed: false,
     sdInitFailed: false,
     sdWriteFailed: false,
-    rfmInitFailed: false,
-    rfmTransmitFailed: false,
+    mavWasActuated: false,
+    svWasActuated: false,
+    mainDeployWaitEnd: false,
+    mainLogShutoff: false,
+    cycleOverflow: false,
+    invalidCommand: false,
   };
 }
 
 export const Events: MessageFns<Events> = {
   encode(message: Events, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.keyArmed !== false) {
-      writer.uint32(8).bool(message.keyArmed);
-    }
     if (message.altitudeArmed !== false) {
-      writer.uint32(16).bool(message.altitudeArmed);
+      writer.uint32(8).bool(message.altitudeArmed);
     }
     if (message.altimeterInitFailed !== false) {
-      writer.uint32(24).bool(message.altimeterInitFailed);
+      writer.uint32(16).bool(message.altimeterInitFailed);
     }
     if (message.altimeterReadingFailed !== false) {
-      writer.uint32(32).bool(message.altimeterReadingFailed);
-    }
-    if (message.altimeterWasTurnedOff !== false) {
-      writer.uint32(40).bool(message.altimeterWasTurnedOff);
+      writer.uint32(24).bool(message.altimeterReadingFailed);
     }
     if (message.gpsInitFailed !== false) {
-      writer.uint32(48).bool(message.gpsInitFailed);
+      writer.uint32(32).bool(message.gpsInitFailed);
     }
     if (message.gpsReadingFailed !== false) {
-      writer.uint32(56).bool(message.gpsReadingFailed);
-    }
-    if (message.gpsWasTurnedOff !== false) {
-      writer.uint32(64).bool(message.gpsWasTurnedOff);
+      writer.uint32(40).bool(message.gpsReadingFailed);
     }
     if (message.imuInitFailed !== false) {
-      writer.uint32(72).bool(message.imuInitFailed);
+      writer.uint32(48).bool(message.imuInitFailed);
     }
     if (message.imuReadingFailed !== false) {
-      writer.uint32(80).bool(message.imuReadingFailed);
-    }
-    if (message.imuWasTurnedOff !== false) {
-      writer.uint32(88).bool(message.imuWasTurnedOff);
+      writer.uint32(56).bool(message.imuReadingFailed);
     }
     if (message.accelerometerInitFailed !== false) {
-      writer.uint32(96).bool(message.accelerometerInitFailed);
+      writer.uint32(64).bool(message.accelerometerInitFailed);
     }
     if (message.accelerometerReadingFailed !== false) {
-      writer.uint32(104).bool(message.accelerometerReadingFailed);
-    }
-    if (message.accelerometerWasTurnedOff !== false) {
-      writer.uint32(112).bool(message.accelerometerWasTurnedOff);
+      writer.uint32(72).bool(message.accelerometerReadingFailed);
     }
     if (message.thermometerInitFailed !== false) {
-      writer.uint32(120).bool(message.thermometerInitFailed);
+      writer.uint32(80).bool(message.thermometerInitFailed);
     }
     if (message.thermometerReadingFailed !== false) {
-      writer.uint32(128).bool(message.thermometerReadingFailed);
+      writer.uint32(88).bool(message.thermometerReadingFailed);
     }
-    if (message.thermometerWasTurnedOff !== false) {
-      writer.uint32(136).bool(message.thermometerWasTurnedOff);
+    if (message.voltageInitFailed !== false) {
+      writer.uint32(96).bool(message.voltageInitFailed);
+    }
+    if (message.voltageReadingFailed !== false) {
+      writer.uint32(104).bool(message.voltageReadingFailed);
+    }
+    if (message.adcInitFailed !== false) {
+      writer.uint32(112).bool(message.adcInitFailed);
+    }
+    if (message.adcReadingFailed !== false) {
+      writer.uint32(120).bool(message.adcReadingFailed);
+    }
+    if (message.framInitFailed !== false) {
+      writer.uint32(128).bool(message.framInitFailed);
+    }
+    if (message.framWriteFailed !== false) {
+      writer.uint32(136).bool(message.framWriteFailed);
     }
     if (message.sdInitFailed !== false) {
       writer.uint32(144).bool(message.sdInitFailed);
@@ -570,11 +648,23 @@ export const Events: MessageFns<Events> = {
     if (message.sdWriteFailed !== false) {
       writer.uint32(152).bool(message.sdWriteFailed);
     }
-    if (message.rfmInitFailed !== false) {
-      writer.uint32(160).bool(message.rfmInitFailed);
+    if (message.mavWasActuated !== false) {
+      writer.uint32(160).bool(message.mavWasActuated);
     }
-    if (message.rfmTransmitFailed !== false) {
-      writer.uint32(168).bool(message.rfmTransmitFailed);
+    if (message.svWasActuated !== false) {
+      writer.uint32(168).bool(message.svWasActuated);
+    }
+    if (message.mainDeployWaitEnd !== false) {
+      writer.uint32(176).bool(message.mainDeployWaitEnd);
+    }
+    if (message.mainLogShutoff !== false) {
+      writer.uint32(184).bool(message.mainLogShutoff);
+    }
+    if (message.cycleOverflow !== false) {
+      writer.uint32(192).bool(message.cycleOverflow);
+    }
+    if (message.invalidCommand !== false) {
+      writer.uint32(200).bool(message.invalidCommand);
     }
     return writer;
   },
@@ -591,7 +681,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.keyArmed = reader.bool();
+          message.altitudeArmed = reader.bool();
           continue;
         }
         case 2: {
@@ -599,7 +689,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.altitudeArmed = reader.bool();
+          message.altimeterInitFailed = reader.bool();
           continue;
         }
         case 3: {
@@ -607,7 +697,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.altimeterInitFailed = reader.bool();
+          message.altimeterReadingFailed = reader.bool();
           continue;
         }
         case 4: {
@@ -615,7 +705,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.altimeterReadingFailed = reader.bool();
+          message.gpsInitFailed = reader.bool();
           continue;
         }
         case 5: {
@@ -623,7 +713,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.altimeterWasTurnedOff = reader.bool();
+          message.gpsReadingFailed = reader.bool();
           continue;
         }
         case 6: {
@@ -631,7 +721,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.gpsInitFailed = reader.bool();
+          message.imuInitFailed = reader.bool();
           continue;
         }
         case 7: {
@@ -639,7 +729,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.gpsReadingFailed = reader.bool();
+          message.imuReadingFailed = reader.bool();
           continue;
         }
         case 8: {
@@ -647,7 +737,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.gpsWasTurnedOff = reader.bool();
+          message.accelerometerInitFailed = reader.bool();
           continue;
         }
         case 9: {
@@ -655,7 +745,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.imuInitFailed = reader.bool();
+          message.accelerometerReadingFailed = reader.bool();
           continue;
         }
         case 10: {
@@ -663,7 +753,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.imuReadingFailed = reader.bool();
+          message.thermometerInitFailed = reader.bool();
           continue;
         }
         case 11: {
@@ -671,7 +761,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.imuWasTurnedOff = reader.bool();
+          message.thermometerReadingFailed = reader.bool();
           continue;
         }
         case 12: {
@@ -679,7 +769,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.accelerometerInitFailed = reader.bool();
+          message.voltageInitFailed = reader.bool();
           continue;
         }
         case 13: {
@@ -687,7 +777,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.accelerometerReadingFailed = reader.bool();
+          message.voltageReadingFailed = reader.bool();
           continue;
         }
         case 14: {
@@ -695,7 +785,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.accelerometerWasTurnedOff = reader.bool();
+          message.adcInitFailed = reader.bool();
           continue;
         }
         case 15: {
@@ -703,7 +793,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerInitFailed = reader.bool();
+          message.adcReadingFailed = reader.bool();
           continue;
         }
         case 16: {
@@ -711,7 +801,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerReadingFailed = reader.bool();
+          message.framInitFailed = reader.bool();
           continue;
         }
         case 17: {
@@ -719,7 +809,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerWasTurnedOff = reader.bool();
+          message.framWriteFailed = reader.bool();
           continue;
         }
         case 18: {
@@ -743,7 +833,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.rfmInitFailed = reader.bool();
+          message.mavWasActuated = reader.bool();
           continue;
         }
         case 21: {
@@ -751,7 +841,39 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.rfmTransmitFailed = reader.bool();
+          message.svWasActuated = reader.bool();
+          continue;
+        }
+        case 22: {
+          if (tag !== 176) {
+            break;
+          }
+
+          message.mainDeployWaitEnd = reader.bool();
+          continue;
+        }
+        case 23: {
+          if (tag !== 184) {
+            break;
+          }
+
+          message.mainLogShutoff = reader.bool();
+          continue;
+        }
+        case 24: {
+          if (tag !== 192) {
+            break;
+          }
+
+          message.cycleOverflow = reader.bool();
+          continue;
+        }
+        case 25: {
+          if (tag !== 200) {
+            break;
+          }
+
+          message.invalidCommand = reader.bool();
           continue;
         }
       }
@@ -765,29 +887,20 @@ export const Events: MessageFns<Events> = {
 
   fromJSON(object: any): Events {
     return {
-      keyArmed: isSet(object.keyArmed) ? globalThis.Boolean(object.keyArmed) : false,
       altitudeArmed: isSet(object.altitudeArmed) ? globalThis.Boolean(object.altitudeArmed) : false,
       altimeterInitFailed: isSet(object.altimeterInitFailed) ? globalThis.Boolean(object.altimeterInitFailed) : false,
       altimeterReadingFailed: isSet(object.altimeterReadingFailed)
         ? globalThis.Boolean(object.altimeterReadingFailed)
         : false,
-      altimeterWasTurnedOff: isSet(object.altimeterWasTurnedOff)
-        ? globalThis.Boolean(object.altimeterWasTurnedOff)
-        : false,
       gpsInitFailed: isSet(object.gpsInitFailed) ? globalThis.Boolean(object.gpsInitFailed) : false,
       gpsReadingFailed: isSet(object.gpsReadingFailed) ? globalThis.Boolean(object.gpsReadingFailed) : false,
-      gpsWasTurnedOff: isSet(object.gpsWasTurnedOff) ? globalThis.Boolean(object.gpsWasTurnedOff) : false,
       imuInitFailed: isSet(object.imuInitFailed) ? globalThis.Boolean(object.imuInitFailed) : false,
       imuReadingFailed: isSet(object.imuReadingFailed) ? globalThis.Boolean(object.imuReadingFailed) : false,
-      imuWasTurnedOff: isSet(object.imuWasTurnedOff) ? globalThis.Boolean(object.imuWasTurnedOff) : false,
       accelerometerInitFailed: isSet(object.accelerometerInitFailed)
         ? globalThis.Boolean(object.accelerometerInitFailed)
         : false,
       accelerometerReadingFailed: isSet(object.accelerometerReadingFailed)
         ? globalThis.Boolean(object.accelerometerReadingFailed)
-        : false,
-      accelerometerWasTurnedOff: isSet(object.accelerometerWasTurnedOff)
-        ? globalThis.Boolean(object.accelerometerWasTurnedOff)
         : false,
       thermometerInitFailed: isSet(object.thermometerInitFailed)
         ? globalThis.Boolean(object.thermometerInitFailed)
@@ -795,21 +908,27 @@ export const Events: MessageFns<Events> = {
       thermometerReadingFailed: isSet(object.thermometerReadingFailed)
         ? globalThis.Boolean(object.thermometerReadingFailed)
         : false,
-      thermometerWasTurnedOff: isSet(object.thermometerWasTurnedOff)
-        ? globalThis.Boolean(object.thermometerWasTurnedOff)
+      voltageInitFailed: isSet(object.voltageInitFailed) ? globalThis.Boolean(object.voltageInitFailed) : false,
+      voltageReadingFailed: isSet(object.voltageReadingFailed)
+        ? globalThis.Boolean(object.voltageReadingFailed)
         : false,
+      adcInitFailed: isSet(object.adcInitFailed) ? globalThis.Boolean(object.adcInitFailed) : false,
+      adcReadingFailed: isSet(object.adcReadingFailed) ? globalThis.Boolean(object.adcReadingFailed) : false,
+      framInitFailed: isSet(object.framInitFailed) ? globalThis.Boolean(object.framInitFailed) : false,
+      framWriteFailed: isSet(object.framWriteFailed) ? globalThis.Boolean(object.framWriteFailed) : false,
       sdInitFailed: isSet(object.sdInitFailed) ? globalThis.Boolean(object.sdInitFailed) : false,
       sdWriteFailed: isSet(object.sdWriteFailed) ? globalThis.Boolean(object.sdWriteFailed) : false,
-      rfmInitFailed: isSet(object.rfmInitFailed) ? globalThis.Boolean(object.rfmInitFailed) : false,
-      rfmTransmitFailed: isSet(object.rfmTransmitFailed) ? globalThis.Boolean(object.rfmTransmitFailed) : false,
+      mavWasActuated: isSet(object.mavWasActuated) ? globalThis.Boolean(object.mavWasActuated) : false,
+      svWasActuated: isSet(object.svWasActuated) ? globalThis.Boolean(object.svWasActuated) : false,
+      mainDeployWaitEnd: isSet(object.mainDeployWaitEnd) ? globalThis.Boolean(object.mainDeployWaitEnd) : false,
+      mainLogShutoff: isSet(object.mainLogShutoff) ? globalThis.Boolean(object.mainLogShutoff) : false,
+      cycleOverflow: isSet(object.cycleOverflow) ? globalThis.Boolean(object.cycleOverflow) : false,
+      invalidCommand: isSet(object.invalidCommand) ? globalThis.Boolean(object.invalidCommand) : false,
     };
   },
 
   toJSON(message: Events): unknown {
     const obj: any = {};
-    if (message.keyArmed !== false) {
-      obj.keyArmed = message.keyArmed;
-    }
     if (message.altitudeArmed !== false) {
       obj.altitudeArmed = message.altitudeArmed;
     }
@@ -819,17 +938,11 @@ export const Events: MessageFns<Events> = {
     if (message.altimeterReadingFailed !== false) {
       obj.altimeterReadingFailed = message.altimeterReadingFailed;
     }
-    if (message.altimeterWasTurnedOff !== false) {
-      obj.altimeterWasTurnedOff = message.altimeterWasTurnedOff;
-    }
     if (message.gpsInitFailed !== false) {
       obj.gpsInitFailed = message.gpsInitFailed;
     }
     if (message.gpsReadingFailed !== false) {
       obj.gpsReadingFailed = message.gpsReadingFailed;
-    }
-    if (message.gpsWasTurnedOff !== false) {
-      obj.gpsWasTurnedOff = message.gpsWasTurnedOff;
     }
     if (message.imuInitFailed !== false) {
       obj.imuInitFailed = message.imuInitFailed;
@@ -837,17 +950,11 @@ export const Events: MessageFns<Events> = {
     if (message.imuReadingFailed !== false) {
       obj.imuReadingFailed = message.imuReadingFailed;
     }
-    if (message.imuWasTurnedOff !== false) {
-      obj.imuWasTurnedOff = message.imuWasTurnedOff;
-    }
     if (message.accelerometerInitFailed !== false) {
       obj.accelerometerInitFailed = message.accelerometerInitFailed;
     }
     if (message.accelerometerReadingFailed !== false) {
       obj.accelerometerReadingFailed = message.accelerometerReadingFailed;
-    }
-    if (message.accelerometerWasTurnedOff !== false) {
-      obj.accelerometerWasTurnedOff = message.accelerometerWasTurnedOff;
     }
     if (message.thermometerInitFailed !== false) {
       obj.thermometerInitFailed = message.thermometerInitFailed;
@@ -855,8 +962,23 @@ export const Events: MessageFns<Events> = {
     if (message.thermometerReadingFailed !== false) {
       obj.thermometerReadingFailed = message.thermometerReadingFailed;
     }
-    if (message.thermometerWasTurnedOff !== false) {
-      obj.thermometerWasTurnedOff = message.thermometerWasTurnedOff;
+    if (message.voltageInitFailed !== false) {
+      obj.voltageInitFailed = message.voltageInitFailed;
+    }
+    if (message.voltageReadingFailed !== false) {
+      obj.voltageReadingFailed = message.voltageReadingFailed;
+    }
+    if (message.adcInitFailed !== false) {
+      obj.adcInitFailed = message.adcInitFailed;
+    }
+    if (message.adcReadingFailed !== false) {
+      obj.adcReadingFailed = message.adcReadingFailed;
+    }
+    if (message.framInitFailed !== false) {
+      obj.framInitFailed = message.framInitFailed;
+    }
+    if (message.framWriteFailed !== false) {
+      obj.framWriteFailed = message.framWriteFailed;
     }
     if (message.sdInitFailed !== false) {
       obj.sdInitFailed = message.sdInitFailed;
@@ -864,11 +986,23 @@ export const Events: MessageFns<Events> = {
     if (message.sdWriteFailed !== false) {
       obj.sdWriteFailed = message.sdWriteFailed;
     }
-    if (message.rfmInitFailed !== false) {
-      obj.rfmInitFailed = message.rfmInitFailed;
+    if (message.mavWasActuated !== false) {
+      obj.mavWasActuated = message.mavWasActuated;
     }
-    if (message.rfmTransmitFailed !== false) {
-      obj.rfmTransmitFailed = message.rfmTransmitFailed;
+    if (message.svWasActuated !== false) {
+      obj.svWasActuated = message.svWasActuated;
+    }
+    if (message.mainDeployWaitEnd !== false) {
+      obj.mainDeployWaitEnd = message.mainDeployWaitEnd;
+    }
+    if (message.mainLogShutoff !== false) {
+      obj.mainLogShutoff = message.mainLogShutoff;
+    }
+    if (message.cycleOverflow !== false) {
+      obj.cycleOverflow = message.cycleOverflow;
+    }
+    if (message.invalidCommand !== false) {
+      obj.invalidCommand = message.invalidCommand;
     }
     return obj;
   },
@@ -878,27 +1012,31 @@ export const Events: MessageFns<Events> = {
   },
   fromPartial<I extends Exact<DeepPartial<Events>, I>>(object: I): Events {
     const message = createBaseEvents();
-    message.keyArmed = object.keyArmed ?? false;
     message.altitudeArmed = object.altitudeArmed ?? false;
     message.altimeterInitFailed = object.altimeterInitFailed ?? false;
     message.altimeterReadingFailed = object.altimeterReadingFailed ?? false;
-    message.altimeterWasTurnedOff = object.altimeterWasTurnedOff ?? false;
     message.gpsInitFailed = object.gpsInitFailed ?? false;
     message.gpsReadingFailed = object.gpsReadingFailed ?? false;
-    message.gpsWasTurnedOff = object.gpsWasTurnedOff ?? false;
     message.imuInitFailed = object.imuInitFailed ?? false;
     message.imuReadingFailed = object.imuReadingFailed ?? false;
-    message.imuWasTurnedOff = object.imuWasTurnedOff ?? false;
     message.accelerometerInitFailed = object.accelerometerInitFailed ?? false;
     message.accelerometerReadingFailed = object.accelerometerReadingFailed ?? false;
-    message.accelerometerWasTurnedOff = object.accelerometerWasTurnedOff ?? false;
     message.thermometerInitFailed = object.thermometerInitFailed ?? false;
     message.thermometerReadingFailed = object.thermometerReadingFailed ?? false;
-    message.thermometerWasTurnedOff = object.thermometerWasTurnedOff ?? false;
+    message.voltageInitFailed = object.voltageInitFailed ?? false;
+    message.voltageReadingFailed = object.voltageReadingFailed ?? false;
+    message.adcInitFailed = object.adcInitFailed ?? false;
+    message.adcReadingFailed = object.adcReadingFailed ?? false;
+    message.framInitFailed = object.framInitFailed ?? false;
+    message.framWriteFailed = object.framWriteFailed ?? false;
     message.sdInitFailed = object.sdInitFailed ?? false;
     message.sdWriteFailed = object.sdWriteFailed ?? false;
-    message.rfmInitFailed = object.rfmInitFailed ?? false;
-    message.rfmTransmitFailed = object.rfmTransmitFailed ?? false;
+    message.mavWasActuated = object.mavWasActuated ?? false;
+    message.svWasActuated = object.svWasActuated ?? false;
+    message.mainDeployWaitEnd = object.mainDeployWaitEnd ?? false;
+    message.mainLogShutoff = object.mainLogShutoff ?? false;
+    message.cycleOverflow = object.cycleOverflow ?? false;
+    message.invalidCommand = object.invalidCommand ?? false;
     return message;
   },
 };
@@ -917,7 +1055,7 @@ function createBaseRocketMetadata(): RocketMetadata {
     sdValid: false,
     gpsMsgValid: false,
     mavState: false,
-    svState: false,
+    sv2State: false,
     flightMode: 0,
   };
 }
@@ -960,8 +1098,8 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     if (message.mavState !== false) {
       writer.uint32(96).bool(message.mavState);
     }
-    if (message.svState !== false) {
-      writer.uint32(104).bool(message.svState);
+    if (message.sv2State !== false) {
+      writer.uint32(104).bool(message.sv2State);
     }
     if (message.flightMode !== 0) {
       writer.uint32(112).int32(message.flightMode);
@@ -1077,7 +1215,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
             break;
           }
 
-          message.svState = reader.bool();
+          message.sv2State = reader.bool();
           continue;
         }
         case 14: {
@@ -1111,7 +1249,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
       sdValid: isSet(object.sdValid) ? globalThis.Boolean(object.sdValid) : false,
       gpsMsgValid: isSet(object.gpsMsgValid) ? globalThis.Boolean(object.gpsMsgValid) : false,
       mavState: isSet(object.mavState) ? globalThis.Boolean(object.mavState) : false,
-      svState: isSet(object.svState) ? globalThis.Boolean(object.svState) : false,
+      sv2State: isSet(object.sv2State) ? globalThis.Boolean(object.sv2State) : false,
       flightMode: isSet(object.flightMode) ? flightModeFromJSON(object.flightMode) : 0,
     };
   },
@@ -1154,8 +1292,8 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     if (message.mavState !== false) {
       obj.mavState = message.mavState;
     }
-    if (message.svState !== false) {
-      obj.svState = message.svState;
+    if (message.sv2State !== false) {
+      obj.sv2State = message.sv2State;
     }
     if (message.flightMode !== 0) {
       obj.flightMode = flightModeToJSON(message.flightMode);
@@ -1180,7 +1318,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     message.sdValid = object.sdValid ?? false;
     message.gpsMsgValid = object.gpsMsgValid ?? false;
     message.mavState = object.mavState ?? false;
-    message.svState = object.svState ?? false;
+    message.sv2State = object.sv2State ?? false;
     message.flightMode = object.flightMode ?? 0;
     return message;
   },
@@ -2340,8 +2478,9 @@ export const FillStationTelemeterService = {
     path: "/command.FillStationTelemeter/StreamTelemetry",
     requestStream: false,
     responseStream: true,
-    requestSerialize: (value: TelemetryRequest) => Buffer.from(TelemetryRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => TelemetryRequest.decode(value),
+    requestSerialize: (value: FillStationTelemetryRequest) =>
+      Buffer.from(FillStationTelemetryRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => FillStationTelemetryRequest.decode(value),
     responseSerialize: (value: FillStationTelemetry) => Buffer.from(FillStationTelemetry.encode(value).finish()),
     responseDeserialize: (value: Buffer) => FillStationTelemetry.decode(value),
   },
@@ -2349,17 +2488,17 @@ export const FillStationTelemeterService = {
 
 export interface FillStationTelemeterServer extends UntypedServiceImplementation {
   /** Sends telemetry */
-  streamTelemetry: handleServerStreamingCall<TelemetryRequest, FillStationTelemetry>;
+  streamTelemetry: handleServerStreamingCall<FillStationTelemetryRequest, FillStationTelemetry>;
 }
 
 export interface FillStationTelemeterClient extends Client {
   /** Sends telemetry */
   streamTelemetry(
-    request: TelemetryRequest,
+    request: FillStationTelemetryRequest,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<FillStationTelemetry>;
   streamTelemetry(
-    request: TelemetryRequest,
+    request: FillStationTelemetryRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<FillStationTelemetry>;
@@ -2382,8 +2521,8 @@ export const RocketTelemeterService = {
     path: "/command.RocketTelemeter/StreamTelemetry",
     requestStream: false,
     responseStream: true,
-    requestSerialize: (value: TelemetryRequest) => Buffer.from(TelemetryRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) => TelemetryRequest.decode(value),
+    requestSerialize: (value: RocketTelemetryRequest) => Buffer.from(RocketTelemetryRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => RocketTelemetryRequest.decode(value),
     responseSerialize: (value: RocketTelemetry) => Buffer.from(RocketTelemetry.encode(value).finish()),
     responseDeserialize: (value: Buffer) => RocketTelemetry.decode(value),
   },
@@ -2391,14 +2530,17 @@ export const RocketTelemeterService = {
 
 export interface RocketTelemeterServer extends UntypedServiceImplementation {
   /** Sends telemetry */
-  streamTelemetry: handleServerStreamingCall<TelemetryRequest, RocketTelemetry>;
+  streamTelemetry: handleServerStreamingCall<RocketTelemetryRequest, RocketTelemetry>;
 }
 
 export interface RocketTelemeterClient extends Client {
   /** Sends telemetry */
-  streamTelemetry(request: TelemetryRequest, options?: Partial<CallOptions>): ClientReadableStream<RocketTelemetry>;
   streamTelemetry(
-    request: TelemetryRequest,
+    request: RocketTelemetryRequest,
+    options?: Partial<CallOptions>,
+  ): ClientReadableStream<RocketTelemetry>;
+  streamTelemetry(
+    request: RocketTelemetryRequest,
     metadata?: Metadata,
     options?: Partial<CallOptions>,
   ): ClientReadableStream<RocketTelemetry>;

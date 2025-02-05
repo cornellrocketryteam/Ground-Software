@@ -53,7 +53,7 @@ export default async function Page7() {
               {
                 label: "Launch",
                 stateLabel: "Launched",
-                command: { fire: true },
+                command: { launch: true },
                 isOn: true,
               },
             ]}

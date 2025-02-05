@@ -38,6 +38,14 @@ function GenericHistoricalChart(
   channel: TelemetryChannel
 ) {
   const color = "hsl(var(--chart-1))";
+  const now = Date.now();
+  
+  const chartData = data
+    .filter((d) => d.timestamp.getTime() >= now - duration * 60000)
+    .map((d) => ({
+      timestamp: d.timestamp.getTime(),
+      value: d.value,
+    }));
 
   return (
     <div className="flex flex-col h-full">
@@ -47,10 +55,7 @@ function GenericHistoricalChart(
       <ChartContainer config={getConfig(channel)} className="w-full h-full">
         <LineChart
           accessibilityLayer
-          data={data.map((d) => ({
-            timestamp: d.timestamp.getTime(),
-            value: d.value,
-          }))}
+          data={chartData}
           margin={{ top: 0, right: 30, left: -10, bottom: 40 }}
         >
           <CartesianGrid vertical={false} />

@@ -173,7 +173,6 @@ message FillStationTelemetry {
     float pt1 = 2;
     float pt2 = 3;
     float lc1 = 4;
-    float sv1_cont = 5;
-    float ign1_cont = 6;
-    float ign2_cont = 7;
+    float ign1_cont = 5;
+    float ign2_cont = 6;
 }

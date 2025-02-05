@@ -87,7 +87,6 @@ func (d *Datastore) FillStationTelemetryStore(packet *pb.FillStationTelemetry) {
 		"pt1":       packet.Pt1,
 		"pt2":       packet.Pt2,
 		"lc1":       packet.Lc1,
-		"sv1_cont":  packet.Sv1Cont,
 		"ign1_cont": packet.Ign1Cont,
 		"ign2_cont": packet.Ign2Cont,
 	}

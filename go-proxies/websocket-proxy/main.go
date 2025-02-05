@@ -129,7 +129,7 @@ func main() {
 
 	// Start the broadcaster Goroutine
 	go func() {
-		ticker := time.NewTicker(500 * time.Millisecond)
+		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
 
 		for {

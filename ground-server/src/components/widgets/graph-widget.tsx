@@ -71,6 +71,7 @@ function GenericHistoricalChart(
             }}
           />
           <YAxis
+            domain={["dataMin", "dataMax"]}
             label={{
               value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
               style: { textAnchor: "middle" },
@@ -90,7 +91,7 @@ function GenericHistoricalChart(
             stroke={color} // Use color from config
             strokeWidth={2}
             dot={{ fill: color }}
-            activeDot={{ r: 6 }}
+            activeDot={{ r: 3 }}
           />
         </LineChart>
       </ChartContainer>

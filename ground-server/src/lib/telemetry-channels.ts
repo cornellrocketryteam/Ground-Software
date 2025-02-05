@@ -189,10 +189,10 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     component: ValueWidget,
   },
   {
-    id: "sv_state",
-    label: "SV State",
+    id: "sv2_state",
+    label: "SV2 State",
     requiresAuth: false,
-    dbField: "sv_state",
+    dbField: "sv2_state",
     modes: ["Value"],
     component: ValueWidget,
   },

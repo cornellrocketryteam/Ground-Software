@@ -97,7 +97,7 @@ export default async function Controls() {
               {
                 label: "Launch",
                 stateLabel: "Launched",
-                command: { fire: true },
+                command: { launch: true },
                 isOn: true
               },
             ]}

@@ -1,15 +1,10 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import ActuationBox from "@/components/conops/actuation-box";
 import { CameraBox } from "@/components/conops/camera-box";
 import PreviousButton from "@/components/conops/previous-button"; 
 
-export default async function Page7() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
-
+export default function Page7() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200">
       {/* Page Title */}
@@ -63,14 +58,13 @@ export default async function Page7() {
         </div>
       </div>
 
-            {/* Previous Page Button */}
-            <PreviousButton
+      {/* Previous Page Button */}
+      <PreviousButton
         label="Previous Page"
         confirmMessage="Are you sure you want to move to the previous page?"
         href="/conops/page6" // Adjust to the correct previous page URL
         className="left-6 right-auto"
       />
-
     </div>
   );
 }

@@ -1,5 +1,7 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import { LiveValueBox } from "@/components/conops/live-value-box";
+import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -14,24 +16,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 
-export default async function Conops() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
+export default function Conops() {
+  // Precompute channels so we only do the lookup once
+  const channels = TELEMETRY_CHANNELS.filter((c) =>
+    ["pt1", "pt2", "lc1", "rtd_temp", "pt3", "pt4"].includes(c.dbField)
+  );
 
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black relative">
       <h1 className="text-3xl font-bold mb-6 text-center">Page 1: Sensor Checks</h1>
+
       <div className="grid grid-cols-3 gap-8 w-full max-w-6xl">
-        <LiveValueBox label="Pressure Transducer 1 (PT1)" dbField="pt1" />
-        <LiveValueBox label="Pressure Transducer 2 (PT2)" dbField="pt2" />
-        <LiveValueBox label="Load Cell 1 (LC1)" dbField="lc1" />
-        <LiveValueBox label="RTD Temperature (RTD)" dbField="rtdTemp" />
-        <LiveValueBox label="Pressure Transducer 3 (PT3)" dbField="pt3" />
-        <LiveValueBox label="Pressure Transducer 4 (PT4)" dbField="pt4" />
+        {channels.map((channel) => (
+          <LiveValueBox key={channel.dbField} channel={channel} />
+        ))}
       </div>
+
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button

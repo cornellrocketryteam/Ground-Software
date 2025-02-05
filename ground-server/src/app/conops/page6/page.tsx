@@ -1,4 +1,5 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import ActuationBox from "@/components/conops/actuation-box";
 import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
 import {
@@ -14,15 +15,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; // Import the reusable component
+import PreviousButton from "@/components/conops/previous-button";
 
-export default async function Page6() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
-
+export default function Page6() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200">
       {/* Page Title */}
@@ -30,11 +25,15 @@ export default async function Page6() {
 
       {/* Row with Live Value and Actuation Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
+        {/* 1-minute chart for igniter current */}
         <LiveValueWithHistoricalGraph
-          label="Igniter Current"
-          dbField="igniterCurrent"
-          duration={15}
+          channel={{
+            label: "Igniter Current",
+            dbField: "igniterCurrent",
+          }}
+          duration={1}
         />
+
         <div className="flex justify-center">
           <ActuationBox
             title="Igniter"

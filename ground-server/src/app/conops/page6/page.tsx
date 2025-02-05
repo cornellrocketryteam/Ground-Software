@@ -14,11 +14,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; // Import the reusable component
+import PreviousButton from "@/components/conops/previous-button";
 
 export default async function Page6() {
   const session = await auth();
-
   if (!session) {
     return <div>Not authenticated</div>;
   }
@@ -30,11 +29,16 @@ export default async function Page6() {
 
       {/* Row with Live Value and Actuation Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
+        {/* 1-minute chart for igniter current */}
         <LiveValueWithHistoricalGraph
-          label="Igniter Current"
-          dbField="igniterCurrent"
-          duration={15}
+          channel={{
+            label: "Igniter Current",
+            dbField: "igniterCurrent",
+            // unit: "A", // If known
+          }}
+          duration={1}
         />
+
         <div className="flex justify-center">
           <ActuationBox
             title="Igniter"

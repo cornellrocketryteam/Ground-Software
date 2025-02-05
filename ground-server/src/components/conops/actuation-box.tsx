@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
@@ -55,9 +56,42 @@ export default function ActuationBox({
   const { toast } = useToast();
   const [isSwitchOn, setIsSwitchOn] = useState<boolean>(true);
 
+  // keys for local storage 
+  const currentStateKey = `ActuationBox_currentState-${title}`; 
+  const isOnStateKey = `ActuaionBox_isOnState-${title}`; 
+
+  const buttonOn = "on"; 
+  const buttonOff = "off";
+
+  // ran once to get local storage values
+  useEffect(() => {
+    const storedState = localStorage.getItem(currentStateKey);
+    if (storedState) {
+      setCurrentState(storedState);
+    } else {
+      setCurrentState(initialStateLabel);
+    }
+
+    const isOnState = localStorage.getItem(isOnStateKey);
+
+    if (isOnState == buttonOn){
+      setIsOnState(true); 
+    } else if (isOnState == buttonOff){
+      setIsOnState(false);
+    }
+  }, []);
+
   const handleButtonClick = (button: ButtonConfig) => {
     setCurrentState(button.stateLabel);
     setIsOnState(button.isOn);
+
+    localStorage.setItem(currentStateKey, button.stateLabel);
+
+    if (button.isOn){
+      localStorage.setItem(isOnStateKey, buttonOn); 
+    } else {
+      localStorage.setItem(isOnStateKey, buttonOff); 
+    }
 
     sendCommand(button.command)
       .then((res) => {

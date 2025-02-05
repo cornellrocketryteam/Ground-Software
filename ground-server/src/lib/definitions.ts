@@ -2,7 +2,7 @@ import { type ComponentType } from "react";
 
 export type DataPoint = {
   timestamp: Date;
-  value: number;
+  value: unknown;
 };
 
 export type WidgetProps = {

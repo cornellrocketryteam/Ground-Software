@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode } from "react";
 import { useData } from "@/contexts/data-context";
 
 interface LiveValueBoxProps {
@@ -15,7 +16,7 @@ export function LiveValueBox({ label, dbField }: LiveValueBoxProps) {
     <div className="p-4 border dark:border-white rounded-lg shadow-md w-full h-24 flex flex-col justify-center items-center">
       <h2 className="text-sm font-bold">{label}</h2>
       <p className="text-xl font-mono">
-        {dataPoints ? dataPoints[dataPoints.length - 1].value : "--"}
+        {dataPoints ? dataPoints[dataPoints.length - 1].value as ReactNode : "--"}
       </p>
     </div>
   );

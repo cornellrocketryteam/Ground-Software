@@ -122,6 +122,10 @@ export default function GraphWidget({ mode, channel }: WidgetProps) {
     );
   }
 
+  if (mode === "1m Chart") {
+    return GenericHistoricalChart(1, fieldData, channel);
+  }
+
   if (mode === "15m Chart") {
     return GenericHistoricalChart(15, fieldData, channel);
   }

@@ -86,7 +86,7 @@ function GenericHistoricalChart(
           <Line
             dataKey={"value"} // Use the provided dataKey
             isAnimationActive={false}
-            type="natural"
+            type="linear"
             stroke={color} // Use color from config
             strokeWidth={2}
             dot={{ fill: color }}

@@ -44,8 +44,7 @@ float Sensor::ReadPT2(){
 float Sensor::ReadLoadCell(){
     float voltage = Read(LC_CHANNEL, ADC1_INDEX);
 
-    // TODO: Update after load cell calibration 
-    return voltage; 
+    return 250*voltage/1881; 
 }
 
 float Sensor::ReadIgnitorOneContinuity(){
@@ -57,6 +56,5 @@ float Sensor::ReadIgnitorOneContinuity(){
 float Sensor::ReadIgnitorTwoContinuity(){
     // voltage < 10 implies no continuity, and >= 10 is continuity
     float voltage = Read(IGN_2_CONT_CHANNEL, ADC2_INDEX);
-
     return voltage; 
 }

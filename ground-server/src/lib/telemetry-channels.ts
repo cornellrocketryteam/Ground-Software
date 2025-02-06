@@ -204,4 +204,12 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     modes: ["Value"],
     component: ValueWidget,
   },
+  {
+    id: "ms_since_boot",
+    label: "MS since Boot",
+    requiresAuth: false,
+    dbField: "ms_since_boot",
+    modes: ["Value"],
+    component: ValueWidget,
+  },
 ];

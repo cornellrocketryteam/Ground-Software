@@ -52,6 +52,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // Historical data
         console.log("Historical Message Received");
 
+        if (message.data === null) {
+          console.log("No data received from historical message");
+          return;
+        } 
+        
         setData((prevData) => {
           const field = message.field;
           const widgetData: DataPoint[] = message.data.map(

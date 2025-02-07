@@ -207,6 +207,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     id: "ms_since_boot",
     label: "MS since Boot",
+    unit: "ms",
     requiresAuth: false,
     dbField: "ms_since_boot",
     modes: ["Value"],

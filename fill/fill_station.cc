@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <random>
 #include <spdlog/spdlog.h>
+#include "lib/WDT/wdt.h"
 
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
@@ -119,6 +120,11 @@ class CommanderServiceImpl final : public Commander::Service
     }
 };
 
+// helper for the wdt 
+void close_ball_valve(){
+    ball_valve.close();
+}
+
 // Fill Station service to stream telemetry.
 class TelemeterServiceImpl final : public FillStationTelemeter::Service
 {
@@ -126,12 +132,22 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
                        ServerWriter<FillStationTelemetry> *writer) override
     {
         spdlog::info("Received initial connection point for the fill-station telemetry service.\n");
-        while (true) {
+
+        // start the 10 second watchdog timer
+        WatchdogTimer grpc_wdt(std::chrono::milliseconds(10000),close_ball_valve); 
+
+        while (true) {  
+            if (context->IsCancelled()){ 
+                spdlog::warn("Lost connection to the telemetry stream.\n");
+            }
+
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
                 // Broken stream
                 return Status::CANCELLED; 
             }
+            // pet the dog if we successfully write the stream
+            grpc_wdt.pet();
         }
         return Status::OK;
     }
@@ -143,8 +159,12 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                        ServerWriter<RocketTelemetry> *writer) override
     {
         spdlog::info("Received initial connection point for the rocket telemetry service.\n");
+
+        std::chrono::steady_clock::time_point errorStartTime; // gives rocket 25 seconds to reconnect 
+        bool errorTimerStarted = false;
+        constexpr std::chrono::seconds errorThreshold(25);
+
         while (true) {
-            auto now = std::chrono::high_resolution_clock::now();
             absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
             
             if (t.ok()) {
@@ -153,9 +173,22 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                     // Broken stream
                     return Status::CANCELLED; 
                 }
+
+                errorTimerStarted = false;
             } else {
                 spdlog::error("Error reading the full packet with message:\n");      
-                std::cout << t.status() << std::endl;           
+                std::cout << t.status() << std::endl;     
+
+                // starts timer 
+                if (!errorTimerStarted) { 
+                    errorStartTime = std::chrono::steady_clock::now();
+                    errorTimerStarted = true;
+                } else {
+                    if (std::chrono::steady_clock::now() - errorStartTime >= errorThreshold) {
+                        spdlog::warn("Could not reconnect to rocket. Closing the ball valve.\n");
+                        ball_valve.close();
+                    }
+                }      
             }
         }
         return Status::OK;

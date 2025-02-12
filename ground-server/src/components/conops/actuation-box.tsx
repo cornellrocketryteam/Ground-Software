@@ -34,8 +34,8 @@ interface ActuationBoxProps {
   switchLabel?: string;
   switchOnCommand?: Command;
   switchOffCommand?: Command;
-  small?: boolean;   // For small size (vertical layout)
-  medium?: boolean;  // For medium size (scaled 0.75 internally)
+  small?: boolean; // For small size (vertical layout)
+  medium?: boolean; // For medium size (scaled 0.75 internally)
   compactLayout?: boolean; // Compact layout adjustments
 }
 
@@ -56,28 +56,35 @@ export default function ActuationBox({
   const { toast } = useToast();
   const [isSwitchOn, setIsSwitchOn] = useState<boolean>(true);
 
-  // keys for local storage 
-  const currentStateKey = `ActuationBox_currentState-${title}`; 
-  const isOnStateKey = `ActuaionBox_isOnState-${title}`; 
+  // keys for local storage
+  const currentStateKey = `ActuationBox_currentState-${title}`;
+  const isOnStateKey = `ActuaionBox_isOnState-${title}`;
+  const isSwitchOnKey = `ActuaionBox_isSwitchOnState-${title}`;
 
-  const buttonOn = "on"; 
+  const buttonOn = "on";
   const buttonOff = "off";
 
   // ran once to get local storage values
   useEffect(() => {
-    const storedState = localStorage.getItem(currentStateKey);
-    if (storedState) {
-      setCurrentState(storedState);
+    const storedCurrentState = localStorage.getItem(currentStateKey);
+    if (storedCurrentState) {
+      setCurrentState(storedCurrentState);
     } else {
       setCurrentState(initialStateLabel);
     }
 
-    const isOnState = localStorage.getItem(isOnStateKey);
-
-    if (isOnState == buttonOn){
-      setIsOnState(true); 
-    } else if (isOnState == buttonOff){
+    const storedIsOnState = localStorage.getItem(isOnStateKey);
+    if (storedIsOnState === buttonOn) {
+      setIsOnState(true);
+    } else if (storedIsOnState === buttonOff) {
       setIsOnState(false);
+    }
+
+    const storedIsSwitchOnState = localStorage.getItem(isSwitchOnKey);
+    if (storedIsSwitchOnState === buttonOn) {
+      setIsSwitchOn(true);
+    } else if (storedIsSwitchOnState === buttonOff) {
+      setIsSwitchOn(false);
     }
   }, []);
 
@@ -87,10 +94,10 @@ export default function ActuationBox({
 
     localStorage.setItem(currentStateKey, button.stateLabel);
 
-    if (button.isOn){
-      localStorage.setItem(isOnStateKey, buttonOn); 
+    if (button.isOn) {
+      localStorage.setItem(isOnStateKey, buttonOn);
     } else {
-      localStorage.setItem(isOnStateKey, buttonOff); 
+      localStorage.setItem(isOnStateKey, buttonOff);
     }
 
     sendCommand(button.command)
@@ -101,7 +108,8 @@ export default function ActuationBox({
         console.error("Error sending command", error);
         toast({
           title: "Command Error",
-          description: "There was an error sending the command. Please try again.",
+          description:
+            "There was an error sending the command. Please try again.",
           variant: "destructive",
         });
       });
@@ -109,6 +117,12 @@ export default function ActuationBox({
 
   const handleSwitchChange = (checked: boolean) => {
     setIsSwitchOn(checked);
+
+    if (checked) {
+      localStorage.setItem(isSwitchOnKey, buttonOn);
+    } else {
+      localStorage.setItem(isSwitchOnKey, buttonOff);
+    }
 
     const command = checked ? switchOnCommand : switchOffCommand;
 
@@ -121,7 +135,8 @@ export default function ActuationBox({
           console.error("Error sending switch command", error);
           toast({
             title: "Command Error",
-            description: "There was an error sending the command. Please try again.",
+            description:
+              "There was an error sending the command. Please try again.",
             variant: "destructive",
           });
         });
@@ -178,11 +193,19 @@ export default function ActuationBox({
     : "flex items-center space-x-2 mt-4";
 
   // Switch label classes
-  const switchLabelClasses = isSmall ? "text-xs font-medium" : "text-sm font-medium";
+  const switchLabelClasses = isSmall
+    ? "text-xs font-medium"
+    : "text-sm font-medium";
 
   // For medium layout scaling of interior elements only (not border)
-  const contentWrapperStart = isMedium ? <div className="transform scale-75 origin-center"> : <></>;
-  const contentWrapperEnd = isMedium ? </div> : <></>;
+  const contentWrapperStart = isMedium ? (
+    <div className="transform scale-75 origin-center">
+      {" "}
+      : <></>; const contentWrapperEnd = isMedium ?{" "}
+    </div>
+  ) : (
+    <></>
+  );
 
   return (
     <div className={containerClasses}>
@@ -213,7 +236,9 @@ export default function ActuationBox({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleButtonClick(button)}>
+                    <AlertDialogAction
+                      onClick={() => handleButtonClick(button)}
+                    >
                       Yes, {button.label}
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -224,7 +249,9 @@ export default function ActuationBox({
 
           {/* State below buttons */}
           <div className="flex flex-col items-center">
-            <h4 className="text-xs font-medium mb-1 text-center">Current State</h4>
+            <h4 className="text-xs font-medium mb-1 text-center">
+              Current State
+            </h4>
             <div
               className={`${stateBoxClasses} ${
                 isOnState === true
@@ -261,7 +288,10 @@ export default function ActuationBox({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction autoFocus onClick={() => handleButtonClick(button)}>
+                    <AlertDialogAction
+                      autoFocus
+                      onClick={() => handleButtonClick(button)}
+                    >
                       Yes, {button.label}
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -272,7 +302,9 @@ export default function ActuationBox({
 
           {/* Current State */}
           <div>
-            <h4 className="text-sm font-medium mb-2 text-center">Current State</h4>
+            <h4 className="text-sm font-medium mb-2 text-center">
+              Current State
+            </h4>
             <div
               className={`${stateBoxClasses} ${
                 isOnState === true

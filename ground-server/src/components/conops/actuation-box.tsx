@@ -261,7 +261,7 @@ export default function ActuationBox({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleButtonClick(button)}>
+                    <AlertDialogAction autoFocus onClick={() => handleButtonClick(button)}>
                       Yes, {button.label}
                     </AlertDialogAction>
                   </AlertDialogFooter>

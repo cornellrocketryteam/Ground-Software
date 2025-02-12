@@ -14,7 +14,6 @@ export type TelemetryChannel = {
   id: string;
   label: string;
   unit?: string;
-  requiresAuth: boolean;
   dbField: string;
   modes: string[];
   component: ComponentType<WidgetProps>;

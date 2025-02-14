@@ -77,6 +77,7 @@ function GenericHistoricalChart(
           />
           <YAxis
             domain={["dataMin", "dataMax"]}
+            tickFormatter={(tick) => tick.toFixed(2)}
             label={{
               value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
               style: { textAnchor: "middle" },

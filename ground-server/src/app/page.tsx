@@ -13,7 +13,6 @@ import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
 import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
 import { PresetSelector } from "@/components/dashboard/preset-selector";
 
-import { useData } from "@/contexts/data-context";
 import { type TelemetryChannel } from "@/lib/definitions";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
@@ -26,8 +25,6 @@ export default function Home() {
       layout: Layout;
     }[]
   >([]);
-
-  const { sendHistoricalDataReq } = useData();
 
   // Load layouts and channels from localStorage on mount
   useEffect(() => {
@@ -78,15 +75,6 @@ export default function Home() {
   };
 
   const children = useMemo(() => {
-    const onWidgetModeChange = (widgetId: string, newMode: string) => {
-      const channel = channels.find((channel) => channel.id === widgetId)!;
-      if (channel.id === widgetId && newMode === "15m Chart") {
-        sendHistoricalDataReq(-15, 0, channel.channel.dbField);
-      } else if (channel.id === widgetId && newMode === "60m Chart") {
-        sendHistoricalDataReq(-60, 0, channel.channel.dbField);
-      }
-    };
-
     return channels.map((channel) => {
       const deleteWidget = () => {
         console.log("Deleting widget", channel.id);
@@ -96,14 +84,12 @@ export default function Home() {
       return (
         <DashboardWidget
           key={channel.id}
-          id={channel.id}
           channel={channel.channel}
           deleteWidget={deleteWidget}
-          onModeChange={onWidgetModeChange}
         />
       );
     });
-  }, [channels, sendHistoricalDataReq]);
+  }, [channels]);
 
   return (
     <div>

@@ -1,8 +1,8 @@
-import { type WidgetProps } from "@/lib/definitions";
+import type { Widget, WidgetProps } from "@/lib/definitions";
 import { useData } from "@/contexts/data-context";
 
-export default function OnOffWidget(onStateLabel: string, offStateLabel: string) {
-  const OnOffValueWidget = ({ channel }: WidgetProps) => {
+export default function BoolStateWidget(onStateLabel: string, offStateLabel: string): Widget {
+  const BoolStateWidgetComponent = ({ channel }: WidgetProps) => {
     const { data } = useData();
     const fieldData = data[channel.dbField];
 
@@ -26,6 +26,8 @@ export default function OnOffWidget(onStateLabel: string, offStateLabel: string)
     );
   };
 
-  // Return the component constructor (not an instance)
-  return OnOffValueWidget;
+  return {
+    mode: "State",
+    component: BoolStateWidgetComponent,
+  }
 }

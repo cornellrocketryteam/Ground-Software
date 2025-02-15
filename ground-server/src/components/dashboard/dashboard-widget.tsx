@@ -7,6 +7,7 @@ import {
   type MouseEvent,
   type TouchEvent,
   type CSSProperties,
+  useMemo,
 } from "react";
 import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import {
@@ -20,10 +21,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { cn } from "@/lib/utils";
-import { type TelemetryChannel } from "@/lib/definitions";
+import type { Widget, TelemetryChannel } from "@/lib/definitions";
 
 interface DashboardWidgetProps {
-  id: string;
   channel: TelemetryChannel;
   deleteWidget: () => void;
   style?: CSSProperties;
@@ -32,13 +32,11 @@ interface DashboardWidgetProps {
   onMouseUp?: (event: MouseEvent) => void;
   onTouchEnd?: (event: TouchEvent) => void;
   children?: ReactNode;
-  onModeChange: (widgetId: string, newMode: string) => void;
 }
 
 export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
   (
     {
-      id,
       channel,
       deleteWidget,
       style,
@@ -47,18 +45,35 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
       onMouseUp,
       onTouchEnd,
       children,
-      onModeChange,
     },
     ref
   ) => {
-    const WidgetComponent = channel.component;
+    if (channel.widgets.length === 0) {
+      throw new Error("No widgets found for telemetry channel");
+    }
 
-    const [mode, setMode] = useState(channel.modes[0] ?? "");
+    // Build a lookup for modes to make re-rendering faster
+    const modeMap = useMemo(() => {
+      const modeMap: Record<string, Widget> = {};
+      for (const widget of channel.widgets) {
+        const mode = widget.mode;
+        if (modeMap[mode]) {
+          throw new Error(`Duplicate mode found in 'widgets' list for telemetry channel: ${mode}`);
+        }
+        modeMap[mode] = widget;
+      }
+      return modeMap;
+    }, [channel.widgets]);
 
-    const handleModeChange = (newMode: string) => {
-      setMode(newMode);
-      onModeChange(id, newMode);
-    };
+    const allModes = useMemo(() => Object.keys(modeMap), [modeMap]);
+
+    const [mode, setMode] = useState(allModes[0]);
+
+    const activeWidget = modeMap[mode];
+    if (!activeWidget) {
+      throw new Error(`No widget found for mode: ${mode}. Should be unreachable.`);
+    }
+    const ActiveComponent = activeWidget.component;
 
     return (
       <div
@@ -69,7 +84,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <WidgetComponent mode={mode} channel={channel} />
+        <ActiveComponent channel={channel} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -78,15 +93,15 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
           <DropdownMenuContent className="w-34 drag-ignore">
             <DropdownMenuRadioGroup
               value={mode}
-              onValueChange={handleModeChange}
+              onValueChange={setMode}
             >
-              {channel.modes.map((m) => (
+              {allModes.map((m) => (
                 <DropdownMenuRadioItem key={m} value={m}>
                   {m}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
-            {channel.modes.length > 0 && <DropdownMenuSeparator />}
+            {allModes.length > 0 && <DropdownMenuSeparator />}
             <DropdownMenuItem
               inset
               className="text-red-600"

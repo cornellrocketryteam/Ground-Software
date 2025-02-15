@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { type WidgetProps } from "@/lib/definitions";
+import type { Widget } from "@/lib/definitions";
 import rocket from "@/app/images/rocket.png";
 
-export default function FuelWidget({ mode }: WidgetProps) {
-  if (mode === "3D Illustration") {
-    const scalingFactor = 0.5
+export default function FuelWidget(): Widget {
+  const FuelWidgetComponent = () => {
+    const scalingFactor = 0.5;
     // Replace with actual fuel level from data when available
     const fuelLevel = Math.floor(Math.random() * 100 * scalingFactor);
 
@@ -23,7 +23,10 @@ export default function FuelWidget({ mode }: WidgetProps) {
         </div>
       </div>
     );
-  }
+  };
 
-  return <div>Unsupported mode</div>;
+  return {
+    mode: "3D Illustration",
+    component: FuelWidgetComponent,
+  };
 }

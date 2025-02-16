@@ -2,8 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/app/auth";
 
-import UserAvatar from "@/components/user-avatar/user-avatar";
-import { ModeToggle } from "@/components/mode-toggle";
+import UserAvatar from "@/components/navbar/user-avatar/user-avatar";
+import ConnectionStatus from "@/components/navbar/connection-status";
+import ModeToggle from "@/components/navbar/mode-toggle";
+
 import { Button } from "@/components/ui/button";
 
 import crt from "@/app/images/crt.png";
@@ -42,7 +44,7 @@ export default async function Navbar() {
         {pageTabs}
       </div>
       <div className="flex gap-4 items-center">
-        {/* <TelemetryAdder setWidgets={setWidgets} /> */}
+        <ConnectionStatus />
         <ModeToggle />
         <UserAvatar />
       </div>

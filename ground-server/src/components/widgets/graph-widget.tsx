@@ -36,7 +36,7 @@ export default function GraphWidget(minuteDuration: number): Widget {
 
     useEffect(() => {
       sendHistoricalDataReq(-minuteDuration, 0, channel.dbField);
-    }, [sendHistoricalDataReq, channel.dbField]);
+    }, []);
 
     if (fieldData === undefined || fieldData.length === 0) {
       return (

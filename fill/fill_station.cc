@@ -126,7 +126,24 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
                        ServerWriter<FillStationTelemetry> *writer) override
     {
         spdlog::info("Received initial connection point for the fill-station telemetry service.\n");
-        while (true) {
+
+        std::chrono::steady_clock::time_point errorStartTime; // gives fill station 10 seconds to reconnect to the ground server 
+        bool errorTimerStarted = false;
+        constexpr std::chrono::seconds errorThreshold(10);
+        while (true) {  
+            if (context->IsCancelled()){ 
+                // starts timer 
+                if (!errorTimerStarted) { 
+                    errorStartTime = std::chrono::steady_clock::now();
+                    errorTimerStarted = true;
+                } else {
+                    if (std::chrono::steady_clock::now() - errorStartTime >= errorThreshold) {
+                        spdlog::warn("Could not reconnect to the ground server. Closing the ball valve.\n");
+                        ball_valve.close();
+                    }
+                }      
+            }
+
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
                 // Broken stream
@@ -143,8 +160,12 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                        ServerWriter<RocketTelemetry> *writer) override
     {
         spdlog::info("Received initial connection point for the rocket telemetry service.\n");
+
+        std::chrono::steady_clock::time_point errorStartTime; // gives rocket 25 seconds to reconnect 
+        bool errorTimerStarted = false;
+        constexpr std::chrono::seconds errorThreshold(25);
+
         while (true) {
-            auto now = std::chrono::high_resolution_clock::now();
             absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
             
             if (t.ok()) {
@@ -153,9 +174,22 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                     // Broken stream
                     return Status::CANCELLED; 
                 }
+
+                errorTimerStarted = false;
             } else {
                 spdlog::error("Error reading the full packet with message:\n");      
-                std::cout << t.status() << std::endl;           
+                std::cout << t.status() << std::endl;     
+
+                // starts timer 
+                if (!errorTimerStarted) { 
+                    errorStartTime = std::chrono::steady_clock::now();
+                    errorTimerStarted = true;
+                } else {
+                    if (std::chrono::steady_clock::now() - errorStartTime >= errorThreshold) {
+                        spdlog::warn("Could not reconnect to rocket. Closing the ball valve.\n");
+                        ball_valve.close();
+                    }
+                }      
             }
         }
         return Status::OK;

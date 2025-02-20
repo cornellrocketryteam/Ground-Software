@@ -11,17 +11,20 @@ import {
 } from "react";
 
 type DataContextType = {
+  connected: boolean;
   data: { [field: string]: DataPoint[] };
   sendHistoricalDataReq: (start: number, stop: number, field: string) => void
 };
 
 const DataContext = createContext<DataContextType>({
+  connected: false,
   data: {},
   sendHistoricalDataReq() {},
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<{ [field: string]: DataPoint[] }>({});
+  const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Create the WebSocket connection once on mount
@@ -34,14 +37,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     wsRef.current.onopen = () => {
       console.log("WebSocket connection opened:", url);
+      setConnected(true);
     };
 
     wsRef.current.onclose = (event) => {
       console.log("WebSocket connection closed:", event.reason, event.code);
+      setConnected(false);
     };
 
     wsRef.current.onerror = (error) => {
       console.error("WebSocket error:", error);
+      setConnected(false);
     };
 
     wsRef.current.onmessage = (event) => {
@@ -118,7 +124,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <DataContext.Provider value={{ data, sendHistoricalDataReq }}>
+    <DataContext.Provider value={{ connected,  data, sendHistoricalDataReq }}>
       {children}
     </DataContext.Provider>
   );

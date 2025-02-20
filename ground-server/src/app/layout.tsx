@@ -5,7 +5,7 @@ import localFont from "next/font/local";
 import { SessionProvider } from "next-auth/react";
 
 import { ThemeProvider } from "@/components/theme-provider";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/navbar/navbar";
 
 import { Toaster } from "@/components/ui/toaster"
 import { DataProvider } from "@/contexts/data-context";

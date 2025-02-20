@@ -13,6 +13,12 @@ const client = new CommanderClient(
   grpc.credentials.createInsecure()
 );
 
+export async function isConnected() {
+  const channel = client.getChannel();
+  const state = channel.getConnectivityState(true); // pass true to try connecting if idle
+  return state === grpc.connectivityState.READY;
+}
+
 export async function sendCommand(command: Command) {
   const session = await auth();
 

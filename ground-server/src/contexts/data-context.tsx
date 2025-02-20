@@ -112,7 +112,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(connect, []);
 
   const sendHistoricalDataReq = (start: number, stop: number, field: string) => {
-    if (wsRef.current) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
           start,

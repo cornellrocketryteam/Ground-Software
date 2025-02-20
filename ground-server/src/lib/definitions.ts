@@ -15,7 +15,6 @@ export type Widget = {
 }
 
 export type TelemetryChannel = {
-  id: string;
   label: string;
   unit?: string;
   dbField: string;

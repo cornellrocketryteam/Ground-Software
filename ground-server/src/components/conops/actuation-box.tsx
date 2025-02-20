@@ -149,7 +149,7 @@ export default function ActuationBox({
 
   // Container classes
   const containerClasses = isSmall
-    ? "border border-gray-300 p-4 rounded-lg flex flex-col items-center"
+    ? "border border-gray-300 p-4 w-[250px] h-[200px] rounded-lg flex flex-col items-center"
     : isMedium
     ? "border border-gray-300 p-8 rounded-lg flex flex-col items-center"
     : "border border-gray-300 p-8 rounded-lg flex flex-col items-center";
@@ -175,14 +175,14 @@ export default function ActuationBox({
 
   // Button sizes
   const buttonClasses = isSmall
-    ? "h-6 w-[6.5rem] text-base"
+    ? "h-7 w-[10rem] text-base"
     : "h-12 w-52 text-lg";
 
   // State box classes
   const stateBoxClasses = compactLayout
-    ? "h-[60px] w-[80px] text-sm font-bold flex items-center justify-center border"
+    ? "h-[80px] w-[100px] text-sm font-bold flex items-center justify-center border"
     : isSmall
-    ? "h-[50px] w-[75px] flex items-center justify-center text-base font-bold"
+    ? "h-[60px] w-[100px] flex items-center justify-center text-base font-bold"
     : "h-[100px] w-[150px] flex items-center justify-center text-lg font-bold";
 
   // Switch wrapper classes

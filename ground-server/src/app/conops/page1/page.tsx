@@ -24,14 +24,49 @@ export default async function Conops() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black relative">
       <h1 className="text-3xl font-bold mb-6 text-center">Page 1: Sensor Checks</h1>
+
       <div className="grid grid-cols-3 gap-8 w-full max-w-6xl">
-        <LiveValueBox label="Pressure Transducer 1 (PT1)" dbField="pt1" />
-        <LiveValueBox label="Pressure Transducer 2 (PT2)" dbField="pt2" />
-        <LiveValueBox label="Load Cell 1 (LC1)" dbField="lc1" />
-        <LiveValueBox label="RTD Temperature (RTD)" dbField="rtdTemp" />
-        <LiveValueBox label="Pressure Transducer 3 (PT3)" dbField="pt3" />
-        <LiveValueBox label="Pressure Transducer 4 (PT4)" dbField="pt4" />
+        {/* Pass a single channel object, specifying label, dbField, and optional unit */}
+        <LiveValueBox
+          channel={{
+            label: "Pressure Transducer 1 (PT1)",
+            dbField: "pt1",
+            // unit: "psi", // optionally define the unit here
+          }}
+        />
+        <LiveValueBox
+          channel={{
+            label: "Pressure Transducer 2 (PT2)",
+            dbField: "pt2",
+          }}
+        />
+        <LiveValueBox
+          channel={{
+            label: "Load Cell 1 (LC1)",
+            dbField: "lc1",
+          }}
+        />
+        <LiveValueBox
+          channel={{
+            label: "RTD Temperature (RTD)",
+            dbField: "rtd_temp",
+            // unit: "°C",
+          }}
+        />
+        <LiveValueBox
+          channel={{
+            label: "Pressure Transducer 3 (PT3)",
+            dbField: "pt3",
+          }}
+        />
+        <LiveValueBox
+          channel={{
+            label: "Pressure Transducer 4 (PT4)",
+            dbField: "pt4",
+          }}
+        />
       </div>
+
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button

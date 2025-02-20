@@ -28,7 +28,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null);
 
   // Create the WebSocket connection once on mount
-  useEffect(() => {
+  const connect = () => {
     // Adjust your WebSocket URL as needed
     const url = "ws://192.168.1.200:8080/ws";
 
@@ -48,6 +48,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     wsRef.current.onerror = (error) => {
       console.error("WebSocket error:", error);
       setConnected(false);
+      wsRef.current?.close();
+      setTimeout(connect, 1000);
     };
 
     wsRef.current.onmessage = (event) => {
@@ -105,7 +107,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         wsRef.current = null;
       }
     };
-  }, []);
+  };
+
+  useEffect(connect, []);
 
   const sendHistoricalDataReq = (start: number, stop: number, field: string) => {
     if (wsRef.current) {

@@ -1,9 +1,9 @@
 import Image from "next/image";
-import { type WidgetProps } from "@/lib/definitions";
+import type { Widget } from "@/lib/definitions";
 import monkey from "@/app/images/monkey-parachuting.png";
 
-export default function MonkeyWidget({ mode }: WidgetProps) {
-  if (mode === "3D Illustration") {
+export default function MonkeyWidget(): Widget {
+  const MonkeyWidgetComponent = () => {
     // Replace with actual fuel level from data when available
     const degrees = Math.floor(Math.random() * 60) - 20;
 
@@ -13,11 +13,14 @@ export default function MonkeyWidget({ mode }: WidgetProps) {
           src={monkey}
           alt="Monkey Parachuting"
           className="h-full w-auto object-contain"
-          style={{ "rotate": `${degrees}deg` }}
+          style={{ rotate: `${degrees}deg` }}
         />
       </div>
     );
-  }
+  };
 
-  return <div>Unsupported mode</div>;
+  return {
+    mode: "Monkey",
+    component: MonkeyWidgetComponent,
+  };
 }

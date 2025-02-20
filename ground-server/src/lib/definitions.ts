@@ -1,4 +1,4 @@
-import { type ComponentType } from "react";
+import type { ComponentType } from "react";
 
 export type DataPoint = {
   timestamp: Date;
@@ -6,17 +6,20 @@ export type DataPoint = {
 };
 
 export type WidgetProps = {
-  mode: string;
   channel: TelemetryChannel;
 };
+
+export type Widget = {
+  mode: string;
+  component: ComponentType<WidgetProps>;
+}
 
 export type TelemetryChannel = {
   id: string;
   label: string;
   unit?: string;
   dbField: string;
-  modes: string[];
-  component: ComponentType<WidgetProps>;
+  widgets: Widget[];
 };
 
 export type Preset = {

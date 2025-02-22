@@ -13,7 +13,7 @@ import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
 import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
 import { PresetSelector } from "@/components/dashboard/preset-selector";
 
-import { type TelemetryChannel } from "@/lib/definitions";
+import type { TelemetryChannel } from "@/lib/definitions";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 

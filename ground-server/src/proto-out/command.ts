@@ -206,9 +206,7 @@ export interface RocketUmbTelemetry {
   metadata: RocketMetadata | undefined;
   msSinceBoot: number;
   events: Events | undefined;
-  radioState: boolean;
-  transmitState: boolean;
-  voltage: number;
+  batteryVoltage: number;
   pt3: number;
   pt4: number;
   rtdTemp: number;
@@ -225,7 +223,6 @@ export interface FillStationTelemetry {
   pt1: number;
   pt2: number;
   lc1: number;
-  sv1Cont: number;
   ign1Cont: number;
   ign2Cont: number;
 }
@@ -2033,17 +2030,7 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
 };
 
 function createBaseRocketUmbTelemetry(): RocketUmbTelemetry {
-  return {
-    metadata: undefined,
-    msSinceBoot: 0,
-    events: undefined,
-    radioState: false,
-    transmitState: false,
-    voltage: 0,
-    pt3: 0,
-    pt4: 0,
-    rtdTemp: 0,
-  };
+  return { metadata: undefined, msSinceBoot: 0, events: undefined, batteryVoltage: 0, pt3: 0, pt4: 0, rtdTemp: 0 };
 }
 
 export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
@@ -2057,23 +2044,17 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     if (message.events !== undefined) {
       Events.encode(message.events, writer.uint32(26).fork()).join();
     }
-    if (message.radioState !== false) {
-      writer.uint32(32).bool(message.radioState);
-    }
-    if (message.transmitState !== false) {
-      writer.uint32(40).bool(message.transmitState);
-    }
-    if (message.voltage !== 0) {
-      writer.uint32(53).float(message.voltage);
+    if (message.batteryVoltage !== 0) {
+      writer.uint32(37).float(message.batteryVoltage);
     }
     if (message.pt3 !== 0) {
-      writer.uint32(61).float(message.pt3);
+      writer.uint32(45).float(message.pt3);
     }
     if (message.pt4 !== 0) {
-      writer.uint32(69).float(message.pt4);
+      writer.uint32(53).float(message.pt4);
     }
     if (message.rtdTemp !== 0) {
-      writer.uint32(77).float(message.rtdTemp);
+      writer.uint32(61).float(message.rtdTemp);
     }
     return writer;
   },
@@ -2110,19 +2091,19 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
           continue;
         }
         case 4: {
-          if (tag !== 32) {
+          if (tag !== 37) {
             break;
           }
 
-          message.radioState = reader.bool();
+          message.batteryVoltage = reader.float();
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 45) {
             break;
           }
 
-          message.transmitState = reader.bool();
+          message.pt3 = reader.float();
           continue;
         }
         case 6: {
@@ -2130,27 +2111,11 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
             break;
           }
 
-          message.voltage = reader.float();
+          message.pt4 = reader.float();
           continue;
         }
         case 7: {
           if (tag !== 61) {
-            break;
-          }
-
-          message.pt3 = reader.float();
-          continue;
-        }
-        case 8: {
-          if (tag !== 69) {
-            break;
-          }
-
-          message.pt4 = reader.float();
-          continue;
-        }
-        case 9: {
-          if (tag !== 77) {
             break;
           }
 
@@ -2171,9 +2136,7 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
       metadata: isSet(object.metadata) ? RocketMetadata.fromJSON(object.metadata) : undefined,
       msSinceBoot: isSet(object.msSinceBoot) ? globalThis.Number(object.msSinceBoot) : 0,
       events: isSet(object.events) ? Events.fromJSON(object.events) : undefined,
-      radioState: isSet(object.radioState) ? globalThis.Boolean(object.radioState) : false,
-      transmitState: isSet(object.transmitState) ? globalThis.Boolean(object.transmitState) : false,
-      voltage: isSet(object.voltage) ? globalThis.Number(object.voltage) : 0,
+      batteryVoltage: isSet(object.batteryVoltage) ? globalThis.Number(object.batteryVoltage) : 0,
       pt3: isSet(object.pt3) ? globalThis.Number(object.pt3) : 0,
       pt4: isSet(object.pt4) ? globalThis.Number(object.pt4) : 0,
       rtdTemp: isSet(object.rtdTemp) ? globalThis.Number(object.rtdTemp) : 0,
@@ -2191,14 +2154,8 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     if (message.events !== undefined) {
       obj.events = Events.toJSON(message.events);
     }
-    if (message.radioState !== false) {
-      obj.radioState = message.radioState;
-    }
-    if (message.transmitState !== false) {
-      obj.transmitState = message.transmitState;
-    }
-    if (message.voltage !== 0) {
-      obj.voltage = message.voltage;
+    if (message.batteryVoltage !== 0) {
+      obj.batteryVoltage = message.batteryVoltage;
     }
     if (message.pt3 !== 0) {
       obj.pt3 = message.pt3;
@@ -2224,9 +2181,7 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     message.events = (object.events !== undefined && object.events !== null)
       ? Events.fromPartial(object.events)
       : undefined;
-    message.radioState = object.radioState ?? false;
-    message.transmitState = object.transmitState ?? false;
-    message.voltage = object.voltage ?? 0;
+    message.batteryVoltage = object.batteryVoltage ?? 0;
     message.pt3 = object.pt3 ?? 0;
     message.pt4 = object.pt4 ?? 0;
     message.rtdTemp = object.rtdTemp ?? 0;
@@ -2315,7 +2270,7 @@ export const RocketTelemetry: MessageFns<RocketTelemetry> = {
 };
 
 function createBaseFillStationTelemetry(): FillStationTelemetry {
-  return { timestamp: 0, pt1: 0, pt2: 0, lc1: 0, sv1Cont: 0, ign1Cont: 0, ign2Cont: 0 };
+  return { timestamp: 0, pt1: 0, pt2: 0, lc1: 0, ign1Cont: 0, ign2Cont: 0 };
 }
 
 export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
@@ -2332,14 +2287,11 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     if (message.lc1 !== 0) {
       writer.uint32(37).float(message.lc1);
     }
-    if (message.sv1Cont !== 0) {
-      writer.uint32(45).float(message.sv1Cont);
-    }
     if (message.ign1Cont !== 0) {
-      writer.uint32(53).float(message.ign1Cont);
+      writer.uint32(45).float(message.ign1Cont);
     }
     if (message.ign2Cont !== 0) {
-      writer.uint32(61).float(message.ign2Cont);
+      writer.uint32(53).float(message.ign2Cont);
     }
     return writer;
   },
@@ -2388,19 +2340,11 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
             break;
           }
 
-          message.sv1Cont = reader.float();
+          message.ign1Cont = reader.float();
           continue;
         }
         case 6: {
           if (tag !== 53) {
-            break;
-          }
-
-          message.ign1Cont = reader.float();
-          continue;
-        }
-        case 7: {
-          if (tag !== 61) {
             break;
           }
 
@@ -2422,7 +2366,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
       pt1: isSet(object.pt1) ? globalThis.Number(object.pt1) : 0,
       pt2: isSet(object.pt2) ? globalThis.Number(object.pt2) : 0,
       lc1: isSet(object.lc1) ? globalThis.Number(object.lc1) : 0,
-      sv1Cont: isSet(object.sv1Cont) ? globalThis.Number(object.sv1Cont) : 0,
       ign1Cont: isSet(object.ign1Cont) ? globalThis.Number(object.ign1Cont) : 0,
       ign2Cont: isSet(object.ign2Cont) ? globalThis.Number(object.ign2Cont) : 0,
     };
@@ -2442,9 +2385,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     if (message.lc1 !== 0) {
       obj.lc1 = message.lc1;
     }
-    if (message.sv1Cont !== 0) {
-      obj.sv1Cont = message.sv1Cont;
-    }
     if (message.ign1Cont !== 0) {
       obj.ign1Cont = message.ign1Cont;
     }
@@ -2463,7 +2403,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     message.pt1 = object.pt1 ?? 0;
     message.pt2 = object.pt2 ?? 0;
     message.lc1 = object.lc1 ?? 0;
-    message.sv1Cont = object.sv1Cont ?? 0;
     message.ign1Cont = object.ign1Cont ?? 0;
     message.ign2Cont = object.ign2Cont ?? 0;
     return message;

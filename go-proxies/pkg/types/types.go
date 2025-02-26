@@ -115,9 +115,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 	if packet.UmbTelem != nil {
 		umbTelem := packet.UmbTelem
 		fields["ms_since_boot"] = umbTelem.MsSinceBoot
-		fields["radio_state"] = umbTelem.RadioState
-		fields["transmit_state"] = umbTelem.TransmitState
-		fields["voltage"] = umbTelem.Voltage
+		fields["battery_voltage"] = umbTelem.BatteryVoltage
 		fields["pt3"] = umbTelem.Pt3
 		fields["pt4"] = umbTelem.Pt4
 		fields["rtd_temp"] = umbTelem.RtdTemp

@@ -9,8 +9,8 @@
 #define SAFE '5'
 #define CLEAR_SD '6'
 
-// 26 to account for 24 byte packet, then /r/n characters
-#define UMB_PACKET_SIZE 26
+// 28 to account for 26 byte packet, then /r/n characters
+#define UMB_PACKET_SIZE 28
 
 #include "protos/command.grpc.pb.h"
 #include <iostream>

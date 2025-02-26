@@ -16,6 +16,8 @@
 #include "sensors/sensor.h"
 #include "umbilical/proto_build.h"
 
+#include "storage/storage.h" 
+
 #include "wiringPi.h"
 
 #include "absl/flags/flag.h"

@@ -1,4 +1,5 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
 import { CameraBox } from "@/components/conops/camera-box";
 import ActuationBox from "@/components/conops/actuation-box";
@@ -15,15 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button";
 
-export default async function Page4() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
-
+export default function Page4() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200">
       {/* Page Title */}
@@ -31,25 +26,37 @@ export default async function Page4() {
 
       {/* Live Value and Historical Graph Boxes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
+        {/* 1-Minute chart for RTD Temperature */}
         <LiveValueWithHistoricalGraph
-          label="RTD Temperature"
-          dbField="rtdTemp"
-          duration={15}
+          channel={{
+            label: "RTD Temperature",
+            dbField: "rtd_temp",
+          }}
+          duration={1}
         />
+
         <LiveValueWithHistoricalGraph
-          label="Load Cell 1 (LC1)"
-          dbField="lc1"
-          duration={60}
+          channel={{
+            label: "Load Cell 1 (LC1)",
+            dbField: "lc1",
+          }}
+          duration={1}
         />
+
         <LiveValueWithHistoricalGraph
-          label="Pressure Transducer 4 (PT4)"
-          dbField="pt4"
-          duration={15}
+          channel={{
+            label: "Pressure Transducer 4 (PT4)",
+            dbField: "pt4",
+          }}
+          duration={1}
         />
+
         <LiveValueWithHistoricalGraph
-          label="Pressure Transducer 1 (PT1)"
-          dbField="pt1"
-          duration={60}
+          channel={{
+            label: "Pressure Transducer 1 (PT1)",
+            dbField: "pt1",
+          }}
+          duration={1}
         />
       </div>
 
@@ -107,7 +114,7 @@ export default async function Page4() {
         </div>
       </div>
 
-    {/* Previous Page Button */}
+      {/* Previous Page Button */}
       <PreviousButton
         label="Previous Page"
         confirmMessage="Are you sure you want to move to the previous page?"
@@ -118,12 +125,12 @@ export default async function Page4() {
       {/* Alert Dialog Button */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-            <Button
-                    variant="default"
-                    className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
-                >
-                    {"Next Page"}
-            </Button>
+          <Button
+            variant="default"
+            className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
+          >
+            {"Next Page"}
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

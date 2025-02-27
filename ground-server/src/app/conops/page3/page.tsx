@@ -1,6 +1,8 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import ActuationBox from "@/components/conops/actuation-box";
 import { LiveValueBox } from "@/components/conops/live-value-box";
+import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -14,14 +16,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button";
 
-export default async function Page3() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
+export default function Page3() {
+  // Look up telemetry channels once and store them
+  const pt1Channel = TELEMETRY_CHANNELS.find((c) => c.dbField === "pt1");
 
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black relative text-gray-900 dark:text-gray-200">
@@ -29,7 +28,7 @@ export default async function Page3() {
       <h1 className="text-3xl font-bold mb-6 text-center">Page 3: Pre-Fill</h1>
 
       {/* Actuation Boxes */}
-      <div className="grid grid-cols-7 gap-4 w-full max-w-7xl">
+      <div className="grid grid-cols-5 gap-8 w-full max-w-7xl">
         <ActuationBox
           title="Solenoid Valve 1"
           buttons={[
@@ -43,25 +42,6 @@ export default async function Page3() {
           title="Ball Valve 1 (BV1)"
           buttons={[
             { label: "Close", stateLabel: "Closed", command: { bv1Open: false }, isOn: false },
-          ]}
-          initialStateLabel="Closed"
-          small={true}
-          useSwitch={false}
-        />
-        {/* Using mavOpen as a command place holder until i figure out what MV1 and MV2 is */}
-        <ActuationBox
-          title="MV1?"
-          buttons={[
-            { label: "Close", stateLabel: "Closed", command: { mavOpen: false }, isOn: false },
-          ]}
-          initialStateLabel="Closed"
-          small={true}
-          useSwitch={false}
-        />
-        <ActuationBox
-          title="MV2?"
-          buttons={[
-            { label: "Close", stateLabel: "Closed", command: { mavOpen: false }, isOn: false },
           ]}
           initialStateLabel="Closed"
           small={true}
@@ -113,12 +93,16 @@ export default async function Page3() {
 
         {/* PT1 Live Value Box */}
         <div className="flex-grow max-w-[300px]">
-          <LiveValueBox label="PT1 Pressure" dbField="pt1" />
+          {pt1Channel ? (
+            <LiveValueBox channel={pt1Channel} />
+          ) : (
+            <p>Error: PT1 telemetry channel not found</p>
+          )}
         </div>
       </div>
 
-        {/* Previous Page Button */}
-        <PreviousButton
+      {/* Previous Page Button */}
+      <PreviousButton
         label="Previous Page"
         confirmMessage="Are you sure you want to move to the previous page?"
         href="/conops/page2" // Adjust to the correct previous page URL
@@ -128,12 +112,12 @@ export default async function Page3() {
       {/* Alert Dialog Button */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-            <Button
-                    variant="default"
-                    className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
-                >
-                    {"Next Page"}
-            </Button>
+          <Button
+            variant="default"
+            className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
+          >
+            {"Next Page"}
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

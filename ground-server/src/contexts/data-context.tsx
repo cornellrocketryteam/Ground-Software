@@ -1,6 +1,6 @@
 "use client";
 
-import { DataPoint } from "@/lib/definitions";
+import type { DataPoint } from "@/lib/definitions";
 import {
   createContext,
   useContext,

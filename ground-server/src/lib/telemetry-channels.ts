@@ -36,6 +36,11 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
+    label: "Battery Voltage",
+    dbField: "battery_voltage",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)]
+  },
+  {
     label: "Pressure Transducer 3",
     unit: "psi",
     dbField: "pt3",

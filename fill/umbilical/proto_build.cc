@@ -148,9 +148,10 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         bool radio_state; 
         bool transmit_state; 
 
+        float battery_voltage;
         float pt3;
         float pt4; 
-        float temp;
+        float rtd_temp;
 
         char packet[UMB_PACKET_SIZE]; 
 
@@ -165,13 +166,10 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         memcpy(&metadata, packet, sizeof(metadata));
         memcpy(&ms_since_boot, packet + 2, sizeof(ms_since_boot));
         memcpy(&events_val, packet + 6, sizeof(events_val));
-
-        memcpy(&radio_state, packet + 10, sizeof(radio_state));
-        memcpy(&transmit_state, packet + 11, sizeof(transmit_state));
-
-        memcpy(&pt3, packet + 12, sizeof(pt3));
-        memcpy(&pt4, packet + 16, sizeof(pt4));
-        memcpy(&temp, packet + 20, sizeof(temp));
+        memcpy(&battery_voltage, packet + 10, sizeof(battery_voltage));
+        memcpy(&pt3, packet + 14, sizeof(pt3));
+        memcpy(&pt4, packet + 18, sizeof(pt4));
+        memcpy(&rtd_temp, packet + 22, sizeof(rtd_temp));
 
         rocketMetadata->set_alt_armed(static_cast<bool>(metadata & 0x1)); 
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata & 0x2) >> 1)); 
@@ -235,11 +233,10 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         events->set_invalid_command(static_cast<bool>((events_val & 0x1000000) >> 24)); 
 
         rocketUmbTelemetry->set_ms_since_boot(ms_since_boot);
-        rocketUmbTelemetry->set_radio_state(radio_state);
-        rocketUmbTelemetry->set_transmit_state(transmit_state);
+        rocketUmbTelemetry->set_battery_voltage(battery_voltage);
         rocketUmbTelemetry->set_pt3(pt3);
         rocketUmbTelemetry->set_pt4(pt4);
-        rocketUmbTelemetry->set_rtd_temp(temp);
+        rocketUmbTelemetry->set_rtd_temp(rtd_temp);
 
     } else {
         spdlog::error("Serial port is not open. Trying to open again.\n");

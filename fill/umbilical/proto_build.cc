@@ -126,9 +126,8 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 }
 
-absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
+RocketUmbTelemetry RocketTelemetryProtoBuilder::buildProto(){
     RocketTelemetry rocketTelemetry; 
-
     recycle_count++;
 
     if (recycle_count == 100){
@@ -157,7 +156,9 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
         if (status == -1 || status < UMB_PACKET_SIZE - 1){
             // This means we did not read enough bytes 
-            return absl::InternalError("Not enough Bytes"); 
+
+            // TODO: This now has to be fixed 
+            return *rocketUmbTelemetry; 
         }
         // For Debugging 
         spdlog::debug("Packet: {}\n", packet); 
@@ -241,9 +242,9 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(temp);
 
+        return *rocketUmbTelemetry;
     } else {
         spdlog::error("Serial port is not open. Trying to open again.\n");
         openfile();
     }
-    return rocketTelemetry;
 }

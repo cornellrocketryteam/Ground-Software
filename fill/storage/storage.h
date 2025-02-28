@@ -22,25 +22,17 @@ class DataBase {
 
     std::string org; 
 
-    // Stores the InfluxDBFactory objects. Different objects are needed for different 
-    // buckets according to the InfluxDB-cxx library. 
+    // Stores the InfluxDBFactory objects. 
     std::unique_ptr<InfluxDB> fill_db; 
     std::unique_ptr<InfluxDB> rocket_db; 
-
-    std::unique_ptr<InfluxDB> fill_rats_db; 
-    std::unique_ptr<InfluxDB> ground_rats_db; 
 
     public: 
     // initializes influxDB and sets [db]
     DataBase();     
     ~DataBase(); 
 
-    void writeUmbilicalTelemetry(FillStationTelemetry t); 
-    void writeFillStationTelemetry(RocketUmbTelemetry t); 
-
-    // TODO: Create protobuf format for RATS Telemetry 
-    void writeFillRATSTelemetry(); 
-    void writeGroundRATSTelemetry(); 
+    void writeUmbilicalTelemetry(RocketUmbTelemetry t); 
+    void writeFillStationTelemetry(FillStationTelemetry t); 
 };
 
 #endif 

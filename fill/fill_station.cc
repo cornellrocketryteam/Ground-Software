@@ -20,10 +20,6 @@
 
 #include "wiringPi.h"
 
-#include "absl/flags/flag.h"
-#include "absl/flags/parse.h"
-#include "absl/strings/str_format.h"
-
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
@@ -60,7 +56,10 @@ Sensor sensor_suite;
 /* Umblical Tools */
 RocketTelemetryProtoBuilder protoBuild;
 
-ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the fill station telemetry");
+/* Database */
+DataBase db; 
+
+const int PORT_NUMBER = 50051;
 
 FillStationTelemetry readTelemetry() {
     FillStationTelemetry t;
@@ -75,6 +74,10 @@ FillStationTelemetry readTelemetry() {
 
     t.set_lc1(sensor_suite.ReadLoadCell());
     return t;
+}
+
+RocketUmbTelemetry readUmbTelemetry() {
+    return protoBuild.buildProto();
 }
 
 // Fill Station service to accept commands.
@@ -121,57 +124,13 @@ class CommanderServiceImpl final : public Commander::Service
     }
 };
 
-// Fill Station service to stream telemetry.
-class TelemeterServiceImpl final : public FillStationTelemeter::Service
-{
-    Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
-                       ServerWriter<FillStationTelemetry> *writer) override
-    {
-        spdlog::info("Received initial connection point for the fill-station telemetry service.\n");
-        while (true) {
-            FillStationTelemetry t = readTelemetry();
-            if (!writer->Write(t)) {
-                // Broken stream
-                return Status::CANCELLED; 
-            }
-        }
-        return Status::OK;
-    }
-};
-
-class RocketTelemeterServiceImpl final : public RocketTelemeter::Service 
-{
-    Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
-                       ServerWriter<RocketTelemetry> *writer) override
-    {
-        spdlog::info("Received initial connection point for the rocket telemetry service.\n");
-        while (true) {
-            auto now = std::chrono::high_resolution_clock::now();
-            absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
-            
-            if (t.ok()) {
-                // Operation was successful, access the value
-                if (!writer->Write(*t)) {
-                    // Broken stream
-                    return Status::CANCELLED; 
-                }
-            } else {
-                spdlog::error("Error reading the full packet with message:\n");      
-                std::cout << t.status() << std::endl;           
-            }
-        }
-        return Status::OK;
-    }
-};
-
 // Server startup function
 void RunServer(uint16_t port, std::shared_ptr<Server> server)
 {
-    std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
-    CommanderServiceImpl commander_service;
-    TelemeterServiceImpl telemeter_service;
-    RocketTelemeterServiceImpl rocket_telemeter_service; 
+    std::string server_address = "0.0.0.0:" + std::to_string(port); 
 
+    CommanderServiceImpl commander_service;
+  
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
@@ -179,8 +138,6 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     // Register services.
     builder.RegisterService(&commander_service);
-    builder.RegisterService(&telemeter_service);
-    builder.RegisterService(&rocket_telemeter_service);
     // Finally assemble the server.
     server = builder.BuildAndStart();
 
@@ -191,17 +148,33 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     server->Wait();
 }
 
+// Thread functions for reading telemetry 
+void fill_telemetry_thread() {
+    while(true){
+        db.writeFillStationTelemetry(readTelemetry());
+    }
+}
+
+void umb_telemetry_thread() {
+    while(true){
+        db.writeUmbilicalTelemetry(readUmbTelemetry());
+    }
+}
+
 /*
 MAIN
 */
 // Start server and client services
 int main(int argc, char **argv)
 {
-    absl::ParseCommandLine(argc, argv);
+    // start telemetry threads 
+    std::thread fill_thread(fill_telemetry_thread);
+    std::thread umb_thread(umb_telemetry_thread);
+
     // Start the server in another thread
     std::shared_ptr<Server> server;
-    RunServer(absl::GetFlag(FLAGS_server_port), server);
-    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
+    RunServer(PORT_NUMBER, server);
+    std::thread serverThread(RunServer, PORT_NUMBER, server);
 
     server->Shutdown();
 

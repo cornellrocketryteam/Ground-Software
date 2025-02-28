@@ -59,7 +59,7 @@ class RocketTelemetryProtoBuilder {
         // send the Safe command when ground server disconnects from the fill station
         void sendSafeCommand();
 
-        absl::StatusOr<RocketTelemetry> buildProto(); 
+        RocketUmbTelemetry buildProto(); 
 };
 
 #endif

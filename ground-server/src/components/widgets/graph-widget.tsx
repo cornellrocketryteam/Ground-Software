@@ -1,0 +1,131 @@
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+import type { TelemetryChannel, Widget, WidgetProps } from "@/lib/definitions";
+import { useData } from "@/contexts/data-context";
+import { useEffect } from "react";
+
+function getConfig(channel: TelemetryChannel) {
+  const chartConfig = {
+    config: {
+      label: channel.label,
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig;
+  return chartConfig;
+}
+
+function tickFormatter(tick: number) {
+  const date = new Date(tick);
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const formattedTime = `${hours}:${minutes}`;
+  return formattedTime;
+}
+
+export default function GraphWidget(minuteDuration: number): Widget {
+  const GraphWidgetComponent = ({ channel }: WidgetProps) => {
+    const { data, sendHistoricalDataReq } = useData();
+    const fieldData = data[channel.dbField];
+
+    useEffect(() => {
+      sendHistoricalDataReq(-minuteDuration, 0, channel.dbField);
+    }, []);
+
+    if (fieldData === undefined || fieldData.length === 0) {
+      return (
+        <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+          <p className="font-semibold text-lg">{channel.label}</p>
+          <p className="font-normal text-lg">No data</p>
+        </div>
+      );
+    }
+
+    const latestValue = fieldData[fieldData.length - 1].value;
+    if (typeof latestValue !== "number") {
+      return (
+        <div>
+          Data is not numbers and so cannot be displayed using the graph widget.
+        </div>
+      );
+    }
+
+    const color = "hsl(var(--chart-1))";
+    const now = Date.now();
+
+    const chartData = fieldData
+      .filter((d) => d.timestamp.getTime() >= now - minuteDuration * 60000)
+      .map((d) => ({
+        timestamp: d.timestamp.getTime(),
+        value: d.value,
+      }));
+
+    return (
+      <div className="flex flex-col h-full">
+        <h3 className="text-center mb-2 font-semibold">
+          {minuteDuration}-Minute {channel.label} History
+        </h3>
+        <ChartContainer config={getConfig(channel)} className="w-full h-full">
+          <LineChart
+            accessibilityLayer
+            data={chartData}
+            margin={{ top: 0, right: 30, left: -10, bottom: 40 }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              interval="preserveStartEnd"
+              dataKey="timestamp"
+              tickFormatter={tickFormatter}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              type="number"
+              domain={["dataMin", "dataMax"]}
+              label={{
+                value: `Time`,
+                style: { textAnchor: "middle" },
+                position: "bottom",
+                offset: 0,
+              }}
+            />
+            <YAxis
+              domain={["dataMin", "dataMax"]}
+              tickFormatter={(tick) => tick.toFixed(2)}
+              label={{
+                value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
+                style: { textAnchor: "middle" },
+                angle: -90,
+                position: "left",
+                offset: -25,
+              }}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Line
+              dataKey={"value"} // Use the provided dataKey
+              isAnimationActive={false}
+              type="linear"
+              stroke={color} // Use color from config
+              strokeWidth={2}
+              dot={{ fill: color }}
+              activeDot={{ r: 3 }}
+            />
+          </LineChart>
+        </ChartContainer>
+      </div>
+    );
+  };
+
+  return {
+    mode: `${minuteDuration}m Chart`,
+    component: GraphWidgetComponent,
+  };
+}

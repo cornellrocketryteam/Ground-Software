@@ -1,0 +1,20 @@
+###############################################################################
+# Bazel now uses Bzlmod by default to manage external dependencies.
+# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
+#
+# For more details, please check https://github.com/bazelbuild/bazel/issues/18958
+###############################################################################
+
+""" Root module for fill station software """
+
+module(
+    name = "ground_software",
+    repo_name = "com_ground_software",
+)
+
+# Dependencies
+bazel_dep(name = "abseil-cpp", version = "20230802.0.bcr.1")
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
+bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "grpc", version = "1.56.3", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "protobuf", version = "23.1")

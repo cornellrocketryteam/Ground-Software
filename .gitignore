@@ -1,0 +1,30 @@
+# New change
+# Bazel files
+bazel-*
+bazel_format_virtual_environment/
+tools/bazel-*
+MODULE.bazel.lock
+
+# Docker debugging directories
+fill/output
+
+# Bazel wrapper
+bazel_wrapper
+bazel_wrapper.bat
+bazel_wrapper.bazelrc
+
+# VSCode
+.vscode/*
+
+# Docker Compose Secrets
+.env*
+
+# Go artifacts
+go-proxies/fill-telem-proxy/main
+go-proxies/websocket-proxy/main
+
+# Test Output
+fill_station_output.txt
+
+# macOS
+**/.DS_Store

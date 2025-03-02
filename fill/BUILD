@@ -10,6 +10,7 @@ cc_binary(
         "//fill/actuators:ignitor",
         "//fill/sensors:sensor",
         "//fill/lib/spdlog:spdlog",
+        "//fill/lib/WDT:wdt",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
         "@abseil-cpp//absl/strings:str_format",

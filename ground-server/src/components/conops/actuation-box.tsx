@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { sendCommand } from "@/lib/grpcClient";
 import { type Command } from "@/proto-out/command";
 import { useToast } from "@/components/ui/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 interface ButtonConfig {
   label: string;
@@ -37,6 +38,7 @@ interface ActuationBoxProps {
   small?: boolean; // For small size (vertical layout)
   medium?: boolean; // For medium size (scaled 0.75 internally)
   compactLayout?: boolean; // Compact layout adjustments
+  useSlider?: boolean;
 }
 
 export default function ActuationBox({
@@ -50,11 +52,13 @@ export default function ActuationBox({
   small = false,
   medium = false,
   compactLayout = false,
+  useSlider = false,
 }: ActuationBoxProps) {
   const [currentState, setCurrentState] = useState<string | null>(null);
   const [isOnState, setIsOnState] = useState<boolean | null>(null);
   const { toast } = useToast();
   const [isSwitchOn, setIsSwitchOn] = useState<boolean>(true);
+  const [sliderValue, setSliderValue] = useState(1); //use 1 second as initial state from prop
 
   // keys for local storage
   const currentStateKey = `ActuationBox_currentState-${title}`;
@@ -331,6 +335,24 @@ export default function ActuationBox({
           <span className={switchLabelClasses}>{switchLabel}</span>
         </div>
       )}
+
+      {useSlider && (
+        <div className="mt-8 w-full flex flex-col items-center">
+          <h4 className="text-sm font-bold mb-4 text-center">Vent Duration</h4>
+          <Slider
+            min={0}
+            max={4}
+            step={1}
+            value={[sliderValue]}
+            onValueChange={(value) => setSliderValue(value[0])} //probably add a command to change sleep duration to backend here
+          />
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            {sliderValue} {sliderValue === 1 ? "second" : "seconds"}
+          </p>
+        </div>
+      )}
+
+
 
       {/* Extra Spacing */}
       <div className={isSmall ? "mt-4" : "mt-8"}></div>

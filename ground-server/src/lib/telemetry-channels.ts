@@ -135,4 +135,156 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "ms_since_boot",
     widgets: [ValueWidget()],
   },
+
+  // Events
+  {
+    label: "Altitude Armed",
+    dbField: "altitude_armed",
+    widgets: [BoolStateWidget("Armed", "Disarmed"), EventCounterWidget()],
+  },
+  {
+    label: "Altimeter Init Failed",
+    dbField: "altimeter_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Altimeter Reading Failed",
+    dbField: "altimeter_reading_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "GPS Init Failed",
+    dbField: "gps_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "GPS Reading Failed",
+    dbField: "gps_reading_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "IMU Init Failed",
+    dbField: "imu_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "IMU Reading Failed",
+    dbField: "imu_reading_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Accelerometer Init Failed",
+    dbField: "accelerometer_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Accelerometer Reading Failed",
+    dbField: "accelerometer_reading_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "ADC Init Failed",
+    dbField: "adc_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "ADC Reading Failed",
+    dbField: "adc_reading_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "FRAM Init Failed",
+    dbField: "fram_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "FRAM Read Failed",
+    dbField: "fram_read_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "FRAM Write Failed",
+    dbField: "fram_write_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "SD Init Failed",
+    dbField: "sd_init_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "SD Write Failed",
+    dbField: "sd_write_failed",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "MAV Was Actuated",
+    dbField: "mav_was_actuated",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "SV Was Actuated",
+    dbField: "sv_was_actuated",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Main Deploy Wait End",
+    dbField: "main_deploy_wait_end",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Main Log Shutoff",
+    dbField: "main_log_shutoff",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Cycle Overflow",
+    dbField: "cycle_overflow",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Unknown Command Received",
+    dbField: "unknown_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Launch Command Received",
+    dbField: "launch_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "MAV Command Received",
+    dbField: "mav_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "SV Command Received",
+    dbField: "sv_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Safe Command Received",
+    dbField: "safe_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Reset Card Command Received",
+    dbField: "reset_card_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Reset Fram Command Received",
+    dbField: "reset_fram_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "State Change Command Received",
+    dbField: "state_change_command_received",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },
+  {
+    label: "Umbilical Disconnected",
+    dbField: "umbilical_disconnected",
+    widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
+  },  
 ];

@@ -1,14 +1,12 @@
 #ifndef QD_H
 #define QD_H
 
-//TODO: Update COIL based on specs 
-#define COIL1 5
-#define COIL2 6
-#define COIL3 22
-#define COIL4 26
+#define PUL_PIN 5
+#define DIR_PIN 6
+#define ENA_PIN 26
 
-#include "steppermotor.h"
 #include "actuator.h"
+#include "wiringPi.h"
 #include <spdlog/spdlog.h>
 
 #include <thread> 
@@ -20,7 +18,6 @@ class QD : public Actuator {
         bool Actuate();
         bool isActuating();
     protected:
-        StepperMotor* stepperMotor;
     private:
         void turnMotor();
 };

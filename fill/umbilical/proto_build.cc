@@ -143,7 +143,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
 
         uint16_t metadata;
         uint32_t ms_since_boot; 
-        uint64_t events_val; 
+        uint32_t events_val; 
 
         bool radio_state; 
         bool transmit_state; 
@@ -206,31 +206,36 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
                 break; 
         }
 
-        events->set_altitude_armed(static_cast<bool>(events_val & 0x1));
-        events->set_altimeter_init_failed(static_cast<bool>((events_val & 0x2) >> 1)); 
-        events->set_altimeter_reading_failed(static_cast<bool>((events_val & 0x4) >> 2)); 
-        events->set_gps_init_failed(static_cast<bool>((events_val & 0x8) >> 3)); 
-        events->set_gps_reading_failed(static_cast<bool>((events_val & 0x10) >> 4)); 
-        events->set_imu_init_failed(static_cast<bool>((events_val & 0x20) >> 5)); 
-        events->set_imu_reading_failed(static_cast<bool>((events_val & 0x40) >> 6)); 
-        events->set_accelerometer_init_failed(static_cast<bool>((events_val & 0x80) >> 7)); 
-        events->set_accelerometer_reading_failed(static_cast<bool>((events_val & 0x100) >> 8)); 
-        events->set_thermometer_init_failed(static_cast<bool>((events_val & 0x200) >> 9)); 
-        events->set_thermometer_reading_failed(static_cast<bool>((events_val & 0x400) >> 10)); 
-        events->set_voltage_init_failed(static_cast<bool>((events_val & 0x800) >> 11)); 
-        events->set_voltage_reading_failed(static_cast<bool>((events_val & 0x1000) >> 12)); 
-        events->set_adc_init_failed(static_cast<bool>((events_val & 0x2000) >> 13)); 
-        events->set_adc_reading_failed(static_cast<bool>((events_val & 0x4000) >> 14)); 
-        events->set_fram_init_failed(static_cast<bool>((events_val & 0x8000) >> 15)); 
-        events->set_fram_write_failed(static_cast<bool>((events_val & 0x10000) >> 16)); 
-        events->set_sd_init_failed(static_cast<bool>((events_val & 0x20000) >> 17)); 
-        events->set_sd_write_failed(static_cast<bool>((events_val & 0x40000) >> 18)); 
-        events->set_mav_was_actuated(static_cast<bool>((events_val & 0x80000) >> 19)); 
-        events->set_sv_was_actuated(static_cast<bool>((events_val & 0x100000) >> 20)); 
-        events->set_main_deploy_wait_end(static_cast<bool>((events_val & 0x200000) >> 21)); 
-        events->set_main_log_shutoff(static_cast<bool>((events_val & 0x400000) >> 22)); 
-        events->set_cycle_overflow(static_cast<bool>((events_val & 0x800000) >> 23)); 
-        events->set_invalid_command(static_cast<bool>((events_val & 0x1000000) >> 24)); 
+        events->set_altitude_armed(static_cast<bool>((events_val >> 0) & 0x1));
+        events->set_altimeter_init_failed(static_cast<bool>((events_val >> 1) & 0x1));
+        events->set_altimeter_reading_failed(static_cast<bool>((events_val >> 2) & 0x1));
+        events->set_gps_init_failed(static_cast<bool>((events_val >> 3) & 0x1));
+        events->set_gps_reading_failed(static_cast<bool>((events_val >> 4) & 0x1));
+        events->set_imu_init_failed(static_cast<bool>((events_val >> 5) & 0x1));
+        events->set_imu_reading_failed(static_cast<bool>((events_val >> 6) & 0x1));
+        events->set_accelerometer_init_failed(static_cast<bool>((events_val >> 7) & 0x1));
+        events->set_accelerometer_reading_failed(static_cast<bool>((events_val >> 8) & 0x1));
+        events->set_adc_init_failed(static_cast<bool>((events_val >> 9) & 0x1));
+        events->set_adc_reading_failed(static_cast<bool>((events_val >> 10) & 0x1));
+        events->set_fram_init_failed(static_cast<bool>((events_val >> 11) & 0x1));
+        events->set_fram_read_failed(static_cast<bool>((events_val >> 12) & 0x1));
+        events->set_fram_write_failed(static_cast<bool>((events_val >> 13) & 0x1));
+        events->set_sd_init_failed(static_cast<bool>((events_val >> 14) & 0x1));
+        events->set_sd_write_failed(static_cast<bool>((events_val >> 15) & 0x1));
+        events->set_mav_was_actuated(static_cast<bool>((events_val >> 16) & 0x1));
+        events->set_sv_was_actuated(static_cast<bool>((events_val >> 17) & 0x1));
+        events->set_main_deploy_wait_end(static_cast<bool>((events_val >> 18) & 0x1));
+        events->set_main_log_shutoff(static_cast<bool>((events_val >> 19) & 0x1));
+        events->set_cycle_overflow(static_cast<bool>((events_val >> 20) & 0x1));
+        events->set_unknown_command_received(static_cast<bool>((events_val >> 21) & 0x1));
+        events->set_launch_command_received(static_cast<bool>((events_val >> 22) & 0x1));
+        events->set_mav_command_received(static_cast<bool>((events_val >> 23) & 0x1));
+        events->set_sv_command_received(static_cast<bool>((events_val >> 24) & 0x1));
+        events->set_safe_command_received(static_cast<bool>((events_val >> 25) & 0x1));
+        events->set_reset_card_command_received(static_cast<bool>((events_val >> 26) & 0x1));
+        events->set_reset_fram_command_received(static_cast<bool>((events_val >> 27) & 0x1));
+        events->set_state_change_command_received(static_cast<bool>((events_val >> 28) & 0x1));
+        events->set_umbilical_disconnected(static_cast<bool>((events_val >> 29) & 0x1));
 
         rocketUmbTelemetry->set_ms_since_boot(ms_since_boot);
         rocketUmbTelemetry->set_battery_voltage(battery_voltage);

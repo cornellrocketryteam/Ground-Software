@@ -152,13 +152,10 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["imu_reading_failed"] = events.ImuReadingFailed
 			fields["accelerometer_init_failed"] = events.AccelerometerInitFailed
 			fields["accelerometer_reading_failed"] = events.AccelerometerReadingFailed
-			fields["thermometer_init_failed"] = events.ThermometerInitFailed
-			fields["thermometer_reading_failed"] = events.ThermometerReadingFailed
-			fields["voltage_init_failed"] = events.VoltageInitFailed
-			fields["voltage_reading_failed"] = events.VoltageReadingFailed
 			fields["adc_init_failed"] = events.AdcInitFailed
 			fields["adc_reading_failed"] = events.AdcReadingFailed
 			fields["fram_init_failed"] = events.FramInitFailed
+			fields["fram_read_failed"] = events.FramReadFailed
 			fields["fram_write_failed"] = events.FramWriteFailed
 			fields["sd_init_failed"] = events.SdInitFailed
 			fields["sd_write_failed"] = events.SdWriteFailed
@@ -167,7 +164,15 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["main_deploy_wait_end"] = events.MainDeployWaitEnd
 			fields["main_log_shutoff"] = events.MainLogShutoff
 			fields["cycle_overflow"] = events.CycleOverflow
-			fields["invalid_command"] = events.InvalidCommand
+			fields["unknown_command_received"] = events.UnknownCommandReceived
+			fields["launch_command_received"] = events.LaunchCommandReceived
+			fields["mav_command_received"] = events.MavCommandReceived
+			fields["sv_command_received"] = events.SvCommandReceived
+			fields["safe_command_received"] = events.SafeCommandReceived
+			fields["reset_card_command_received"] = events.ResetCardCommandReceived
+			fields["reset_fram_command_received"] = events.ResetFramCommandReceived
+			fields["state_change_command_received"] = events.StateChangeCommandReceived
+			fields["umbilical_disconnected"] = events.UmbilicalDisconnected
 		}
 	}
 

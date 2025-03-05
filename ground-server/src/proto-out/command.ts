@@ -124,13 +124,10 @@ export interface Events {
   imuReadingFailed: boolean;
   accelerometerInitFailed: boolean;
   accelerometerReadingFailed: boolean;
-  thermometerInitFailed: boolean;
-  thermometerReadingFailed: boolean;
-  voltageInitFailed: boolean;
-  voltageReadingFailed: boolean;
   adcInitFailed: boolean;
   adcReadingFailed: boolean;
   framInitFailed: boolean;
+  framReadFailed: boolean;
   framWriteFailed: boolean;
   sdInitFailed: boolean;
   sdWriteFailed: boolean;
@@ -139,7 +136,15 @@ export interface Events {
   mainDeployWaitEnd: boolean;
   mainLogShutoff: boolean;
   cycleOverflow: boolean;
-  invalidCommand: boolean;
+  unknownCommandReceived: boolean;
+  launchCommandReceived: boolean;
+  mavCommandReceived: boolean;
+  svCommandReceived: boolean;
+  safeCommandReceived: boolean;
+  resetCardCommandReceived: boolean;
+  resetFramCommandReceived: boolean;
+  stateChangeCommandReceived: boolean;
+  umbilicalDisconnected: boolean;
 }
 
 export interface RocketMetadata {
@@ -567,13 +572,10 @@ function createBaseEvents(): Events {
     imuReadingFailed: false,
     accelerometerInitFailed: false,
     accelerometerReadingFailed: false,
-    thermometerInitFailed: false,
-    thermometerReadingFailed: false,
-    voltageInitFailed: false,
-    voltageReadingFailed: false,
     adcInitFailed: false,
     adcReadingFailed: false,
     framInitFailed: false,
+    framReadFailed: false,
     framWriteFailed: false,
     sdInitFailed: false,
     sdWriteFailed: false,
@@ -582,7 +584,15 @@ function createBaseEvents(): Events {
     mainDeployWaitEnd: false,
     mainLogShutoff: false,
     cycleOverflow: false,
-    invalidCommand: false,
+    unknownCommandReceived: false,
+    launchCommandReceived: false,
+    mavCommandReceived: false,
+    svCommandReceived: false,
+    safeCommandReceived: false,
+    resetCardCommandReceived: false,
+    resetFramCommandReceived: false,
+    stateChangeCommandReceived: false,
+    umbilicalDisconnected: false,
   };
 }
 
@@ -615,53 +625,68 @@ export const Events: MessageFns<Events> = {
     if (message.accelerometerReadingFailed !== false) {
       writer.uint32(72).bool(message.accelerometerReadingFailed);
     }
-    if (message.thermometerInitFailed !== false) {
-      writer.uint32(80).bool(message.thermometerInitFailed);
-    }
-    if (message.thermometerReadingFailed !== false) {
-      writer.uint32(88).bool(message.thermometerReadingFailed);
-    }
-    if (message.voltageInitFailed !== false) {
-      writer.uint32(96).bool(message.voltageInitFailed);
-    }
-    if (message.voltageReadingFailed !== false) {
-      writer.uint32(104).bool(message.voltageReadingFailed);
-    }
     if (message.adcInitFailed !== false) {
-      writer.uint32(112).bool(message.adcInitFailed);
+      writer.uint32(80).bool(message.adcInitFailed);
     }
     if (message.adcReadingFailed !== false) {
-      writer.uint32(120).bool(message.adcReadingFailed);
+      writer.uint32(88).bool(message.adcReadingFailed);
     }
     if (message.framInitFailed !== false) {
-      writer.uint32(128).bool(message.framInitFailed);
+      writer.uint32(96).bool(message.framInitFailed);
+    }
+    if (message.framReadFailed !== false) {
+      writer.uint32(104).bool(message.framReadFailed);
     }
     if (message.framWriteFailed !== false) {
-      writer.uint32(136).bool(message.framWriteFailed);
+      writer.uint32(112).bool(message.framWriteFailed);
     }
     if (message.sdInitFailed !== false) {
-      writer.uint32(144).bool(message.sdInitFailed);
+      writer.uint32(120).bool(message.sdInitFailed);
     }
     if (message.sdWriteFailed !== false) {
-      writer.uint32(152).bool(message.sdWriteFailed);
+      writer.uint32(128).bool(message.sdWriteFailed);
     }
     if (message.mavWasActuated !== false) {
-      writer.uint32(160).bool(message.mavWasActuated);
+      writer.uint32(136).bool(message.mavWasActuated);
     }
     if (message.svWasActuated !== false) {
-      writer.uint32(168).bool(message.svWasActuated);
+      writer.uint32(144).bool(message.svWasActuated);
     }
     if (message.mainDeployWaitEnd !== false) {
-      writer.uint32(176).bool(message.mainDeployWaitEnd);
+      writer.uint32(152).bool(message.mainDeployWaitEnd);
     }
     if (message.mainLogShutoff !== false) {
-      writer.uint32(184).bool(message.mainLogShutoff);
+      writer.uint32(160).bool(message.mainLogShutoff);
     }
     if (message.cycleOverflow !== false) {
-      writer.uint32(192).bool(message.cycleOverflow);
+      writer.uint32(168).bool(message.cycleOverflow);
     }
-    if (message.invalidCommand !== false) {
-      writer.uint32(200).bool(message.invalidCommand);
+    if (message.unknownCommandReceived !== false) {
+      writer.uint32(176).bool(message.unknownCommandReceived);
+    }
+    if (message.launchCommandReceived !== false) {
+      writer.uint32(184).bool(message.launchCommandReceived);
+    }
+    if (message.mavCommandReceived !== false) {
+      writer.uint32(192).bool(message.mavCommandReceived);
+    }
+    if (message.svCommandReceived !== false) {
+      writer.uint32(200).bool(message.svCommandReceived);
+    }
+    if (message.safeCommandReceived !== false) {
+      writer.uint32(208).bool(message.safeCommandReceived);
+    }
+    if (message.resetCardCommandReceived !== false) {
+      writer.uint32(216).bool(message.resetCardCommandReceived);
+    }
+    if (message.resetFramCommandReceived !== false) {
+      writer.uint32(224).bool(message.resetFramCommandReceived);
+    }
+    if (message.stateChangeCommandReceived !== false) {
+      writer.uint32(232).bool(message.stateChangeCommandReceived);
+    }
+    if (message.umbilicalDisconnected !== false) {
+      writer.uint32(240).bool(message.umbilicalDisconnected);
     }
     return writer;
   },
@@ -750,7 +775,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerInitFailed = reader.bool();
+          message.adcInitFailed = reader.bool();
           continue;
         }
         case 11: {
@@ -758,7 +783,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerReadingFailed = reader.bool();
+          message.adcReadingFailed = reader.bool();
           continue;
         }
         case 12: {
@@ -766,7 +791,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.voltageInitFailed = reader.bool();
+          message.framInitFailed = reader.bool();
           continue;
         }
         case 13: {
@@ -774,7 +799,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.voltageReadingFailed = reader.bool();
+          message.framReadFailed = reader.bool();
           continue;
         }
         case 14: {
@@ -782,7 +807,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.adcInitFailed = reader.bool();
+          message.framWriteFailed = reader.bool();
           continue;
         }
         case 15: {
@@ -790,7 +815,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.adcReadingFailed = reader.bool();
+          message.sdInitFailed = reader.bool();
           continue;
         }
         case 16: {
@@ -798,7 +823,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.framInitFailed = reader.bool();
+          message.sdWriteFailed = reader.bool();
           continue;
         }
         case 17: {
@@ -806,7 +831,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.framWriteFailed = reader.bool();
+          message.mavWasActuated = reader.bool();
           continue;
         }
         case 18: {
@@ -814,7 +839,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.sdInitFailed = reader.bool();
+          message.svWasActuated = reader.bool();
           continue;
         }
         case 19: {
@@ -822,7 +847,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.sdWriteFailed = reader.bool();
+          message.mainDeployWaitEnd = reader.bool();
           continue;
         }
         case 20: {
@@ -830,7 +855,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mavWasActuated = reader.bool();
+          message.mainLogShutoff = reader.bool();
           continue;
         }
         case 21: {
@@ -838,7 +863,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.svWasActuated = reader.bool();
+          message.cycleOverflow = reader.bool();
           continue;
         }
         case 22: {
@@ -846,7 +871,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mainDeployWaitEnd = reader.bool();
+          message.unknownCommandReceived = reader.bool();
           continue;
         }
         case 23: {
@@ -854,7 +879,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mainLogShutoff = reader.bool();
+          message.launchCommandReceived = reader.bool();
           continue;
         }
         case 24: {
@@ -862,7 +887,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.cycleOverflow = reader.bool();
+          message.mavCommandReceived = reader.bool();
           continue;
         }
         case 25: {
@@ -870,7 +895,47 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.invalidCommand = reader.bool();
+          message.svCommandReceived = reader.bool();
+          continue;
+        }
+        case 26: {
+          if (tag !== 208) {
+            break;
+          }
+
+          message.safeCommandReceived = reader.bool();
+          continue;
+        }
+        case 27: {
+          if (tag !== 216) {
+            break;
+          }
+
+          message.resetCardCommandReceived = reader.bool();
+          continue;
+        }
+        case 28: {
+          if (tag !== 224) {
+            break;
+          }
+
+          message.resetFramCommandReceived = reader.bool();
+          continue;
+        }
+        case 29: {
+          if (tag !== 232) {
+            break;
+          }
+
+          message.stateChangeCommandReceived = reader.bool();
+          continue;
+        }
+        case 30: {
+          if (tag !== 240) {
+            break;
+          }
+
+          message.umbilicalDisconnected = reader.bool();
           continue;
         }
       }
@@ -899,19 +964,10 @@ export const Events: MessageFns<Events> = {
       accelerometerReadingFailed: isSet(object.accelerometerReadingFailed)
         ? globalThis.Boolean(object.accelerometerReadingFailed)
         : false,
-      thermometerInitFailed: isSet(object.thermometerInitFailed)
-        ? globalThis.Boolean(object.thermometerInitFailed)
-        : false,
-      thermometerReadingFailed: isSet(object.thermometerReadingFailed)
-        ? globalThis.Boolean(object.thermometerReadingFailed)
-        : false,
-      voltageInitFailed: isSet(object.voltageInitFailed) ? globalThis.Boolean(object.voltageInitFailed) : false,
-      voltageReadingFailed: isSet(object.voltageReadingFailed)
-        ? globalThis.Boolean(object.voltageReadingFailed)
-        : false,
       adcInitFailed: isSet(object.adcInitFailed) ? globalThis.Boolean(object.adcInitFailed) : false,
       adcReadingFailed: isSet(object.adcReadingFailed) ? globalThis.Boolean(object.adcReadingFailed) : false,
       framInitFailed: isSet(object.framInitFailed) ? globalThis.Boolean(object.framInitFailed) : false,
+      framReadFailed: isSet(object.framReadFailed) ? globalThis.Boolean(object.framReadFailed) : false,
       framWriteFailed: isSet(object.framWriteFailed) ? globalThis.Boolean(object.framWriteFailed) : false,
       sdInitFailed: isSet(object.sdInitFailed) ? globalThis.Boolean(object.sdInitFailed) : false,
       sdWriteFailed: isSet(object.sdWriteFailed) ? globalThis.Boolean(object.sdWriteFailed) : false,
@@ -920,7 +976,27 @@ export const Events: MessageFns<Events> = {
       mainDeployWaitEnd: isSet(object.mainDeployWaitEnd) ? globalThis.Boolean(object.mainDeployWaitEnd) : false,
       mainLogShutoff: isSet(object.mainLogShutoff) ? globalThis.Boolean(object.mainLogShutoff) : false,
       cycleOverflow: isSet(object.cycleOverflow) ? globalThis.Boolean(object.cycleOverflow) : false,
-      invalidCommand: isSet(object.invalidCommand) ? globalThis.Boolean(object.invalidCommand) : false,
+      unknownCommandReceived: isSet(object.unknownCommandReceived)
+        ? globalThis.Boolean(object.unknownCommandReceived)
+        : false,
+      launchCommandReceived: isSet(object.launchCommandReceived)
+        ? globalThis.Boolean(object.launchCommandReceived)
+        : false,
+      mavCommandReceived: isSet(object.mavCommandReceived) ? globalThis.Boolean(object.mavCommandReceived) : false,
+      svCommandReceived: isSet(object.svCommandReceived) ? globalThis.Boolean(object.svCommandReceived) : false,
+      safeCommandReceived: isSet(object.safeCommandReceived) ? globalThis.Boolean(object.safeCommandReceived) : false,
+      resetCardCommandReceived: isSet(object.resetCardCommandReceived)
+        ? globalThis.Boolean(object.resetCardCommandReceived)
+        : false,
+      resetFramCommandReceived: isSet(object.resetFramCommandReceived)
+        ? globalThis.Boolean(object.resetFramCommandReceived)
+        : false,
+      stateChangeCommandReceived: isSet(object.stateChangeCommandReceived)
+        ? globalThis.Boolean(object.stateChangeCommandReceived)
+        : false,
+      umbilicalDisconnected: isSet(object.umbilicalDisconnected)
+        ? globalThis.Boolean(object.umbilicalDisconnected)
+        : false,
     };
   },
 
@@ -953,18 +1029,6 @@ export const Events: MessageFns<Events> = {
     if (message.accelerometerReadingFailed !== false) {
       obj.accelerometerReadingFailed = message.accelerometerReadingFailed;
     }
-    if (message.thermometerInitFailed !== false) {
-      obj.thermometerInitFailed = message.thermometerInitFailed;
-    }
-    if (message.thermometerReadingFailed !== false) {
-      obj.thermometerReadingFailed = message.thermometerReadingFailed;
-    }
-    if (message.voltageInitFailed !== false) {
-      obj.voltageInitFailed = message.voltageInitFailed;
-    }
-    if (message.voltageReadingFailed !== false) {
-      obj.voltageReadingFailed = message.voltageReadingFailed;
-    }
     if (message.adcInitFailed !== false) {
       obj.adcInitFailed = message.adcInitFailed;
     }
@@ -973,6 +1037,9 @@ export const Events: MessageFns<Events> = {
     }
     if (message.framInitFailed !== false) {
       obj.framInitFailed = message.framInitFailed;
+    }
+    if (message.framReadFailed !== false) {
+      obj.framReadFailed = message.framReadFailed;
     }
     if (message.framWriteFailed !== false) {
       obj.framWriteFailed = message.framWriteFailed;
@@ -998,8 +1065,32 @@ export const Events: MessageFns<Events> = {
     if (message.cycleOverflow !== false) {
       obj.cycleOverflow = message.cycleOverflow;
     }
-    if (message.invalidCommand !== false) {
-      obj.invalidCommand = message.invalidCommand;
+    if (message.unknownCommandReceived !== false) {
+      obj.unknownCommandReceived = message.unknownCommandReceived;
+    }
+    if (message.launchCommandReceived !== false) {
+      obj.launchCommandReceived = message.launchCommandReceived;
+    }
+    if (message.mavCommandReceived !== false) {
+      obj.mavCommandReceived = message.mavCommandReceived;
+    }
+    if (message.svCommandReceived !== false) {
+      obj.svCommandReceived = message.svCommandReceived;
+    }
+    if (message.safeCommandReceived !== false) {
+      obj.safeCommandReceived = message.safeCommandReceived;
+    }
+    if (message.resetCardCommandReceived !== false) {
+      obj.resetCardCommandReceived = message.resetCardCommandReceived;
+    }
+    if (message.resetFramCommandReceived !== false) {
+      obj.resetFramCommandReceived = message.resetFramCommandReceived;
+    }
+    if (message.stateChangeCommandReceived !== false) {
+      obj.stateChangeCommandReceived = message.stateChangeCommandReceived;
+    }
+    if (message.umbilicalDisconnected !== false) {
+      obj.umbilicalDisconnected = message.umbilicalDisconnected;
     }
     return obj;
   },
@@ -1018,13 +1109,10 @@ export const Events: MessageFns<Events> = {
     message.imuReadingFailed = object.imuReadingFailed ?? false;
     message.accelerometerInitFailed = object.accelerometerInitFailed ?? false;
     message.accelerometerReadingFailed = object.accelerometerReadingFailed ?? false;
-    message.thermometerInitFailed = object.thermometerInitFailed ?? false;
-    message.thermometerReadingFailed = object.thermometerReadingFailed ?? false;
-    message.voltageInitFailed = object.voltageInitFailed ?? false;
-    message.voltageReadingFailed = object.voltageReadingFailed ?? false;
     message.adcInitFailed = object.adcInitFailed ?? false;
     message.adcReadingFailed = object.adcReadingFailed ?? false;
     message.framInitFailed = object.framInitFailed ?? false;
+    message.framReadFailed = object.framReadFailed ?? false;
     message.framWriteFailed = object.framWriteFailed ?? false;
     message.sdInitFailed = object.sdInitFailed ?? false;
     message.sdWriteFailed = object.sdWriteFailed ?? false;
@@ -1033,7 +1121,15 @@ export const Events: MessageFns<Events> = {
     message.mainDeployWaitEnd = object.mainDeployWaitEnd ?? false;
     message.mainLogShutoff = object.mainLogShutoff ?? false;
     message.cycleOverflow = object.cycleOverflow ?? false;
-    message.invalidCommand = object.invalidCommand ?? false;
+    message.unknownCommandReceived = object.unknownCommandReceived ?? false;
+    message.launchCommandReceived = object.launchCommandReceived ?? false;
+    message.mavCommandReceived = object.mavCommandReceived ?? false;
+    message.svCommandReceived = object.svCommandReceived ?? false;
+    message.safeCommandReceived = object.safeCommandReceived ?? false;
+    message.resetCardCommandReceived = object.resetCardCommandReceived ?? false;
+    message.resetFramCommandReceived = object.resetFramCommandReceived ?? false;
+    message.stateChangeCommandReceived = object.stateChangeCommandReceived ?? false;
+    message.umbilicalDisconnected = object.umbilicalDisconnected ?? false;
     return message;
   },
 };

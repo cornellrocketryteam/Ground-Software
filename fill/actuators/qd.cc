@@ -1,14 +1,17 @@
-#include <unistd.h>
 #include "qd.h"
 
 QD::QD(){
-    stepperMotor = new StepperMotor(COIL1, COIL2, COIL3, COIL4, false);
     actuating = false; 
+
+    pinMode(PUL_PIN, OUTPUT); 
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(ENA_PIN, OUTPUT);
+
+    // Disable the driver by setting the enable pin high
+    digitalWrite(ENA_PIN, HIGH);
 }
 
-QD::~QD(){
-    delete stepperMotor;
-}
+QD::~QD(){}
 
 bool QD::Actuate(){
     spdlog::info("Actuating the QD\n");
@@ -26,11 +29,19 @@ bool QD::Actuate(){
 void QD::turnMotor(){
     actuating = true; 
 
-    stepperMotor->Enable(); // enable sensor motor 
-    stepperMotor->Rotate(stepperMotor->CLOCKWISE, 1200, 50); // Rotate the motor clockwise, 50ms time delay
+    // Enable the driver 
+    digitalWrite(ENA_PIN, LOW);
 
-    stepperMotor->StopRotation(); // Holds in current location 
-    stepperMotor->Disable();
+    // Clockwise rotation 
+    digitalWrite(DIR_PIN, HIGH); 
+    
+    // will take two minutes to finish turning the motor 
+    for (int i = 0; i < 1200; i++){
+        digitalWrite(PUL_PIN, HIGH);
+        delayMicroseconds(50); 
+        digitalWrite(PUL_PIN, LOW);
+        delayMicroseconds(50);  
+    }
 
     actuating = false; 
 

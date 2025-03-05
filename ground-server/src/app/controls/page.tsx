@@ -144,6 +144,20 @@ export default async function Controls() {
             initialStateLabel="No Data"
             useSwitch={false}
           />
+
+          <ActuationBox
+            title="Vent"
+            buttons={[
+              {
+                label: "Vent",
+                stateLabel: "Vented",
+                command: { vent: true },
+                isOn: true
+              }
+            ]}
+            initialStateLabel="No Data"
+            useSwitch={false}
+          />
         </div>
       </div>
     </div>

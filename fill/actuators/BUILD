@@ -12,7 +12,8 @@ cc_library(
     name = "qd",
     srcs = ["qd.cc"],
     hdrs = ["qd.h"],
-    deps = [":actuator", "//fill/lib/SMDriver:smdriver"],
+    deps = [":actuator", "//fill/lib/MockWiringPi:mock_wiringpi",],
+    linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],

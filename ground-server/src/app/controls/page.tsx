@@ -150,7 +150,7 @@ export default async function Controls() {
               {
                 label: "Vent",
                 stateLabel: "Vented",
-                command: { launch: false }, //change to correct command when implemented
+                command: { vent: true },
                 isOn: true
               },
             ]}

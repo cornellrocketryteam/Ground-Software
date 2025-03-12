@@ -124,6 +124,16 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
         spdlog::info("Received LAUNCH Command");
         write_command(LAUNCH);
     }
+
+    if (com->vent()) {
+        spdlog::info("Received VENT command");
+        std::thread vent_sender([this](){
+            write_command(OPEN_SV);
+            sleep(2); 
+            write_command(CLOSE_SV); 
+        });
+        vent_sender.detach();
+    }
 }
 
 absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){

@@ -91,11 +91,12 @@ export interface Command {
   qdRetract?: boolean | undefined;
   ignite?: boolean | undefined;
   sv2Close?: boolean | undefined;
-  mavOpen?:
+  mavOpen?: boolean | undefined;
+  launch?:
     | boolean
     | undefined;
-  /** optional bool clear_sd = 9; */
-  launch?: boolean | undefined;
+  /** optional bool clear_sd = 10; */
+  vent?: boolean | undefined;
 }
 
 /**
@@ -242,6 +243,7 @@ function createBaseCommand(): Command {
     sv2Close: undefined,
     mavOpen: undefined,
     launch: undefined,
+    vent: undefined,
   };
 }
 
@@ -270,6 +272,9 @@ export const Command: MessageFns<Command> = {
     }
     if (message.launch !== undefined) {
       writer.uint32(64).bool(message.launch);
+    }
+    if (message.vent !== undefined) {
+      writer.uint32(72).bool(message.vent);
     }
     return writer;
   },
@@ -345,6 +350,14 @@ export const Command: MessageFns<Command> = {
           message.launch = reader.bool();
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.vent = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -364,6 +377,7 @@ export const Command: MessageFns<Command> = {
       sv2Close: isSet(object.sv2Close) ? globalThis.Boolean(object.sv2Close) : undefined,
       mavOpen: isSet(object.mavOpen) ? globalThis.Boolean(object.mavOpen) : undefined,
       launch: isSet(object.launch) ? globalThis.Boolean(object.launch) : undefined,
+      vent: isSet(object.vent) ? globalThis.Boolean(object.vent) : undefined,
     };
   },
 
@@ -393,6 +407,9 @@ export const Command: MessageFns<Command> = {
     if (message.launch !== undefined) {
       obj.launch = message.launch;
     }
+    if (message.vent !== undefined) {
+      obj.vent = message.vent;
+    }
     return obj;
   },
 
@@ -409,6 +426,7 @@ export const Command: MessageFns<Command> = {
     message.sv2Close = object.sv2Close ?? undefined;
     message.mavOpen = object.mavOpen ?? undefined;
     message.launch = object.launch ?? undefined;
+    message.vent = object.vent ?? undefined;
     return message;
   },
 };

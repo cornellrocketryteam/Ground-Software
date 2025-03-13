@@ -1,14 +1,23 @@
-#include <unistd.h>
 #include "qd.h"
 
 QD::QD(){
-    stepperMotor = new StepperMotor(COIL1, COIL2, COIL3, COIL4, false);
     actuating = false; 
+
+    wiringPiSetupGpio();
+
+    pinMode(PUL_PIN, OUTPUT); 
+    pinMode(DIR_PIN, OUTPUT);
+    pinMode(ENA_PIN, OUTPUT);
+
+    // Disable the driver by setting the enable pin low
+    digitalWrite(ENA_PIN, LOW);
+    // pulse should be default high
+    digitalWrite(PUL_PIN, HIGH); 
+
+    digitalWrite(DIR_PIN, HIGH); // default clockwise 
 }
 
-QD::~QD(){
-    delete stepperMotor;
-}
+QD::~QD(){}
 
 bool QD::Actuate(){
     spdlog::info("Actuating the QD\n");
@@ -17,7 +26,6 @@ bool QD::Actuate(){
     }
 
     std::thread actuate_thread(&QD::turnMotor, this);
-
     actuate_thread.detach(); // we want to continue normal operation 
 
     return true; // Has been actuated successfully 
@@ -26,12 +34,19 @@ bool QD::Actuate(){
 void QD::turnMotor(){
     actuating = true; 
 
-    stepperMotor->Enable(); // enable sensor motor 
-    stepperMotor->Rotate(stepperMotor->CLOCKWISE, 1200, 50); // Rotate the motor clockwise, 50ms time delay
+    // Enable the driver 
+    digitalWrite(ENA_PIN, HIGH);
+    delay(201); // necessary to set enable correctly 
+    
+    for (int step = 0; step < 1200; step++) {
+        // Generate one pulse with 50% duty cycle
+        digitalWrite(PUL_PIN, LOW);  
+        delay(10);             
+        digitalWrite(PUL_PIN, HIGH);  
+        delay(10);                
+    }
 
-    stepperMotor->StopRotation(); // Holds in current location 
-    stepperMotor->Disable();
-
+    digitalWrite(ENA_PIN, LOW);
     actuating = false; 
 
     return;

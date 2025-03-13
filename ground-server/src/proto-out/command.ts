@@ -92,11 +92,21 @@ export interface Command {
   ignite?: boolean | undefined;
   sv2Close?: boolean | undefined;
   mavOpen?: boolean | undefined;
-  launch?:
-    | boolean
-    | undefined;
-  /** optional bool clear_sd = 10; */
-  vent?: boolean | undefined;
+  launch?: boolean | undefined;
+  vent?: VentCommand | undefined;
+  ventAndIgnite?: VentCommand | undefined;
+  payloadStart?: boolean | undefined;
+  sdClear?: boolean | undefined;
+  framReset?: boolean | undefined;
+  reboot?: boolean | undefined;
+}
+
+export interface VentCommand {
+  /**
+   * When this message is set, it indicates that a vent command is issued.
+   * The duration field allows specifying how long the vent should last.
+   */
+  duration: number;
 }
 
 /**
@@ -244,6 +254,11 @@ function createBaseCommand(): Command {
     mavOpen: undefined,
     launch: undefined,
     vent: undefined,
+    ventAndIgnite: undefined,
+    payloadStart: undefined,
+    sdClear: undefined,
+    framReset: undefined,
+    reboot: undefined,
   };
 }
 
@@ -274,7 +289,22 @@ export const Command: MessageFns<Command> = {
       writer.uint32(64).bool(message.launch);
     }
     if (message.vent !== undefined) {
-      writer.uint32(72).bool(message.vent);
+      VentCommand.encode(message.vent, writer.uint32(74).fork()).join();
+    }
+    if (message.ventAndIgnite !== undefined) {
+      VentCommand.encode(message.ventAndIgnite, writer.uint32(82).fork()).join();
+    }
+    if (message.payloadStart !== undefined) {
+      writer.uint32(88).bool(message.payloadStart);
+    }
+    if (message.sdClear !== undefined) {
+      writer.uint32(96).bool(message.sdClear);
+    }
+    if (message.framReset !== undefined) {
+      writer.uint32(104).bool(message.framReset);
+    }
+    if (message.reboot !== undefined) {
+      writer.uint32(112).bool(message.reboot);
     }
     return writer;
   },
@@ -351,11 +381,51 @@ export const Command: MessageFns<Command> = {
           continue;
         }
         case 9: {
-          if (tag !== 72) {
+          if (tag !== 74) {
             break;
           }
 
-          message.vent = reader.bool();
+          message.vent = VentCommand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.ventAndIgnite = VentCommand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.payloadStart = reader.bool();
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.sdClear = reader.bool();
+          continue;
+        }
+        case 13: {
+          if (tag !== 104) {
+            break;
+          }
+
+          message.framReset = reader.bool();
+          continue;
+        }
+        case 14: {
+          if (tag !== 112) {
+            break;
+          }
+
+          message.reboot = reader.bool();
           continue;
         }
       }
@@ -377,7 +447,12 @@ export const Command: MessageFns<Command> = {
       sv2Close: isSet(object.sv2Close) ? globalThis.Boolean(object.sv2Close) : undefined,
       mavOpen: isSet(object.mavOpen) ? globalThis.Boolean(object.mavOpen) : undefined,
       launch: isSet(object.launch) ? globalThis.Boolean(object.launch) : undefined,
-      vent: isSet(object.vent) ? globalThis.Boolean(object.vent) : undefined,
+      vent: isSet(object.vent) ? VentCommand.fromJSON(object.vent) : undefined,
+      ventAndIgnite: isSet(object.ventAndIgnite) ? VentCommand.fromJSON(object.ventAndIgnite) : undefined,
+      payloadStart: isSet(object.payloadStart) ? globalThis.Boolean(object.payloadStart) : undefined,
+      sdClear: isSet(object.sdClear) ? globalThis.Boolean(object.sdClear) : undefined,
+      framReset: isSet(object.framReset) ? globalThis.Boolean(object.framReset) : undefined,
+      reboot: isSet(object.reboot) ? globalThis.Boolean(object.reboot) : undefined,
     };
   },
 
@@ -408,7 +483,22 @@ export const Command: MessageFns<Command> = {
       obj.launch = message.launch;
     }
     if (message.vent !== undefined) {
-      obj.vent = message.vent;
+      obj.vent = VentCommand.toJSON(message.vent);
+    }
+    if (message.ventAndIgnite !== undefined) {
+      obj.ventAndIgnite = VentCommand.toJSON(message.ventAndIgnite);
+    }
+    if (message.payloadStart !== undefined) {
+      obj.payloadStart = message.payloadStart;
+    }
+    if (message.sdClear !== undefined) {
+      obj.sdClear = message.sdClear;
+    }
+    if (message.framReset !== undefined) {
+      obj.framReset = message.framReset;
+    }
+    if (message.reboot !== undefined) {
+      obj.reboot = message.reboot;
     }
     return obj;
   },
@@ -426,7 +516,74 @@ export const Command: MessageFns<Command> = {
     message.sv2Close = object.sv2Close ?? undefined;
     message.mavOpen = object.mavOpen ?? undefined;
     message.launch = object.launch ?? undefined;
-    message.vent = object.vent ?? undefined;
+    message.vent = (object.vent !== undefined && object.vent !== null)
+      ? VentCommand.fromPartial(object.vent)
+      : undefined;
+    message.ventAndIgnite = (object.ventAndIgnite !== undefined && object.ventAndIgnite !== null)
+      ? VentCommand.fromPartial(object.ventAndIgnite)
+      : undefined;
+    message.payloadStart = object.payloadStart ?? undefined;
+    message.sdClear = object.sdClear ?? undefined;
+    message.framReset = object.framReset ?? undefined;
+    message.reboot = object.reboot ?? undefined;
+    return message;
+  },
+};
+
+function createBaseVentCommand(): VentCommand {
+  return { duration: 0 };
+}
+
+export const VentCommand: MessageFns<VentCommand> = {
+  encode(message: VentCommand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.duration !== 0) {
+      writer.uint32(8).uint32(message.duration);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VentCommand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVentCommand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.duration = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VentCommand {
+    return { duration: isSet(object.duration) ? globalThis.Number(object.duration) : 0 };
+  },
+
+  toJSON(message: VentCommand): unknown {
+    const obj: any = {};
+    if (message.duration !== 0) {
+      obj.duration = Math.round(message.duration);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VentCommand>, I>>(base?: I): VentCommand {
+    return VentCommand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VentCommand>, I>>(object: I): VentCommand {
+    const message = createBaseVentCommand();
+    message.duration = object.duration ?? 0;
     return message;
   },
 };

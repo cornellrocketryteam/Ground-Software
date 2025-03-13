@@ -150,7 +150,7 @@ export default async function Controls() {
               {
                 label: "Vent",
                 stateLabel: "Vented",
-                command: { vent: true },
+                command: { vent: { duration: 3 } },
                 isOn: true
               },
             ]}
@@ -164,7 +164,7 @@ export default async function Controls() {
               {
                 label: "Vent + Ignite",
                 stateLabel: "Vented & Ignited",
-                command: { launch: false }, //change to correct command when implemented
+                command: { ventAndIgnite: { duration: 3 } },
                 isOn: true
               },
             ]}
@@ -178,7 +178,7 @@ export default async function Controls() {
               {
                 label: "Start",
                 stateLabel: "On",
-                command: { launch: false}, //change to correct command when implemented
+                command: { payloadStart: true },
                 isOn: true
               },
             ]}
@@ -191,7 +191,7 @@ export default async function Controls() {
               {
                 label: "Clear",
                 stateLabel: "Cleared",
-                command: { launch: false }, //change to correct command when implemented
+                command: { sdClear: true }, 
                 isOn: true
               },
             ]}
@@ -204,7 +204,7 @@ export default async function Controls() {
               {
                 label: "Reset",
                 stateLabel: "Reset",
-                command: { launch: false }, //change to correct command when implemented
+                command: { framReset: true },
                 isOn: true
               },
             ]}
@@ -217,7 +217,7 @@ export default async function Controls() {
               {
                 label: "Reboot",
                 stateLabel: "Rebooted",
-                command: { launch: false }, //change to correct command when implemented
+                command: { reboot: true },
                 isOn: true
               },
             ]}

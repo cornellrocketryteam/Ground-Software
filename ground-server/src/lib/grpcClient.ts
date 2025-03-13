@@ -2,7 +2,7 @@
 
 import {
   CommanderClient,
-  type Command,
+  Command,
   type CommandReply,
 } from "@/proto-out/command";
 import * as grpc from "@grpc/grpc-js";
@@ -26,8 +26,10 @@ export async function sendCommand(command: Command) {
     throw new Error("Not authenticated");
   }
 
+  console.log("Sending command: ", command);
+
   const response = await new Promise<CommandReply>((resolve, reject) => {
-    client.sendCommand(command, (err, response) => {
+    client.sendCommand(Command.fromPartial(command), (err, response) => {
       if (err) {
         console.error("Error: ", err);
         return reject(err);

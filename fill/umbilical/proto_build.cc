@@ -127,7 +127,7 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
 
     if (com->has_vent()) {
         spdlog::info("Received VENT command");
-        auto sleep_duration = com->vent().duration();
+        auto sleep_duration = com->vent().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
             write_command(OPEN_SV);
             sleep(sleep_duration); 
@@ -137,21 +137,15 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 
     if (com->has_vent_and_ignite()) {
-        spdlog::info("Received Vent and Ignite command");
-        auto sleep_duration = com->vent().duration();
+        spdlog::info("Received VENT AND IGNITE command");
+        auto sleep_duration = com->vent_and_ignite().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
             write_command(OPEN_SV);
             sleep(sleep_duration); 
             write_command(CLOSE_SV); 
         });
-        std::thread launch_sender([this](){
-            sleep(3);
-            write_command(LAUNCH);
-        });
         vent_sender.detach();
-        launch_sender.detach();
     }
-
 
     if (com->sd_clear()){
         spdlog::info("Received SD_CLEAR command");

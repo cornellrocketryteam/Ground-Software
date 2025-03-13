@@ -3,14 +3,18 @@
 QD::QD(){
     actuating = false; 
 
+    wiringPiSetupGpio();
+
     pinMode(PUL_PIN, OUTPUT); 
     pinMode(DIR_PIN, OUTPUT);
     pinMode(ENA_PIN, OUTPUT);
 
-    wiringPiSetupGpio();
+    // Disable the driver by setting the enable pin low
+    digitalWrite(ENA_PIN, LOW);
+    // pulse should be default high
+    digitalWrite(PUL_PIN, HIGH); 
 
-    // Disable the driver by setting the enable pin high
-    digitalWrite(ENA_PIN, HIGH);
+    digitalWrite(DIR_PIN, HIGH); // default clockwise 
 }
 
 QD::~QD(){}
@@ -22,7 +26,6 @@ bool QD::Actuate(){
     }
 
     std::thread actuate_thread(&QD::turnMotor, this);
-
     actuate_thread.detach(); // we want to continue normal operation 
 
     return true; // Has been actuated successfully 
@@ -32,22 +35,18 @@ void QD::turnMotor(){
     actuating = true; 
 
     // Enable the driver 
-    digitalWrite(ENA_PIN, LOW);
-
-    // Clockwise rotation 
-    digitalWrite(DIR_PIN, HIGH); 
+    digitalWrite(ENA_PIN, HIGH);
+    delay(201); // necessary to set enable correctly 
     
-    pinMode(PUL_PIN, OUTPUT);
-
-    // avoiding pwm for now just to test qd 
     for (int step = 0; step < 1200; step++) {
-        // Generate one pulse with 50% duty cycle at 20 Hz:
-        digitalWrite(PUL_PIN, HIGH);  
-        delay(25);             
+        // Generate one pulse with 50% duty cycle
         digitalWrite(PUL_PIN, LOW);  
-        delay(25);                
+        delay(10);             
+        digitalWrite(PUL_PIN, HIGH);  
+        delay(10);                
     }
 
+    digitalWrite(ENA_PIN, LOW);
     actuating = false; 
 
     return;

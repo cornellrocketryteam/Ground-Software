@@ -1,8 +1,8 @@
 #ifndef QD_H
 #define QD_H
 
-#define PUL_PIN 5
-#define DIR_PIN 6
+#define PUL_PIN 6
+#define DIR_PIN 22
 #define ENA_PIN 26
 
 #include "actuator.h"

@@ -8,6 +8,8 @@
 #define CLOSE_SV '4'
 #define SAFE '5'
 #define CLEAR_SD '6'
+#define FRAM_RESET '7'
+#define REBOOT '8'
 
 // 28 to account for 26 byte packet, then /r/n characters
 #define UMB_PACKET_SIZE 28

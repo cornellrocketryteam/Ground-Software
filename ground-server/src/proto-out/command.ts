@@ -91,11 +91,23 @@ export interface Command {
   qdRetract?: boolean | undefined;
   ignite?: boolean | undefined;
   sv2Close?: boolean | undefined;
-  mavOpen?:
-    | boolean
-    | undefined;
-  /** optional bool clear_sd = 9; */
+  mavOpen?: boolean | undefined;
   launch?: boolean | undefined;
+  vent?: VentCommand | undefined;
+  ventAndIgnite?: VentIgniteCommand | undefined;
+  payloadStart?: boolean | undefined;
+  sdClear?: boolean | undefined;
+  framReset?: boolean | undefined;
+  reboot?: boolean | undefined;
+}
+
+export interface VentCommand {
+  ventDuration: number;
+}
+
+export interface VentIgniteCommand {
+  ventDuration: number;
+  igniteDelay: number;
 }
 
 /**
@@ -124,13 +136,10 @@ export interface Events {
   imuReadingFailed: boolean;
   accelerometerInitFailed: boolean;
   accelerometerReadingFailed: boolean;
-  thermometerInitFailed: boolean;
-  thermometerReadingFailed: boolean;
-  voltageInitFailed: boolean;
-  voltageReadingFailed: boolean;
   adcInitFailed: boolean;
   adcReadingFailed: boolean;
   framInitFailed: boolean;
+  framReadFailed: boolean;
   framWriteFailed: boolean;
   sdInitFailed: boolean;
   sdWriteFailed: boolean;
@@ -139,7 +148,15 @@ export interface Events {
   mainDeployWaitEnd: boolean;
   mainLogShutoff: boolean;
   cycleOverflow: boolean;
-  invalidCommand: boolean;
+  unknownCommandReceived: boolean;
+  launchCommandReceived: boolean;
+  mavCommandReceived: boolean;
+  svCommandReceived: boolean;
+  safeCommandReceived: boolean;
+  resetCardCommandReceived: boolean;
+  resetFramCommandReceived: boolean;
+  stateChangeCommandReceived: boolean;
+  umbilicalDisconnected: boolean;
 }
 
 export interface RocketMetadata {
@@ -206,9 +223,7 @@ export interface RocketUmbTelemetry {
   metadata: RocketMetadata | undefined;
   msSinceBoot: number;
   events: Events | undefined;
-  radioState: boolean;
-  transmitState: boolean;
-  voltage: number;
+  batteryVoltage: number;
   pt3: number;
   pt4: number;
   rtdTemp: number;
@@ -225,7 +240,6 @@ export interface FillStationTelemetry {
   pt1: number;
   pt2: number;
   lc1: number;
-  sv1Cont: number;
   ign1Cont: number;
   ign2Cont: number;
 }
@@ -240,6 +254,12 @@ function createBaseCommand(): Command {
     sv2Close: undefined,
     mavOpen: undefined,
     launch: undefined,
+    vent: undefined,
+    ventAndIgnite: undefined,
+    payloadStart: undefined,
+    sdClear: undefined,
+    framReset: undefined,
+    reboot: undefined,
   };
 }
 
@@ -268,6 +288,24 @@ export const Command: MessageFns<Command> = {
     }
     if (message.launch !== undefined) {
       writer.uint32(64).bool(message.launch);
+    }
+    if (message.vent !== undefined) {
+      VentCommand.encode(message.vent, writer.uint32(74).fork()).join();
+    }
+    if (message.ventAndIgnite !== undefined) {
+      VentIgniteCommand.encode(message.ventAndIgnite, writer.uint32(82).fork()).join();
+    }
+    if (message.payloadStart !== undefined) {
+      writer.uint32(88).bool(message.payloadStart);
+    }
+    if (message.sdClear !== undefined) {
+      writer.uint32(96).bool(message.sdClear);
+    }
+    if (message.framReset !== undefined) {
+      writer.uint32(104).bool(message.framReset);
+    }
+    if (message.reboot !== undefined) {
+      writer.uint32(112).bool(message.reboot);
     }
     return writer;
   },
@@ -343,6 +381,54 @@ export const Command: MessageFns<Command> = {
           message.launch = reader.bool();
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.vent = VentCommand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 10: {
+          if (tag !== 82) {
+            break;
+          }
+
+          message.ventAndIgnite = VentIgniteCommand.decode(reader, reader.uint32());
+          continue;
+        }
+        case 11: {
+          if (tag !== 88) {
+            break;
+          }
+
+          message.payloadStart = reader.bool();
+          continue;
+        }
+        case 12: {
+          if (tag !== 96) {
+            break;
+          }
+
+          message.sdClear = reader.bool();
+          continue;
+        }
+        case 13: {
+          if (tag !== 104) {
+            break;
+          }
+
+          message.framReset = reader.bool();
+          continue;
+        }
+        case 14: {
+          if (tag !== 112) {
+            break;
+          }
+
+          message.reboot = reader.bool();
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -362,6 +448,12 @@ export const Command: MessageFns<Command> = {
       sv2Close: isSet(object.sv2Close) ? globalThis.Boolean(object.sv2Close) : undefined,
       mavOpen: isSet(object.mavOpen) ? globalThis.Boolean(object.mavOpen) : undefined,
       launch: isSet(object.launch) ? globalThis.Boolean(object.launch) : undefined,
+      vent: isSet(object.vent) ? VentCommand.fromJSON(object.vent) : undefined,
+      ventAndIgnite: isSet(object.ventAndIgnite) ? VentIgniteCommand.fromJSON(object.ventAndIgnite) : undefined,
+      payloadStart: isSet(object.payloadStart) ? globalThis.Boolean(object.payloadStart) : undefined,
+      sdClear: isSet(object.sdClear) ? globalThis.Boolean(object.sdClear) : undefined,
+      framReset: isSet(object.framReset) ? globalThis.Boolean(object.framReset) : undefined,
+      reboot: isSet(object.reboot) ? globalThis.Boolean(object.reboot) : undefined,
     };
   },
 
@@ -391,6 +483,24 @@ export const Command: MessageFns<Command> = {
     if (message.launch !== undefined) {
       obj.launch = message.launch;
     }
+    if (message.vent !== undefined) {
+      obj.vent = VentCommand.toJSON(message.vent);
+    }
+    if (message.ventAndIgnite !== undefined) {
+      obj.ventAndIgnite = VentIgniteCommand.toJSON(message.ventAndIgnite);
+    }
+    if (message.payloadStart !== undefined) {
+      obj.payloadStart = message.payloadStart;
+    }
+    if (message.sdClear !== undefined) {
+      obj.sdClear = message.sdClear;
+    }
+    if (message.framReset !== undefined) {
+      obj.framReset = message.framReset;
+    }
+    if (message.reboot !== undefined) {
+      obj.reboot = message.reboot;
+    }
     return obj;
   },
 
@@ -407,6 +517,150 @@ export const Command: MessageFns<Command> = {
     message.sv2Close = object.sv2Close ?? undefined;
     message.mavOpen = object.mavOpen ?? undefined;
     message.launch = object.launch ?? undefined;
+    message.vent = (object.vent !== undefined && object.vent !== null)
+      ? VentCommand.fromPartial(object.vent)
+      : undefined;
+    message.ventAndIgnite = (object.ventAndIgnite !== undefined && object.ventAndIgnite !== null)
+      ? VentIgniteCommand.fromPartial(object.ventAndIgnite)
+      : undefined;
+    message.payloadStart = object.payloadStart ?? undefined;
+    message.sdClear = object.sdClear ?? undefined;
+    message.framReset = object.framReset ?? undefined;
+    message.reboot = object.reboot ?? undefined;
+    return message;
+  },
+};
+
+function createBaseVentCommand(): VentCommand {
+  return { ventDuration: 0 };
+}
+
+export const VentCommand: MessageFns<VentCommand> = {
+  encode(message: VentCommand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ventDuration !== 0) {
+      writer.uint32(8).uint32(message.ventDuration);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VentCommand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVentCommand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.ventDuration = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VentCommand {
+    return { ventDuration: isSet(object.ventDuration) ? globalThis.Number(object.ventDuration) : 0 };
+  },
+
+  toJSON(message: VentCommand): unknown {
+    const obj: any = {};
+    if (message.ventDuration !== 0) {
+      obj.ventDuration = Math.round(message.ventDuration);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VentCommand>, I>>(base?: I): VentCommand {
+    return VentCommand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VentCommand>, I>>(object: I): VentCommand {
+    const message = createBaseVentCommand();
+    message.ventDuration = object.ventDuration ?? 0;
+    return message;
+  },
+};
+
+function createBaseVentIgniteCommand(): VentIgniteCommand {
+  return { ventDuration: 0, igniteDelay: 0 };
+}
+
+export const VentIgniteCommand: MessageFns<VentIgniteCommand> = {
+  encode(message: VentIgniteCommand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.ventDuration !== 0) {
+      writer.uint32(8).uint32(message.ventDuration);
+    }
+    if (message.igniteDelay !== 0) {
+      writer.uint32(16).uint32(message.igniteDelay);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VentIgniteCommand {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVentIgniteCommand();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.ventDuration = reader.uint32();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.igniteDelay = reader.uint32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): VentIgniteCommand {
+    return {
+      ventDuration: isSet(object.ventDuration) ? globalThis.Number(object.ventDuration) : 0,
+      igniteDelay: isSet(object.igniteDelay) ? globalThis.Number(object.igniteDelay) : 0,
+    };
+  },
+
+  toJSON(message: VentIgniteCommand): unknown {
+    const obj: any = {};
+    if (message.ventDuration !== 0) {
+      obj.ventDuration = Math.round(message.ventDuration);
+    }
+    if (message.igniteDelay !== 0) {
+      obj.igniteDelay = Math.round(message.igniteDelay);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(base?: I): VentIgniteCommand {
+    return VentIgniteCommand.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(object: I): VentIgniteCommand {
+    const message = createBaseVentIgniteCommand();
+    message.ventDuration = object.ventDuration ?? 0;
+    message.igniteDelay = object.igniteDelay ?? 0;
     return message;
   },
 };
@@ -570,13 +824,10 @@ function createBaseEvents(): Events {
     imuReadingFailed: false,
     accelerometerInitFailed: false,
     accelerometerReadingFailed: false,
-    thermometerInitFailed: false,
-    thermometerReadingFailed: false,
-    voltageInitFailed: false,
-    voltageReadingFailed: false,
     adcInitFailed: false,
     adcReadingFailed: false,
     framInitFailed: false,
+    framReadFailed: false,
     framWriteFailed: false,
     sdInitFailed: false,
     sdWriteFailed: false,
@@ -585,7 +836,15 @@ function createBaseEvents(): Events {
     mainDeployWaitEnd: false,
     mainLogShutoff: false,
     cycleOverflow: false,
-    invalidCommand: false,
+    unknownCommandReceived: false,
+    launchCommandReceived: false,
+    mavCommandReceived: false,
+    svCommandReceived: false,
+    safeCommandReceived: false,
+    resetCardCommandReceived: false,
+    resetFramCommandReceived: false,
+    stateChangeCommandReceived: false,
+    umbilicalDisconnected: false,
   };
 }
 
@@ -618,53 +877,68 @@ export const Events: MessageFns<Events> = {
     if (message.accelerometerReadingFailed !== false) {
       writer.uint32(72).bool(message.accelerometerReadingFailed);
     }
-    if (message.thermometerInitFailed !== false) {
-      writer.uint32(80).bool(message.thermometerInitFailed);
-    }
-    if (message.thermometerReadingFailed !== false) {
-      writer.uint32(88).bool(message.thermometerReadingFailed);
-    }
-    if (message.voltageInitFailed !== false) {
-      writer.uint32(96).bool(message.voltageInitFailed);
-    }
-    if (message.voltageReadingFailed !== false) {
-      writer.uint32(104).bool(message.voltageReadingFailed);
-    }
     if (message.adcInitFailed !== false) {
-      writer.uint32(112).bool(message.adcInitFailed);
+      writer.uint32(80).bool(message.adcInitFailed);
     }
     if (message.adcReadingFailed !== false) {
-      writer.uint32(120).bool(message.adcReadingFailed);
+      writer.uint32(88).bool(message.adcReadingFailed);
     }
     if (message.framInitFailed !== false) {
-      writer.uint32(128).bool(message.framInitFailed);
+      writer.uint32(96).bool(message.framInitFailed);
+    }
+    if (message.framReadFailed !== false) {
+      writer.uint32(104).bool(message.framReadFailed);
     }
     if (message.framWriteFailed !== false) {
-      writer.uint32(136).bool(message.framWriteFailed);
+      writer.uint32(112).bool(message.framWriteFailed);
     }
     if (message.sdInitFailed !== false) {
-      writer.uint32(144).bool(message.sdInitFailed);
+      writer.uint32(120).bool(message.sdInitFailed);
     }
     if (message.sdWriteFailed !== false) {
-      writer.uint32(152).bool(message.sdWriteFailed);
+      writer.uint32(128).bool(message.sdWriteFailed);
     }
     if (message.mavWasActuated !== false) {
-      writer.uint32(160).bool(message.mavWasActuated);
+      writer.uint32(136).bool(message.mavWasActuated);
     }
     if (message.svWasActuated !== false) {
-      writer.uint32(168).bool(message.svWasActuated);
+      writer.uint32(144).bool(message.svWasActuated);
     }
     if (message.mainDeployWaitEnd !== false) {
-      writer.uint32(176).bool(message.mainDeployWaitEnd);
+      writer.uint32(152).bool(message.mainDeployWaitEnd);
     }
     if (message.mainLogShutoff !== false) {
-      writer.uint32(184).bool(message.mainLogShutoff);
+      writer.uint32(160).bool(message.mainLogShutoff);
     }
     if (message.cycleOverflow !== false) {
-      writer.uint32(192).bool(message.cycleOverflow);
+      writer.uint32(168).bool(message.cycleOverflow);
     }
-    if (message.invalidCommand !== false) {
-      writer.uint32(200).bool(message.invalidCommand);
+    if (message.unknownCommandReceived !== false) {
+      writer.uint32(176).bool(message.unknownCommandReceived);
+    }
+    if (message.launchCommandReceived !== false) {
+      writer.uint32(184).bool(message.launchCommandReceived);
+    }
+    if (message.mavCommandReceived !== false) {
+      writer.uint32(192).bool(message.mavCommandReceived);
+    }
+    if (message.svCommandReceived !== false) {
+      writer.uint32(200).bool(message.svCommandReceived);
+    }
+    if (message.safeCommandReceived !== false) {
+      writer.uint32(208).bool(message.safeCommandReceived);
+    }
+    if (message.resetCardCommandReceived !== false) {
+      writer.uint32(216).bool(message.resetCardCommandReceived);
+    }
+    if (message.resetFramCommandReceived !== false) {
+      writer.uint32(224).bool(message.resetFramCommandReceived);
+    }
+    if (message.stateChangeCommandReceived !== false) {
+      writer.uint32(232).bool(message.stateChangeCommandReceived);
+    }
+    if (message.umbilicalDisconnected !== false) {
+      writer.uint32(240).bool(message.umbilicalDisconnected);
     }
     return writer;
   },
@@ -753,7 +1027,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerInitFailed = reader.bool();
+          message.adcInitFailed = reader.bool();
           continue;
         }
         case 11: {
@@ -761,7 +1035,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.thermometerReadingFailed = reader.bool();
+          message.adcReadingFailed = reader.bool();
           continue;
         }
         case 12: {
@@ -769,7 +1043,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.voltageInitFailed = reader.bool();
+          message.framInitFailed = reader.bool();
           continue;
         }
         case 13: {
@@ -777,7 +1051,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.voltageReadingFailed = reader.bool();
+          message.framReadFailed = reader.bool();
           continue;
         }
         case 14: {
@@ -785,7 +1059,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.adcInitFailed = reader.bool();
+          message.framWriteFailed = reader.bool();
           continue;
         }
         case 15: {
@@ -793,7 +1067,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.adcReadingFailed = reader.bool();
+          message.sdInitFailed = reader.bool();
           continue;
         }
         case 16: {
@@ -801,7 +1075,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.framInitFailed = reader.bool();
+          message.sdWriteFailed = reader.bool();
           continue;
         }
         case 17: {
@@ -809,7 +1083,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.framWriteFailed = reader.bool();
+          message.mavWasActuated = reader.bool();
           continue;
         }
         case 18: {
@@ -817,7 +1091,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.sdInitFailed = reader.bool();
+          message.svWasActuated = reader.bool();
           continue;
         }
         case 19: {
@@ -825,7 +1099,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.sdWriteFailed = reader.bool();
+          message.mainDeployWaitEnd = reader.bool();
           continue;
         }
         case 20: {
@@ -833,7 +1107,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mavWasActuated = reader.bool();
+          message.mainLogShutoff = reader.bool();
           continue;
         }
         case 21: {
@@ -841,7 +1115,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.svWasActuated = reader.bool();
+          message.cycleOverflow = reader.bool();
           continue;
         }
         case 22: {
@@ -849,7 +1123,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mainDeployWaitEnd = reader.bool();
+          message.unknownCommandReceived = reader.bool();
           continue;
         }
         case 23: {
@@ -857,7 +1131,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.mainLogShutoff = reader.bool();
+          message.launchCommandReceived = reader.bool();
           continue;
         }
         case 24: {
@@ -865,7 +1139,7 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.cycleOverflow = reader.bool();
+          message.mavCommandReceived = reader.bool();
           continue;
         }
         case 25: {
@@ -873,7 +1147,47 @@ export const Events: MessageFns<Events> = {
             break;
           }
 
-          message.invalidCommand = reader.bool();
+          message.svCommandReceived = reader.bool();
+          continue;
+        }
+        case 26: {
+          if (tag !== 208) {
+            break;
+          }
+
+          message.safeCommandReceived = reader.bool();
+          continue;
+        }
+        case 27: {
+          if (tag !== 216) {
+            break;
+          }
+
+          message.resetCardCommandReceived = reader.bool();
+          continue;
+        }
+        case 28: {
+          if (tag !== 224) {
+            break;
+          }
+
+          message.resetFramCommandReceived = reader.bool();
+          continue;
+        }
+        case 29: {
+          if (tag !== 232) {
+            break;
+          }
+
+          message.stateChangeCommandReceived = reader.bool();
+          continue;
+        }
+        case 30: {
+          if (tag !== 240) {
+            break;
+          }
+
+          message.umbilicalDisconnected = reader.bool();
           continue;
         }
       }
@@ -902,19 +1216,10 @@ export const Events: MessageFns<Events> = {
       accelerometerReadingFailed: isSet(object.accelerometerReadingFailed)
         ? globalThis.Boolean(object.accelerometerReadingFailed)
         : false,
-      thermometerInitFailed: isSet(object.thermometerInitFailed)
-        ? globalThis.Boolean(object.thermometerInitFailed)
-        : false,
-      thermometerReadingFailed: isSet(object.thermometerReadingFailed)
-        ? globalThis.Boolean(object.thermometerReadingFailed)
-        : false,
-      voltageInitFailed: isSet(object.voltageInitFailed) ? globalThis.Boolean(object.voltageInitFailed) : false,
-      voltageReadingFailed: isSet(object.voltageReadingFailed)
-        ? globalThis.Boolean(object.voltageReadingFailed)
-        : false,
       adcInitFailed: isSet(object.adcInitFailed) ? globalThis.Boolean(object.adcInitFailed) : false,
       adcReadingFailed: isSet(object.adcReadingFailed) ? globalThis.Boolean(object.adcReadingFailed) : false,
       framInitFailed: isSet(object.framInitFailed) ? globalThis.Boolean(object.framInitFailed) : false,
+      framReadFailed: isSet(object.framReadFailed) ? globalThis.Boolean(object.framReadFailed) : false,
       framWriteFailed: isSet(object.framWriteFailed) ? globalThis.Boolean(object.framWriteFailed) : false,
       sdInitFailed: isSet(object.sdInitFailed) ? globalThis.Boolean(object.sdInitFailed) : false,
       sdWriteFailed: isSet(object.sdWriteFailed) ? globalThis.Boolean(object.sdWriteFailed) : false,
@@ -923,7 +1228,27 @@ export const Events: MessageFns<Events> = {
       mainDeployWaitEnd: isSet(object.mainDeployWaitEnd) ? globalThis.Boolean(object.mainDeployWaitEnd) : false,
       mainLogShutoff: isSet(object.mainLogShutoff) ? globalThis.Boolean(object.mainLogShutoff) : false,
       cycleOverflow: isSet(object.cycleOverflow) ? globalThis.Boolean(object.cycleOverflow) : false,
-      invalidCommand: isSet(object.invalidCommand) ? globalThis.Boolean(object.invalidCommand) : false,
+      unknownCommandReceived: isSet(object.unknownCommandReceived)
+        ? globalThis.Boolean(object.unknownCommandReceived)
+        : false,
+      launchCommandReceived: isSet(object.launchCommandReceived)
+        ? globalThis.Boolean(object.launchCommandReceived)
+        : false,
+      mavCommandReceived: isSet(object.mavCommandReceived) ? globalThis.Boolean(object.mavCommandReceived) : false,
+      svCommandReceived: isSet(object.svCommandReceived) ? globalThis.Boolean(object.svCommandReceived) : false,
+      safeCommandReceived: isSet(object.safeCommandReceived) ? globalThis.Boolean(object.safeCommandReceived) : false,
+      resetCardCommandReceived: isSet(object.resetCardCommandReceived)
+        ? globalThis.Boolean(object.resetCardCommandReceived)
+        : false,
+      resetFramCommandReceived: isSet(object.resetFramCommandReceived)
+        ? globalThis.Boolean(object.resetFramCommandReceived)
+        : false,
+      stateChangeCommandReceived: isSet(object.stateChangeCommandReceived)
+        ? globalThis.Boolean(object.stateChangeCommandReceived)
+        : false,
+      umbilicalDisconnected: isSet(object.umbilicalDisconnected)
+        ? globalThis.Boolean(object.umbilicalDisconnected)
+        : false,
     };
   },
 
@@ -956,18 +1281,6 @@ export const Events: MessageFns<Events> = {
     if (message.accelerometerReadingFailed !== false) {
       obj.accelerometerReadingFailed = message.accelerometerReadingFailed;
     }
-    if (message.thermometerInitFailed !== false) {
-      obj.thermometerInitFailed = message.thermometerInitFailed;
-    }
-    if (message.thermometerReadingFailed !== false) {
-      obj.thermometerReadingFailed = message.thermometerReadingFailed;
-    }
-    if (message.voltageInitFailed !== false) {
-      obj.voltageInitFailed = message.voltageInitFailed;
-    }
-    if (message.voltageReadingFailed !== false) {
-      obj.voltageReadingFailed = message.voltageReadingFailed;
-    }
     if (message.adcInitFailed !== false) {
       obj.adcInitFailed = message.adcInitFailed;
     }
@@ -976,6 +1289,9 @@ export const Events: MessageFns<Events> = {
     }
     if (message.framInitFailed !== false) {
       obj.framInitFailed = message.framInitFailed;
+    }
+    if (message.framReadFailed !== false) {
+      obj.framReadFailed = message.framReadFailed;
     }
     if (message.framWriteFailed !== false) {
       obj.framWriteFailed = message.framWriteFailed;
@@ -1001,8 +1317,32 @@ export const Events: MessageFns<Events> = {
     if (message.cycleOverflow !== false) {
       obj.cycleOverflow = message.cycleOverflow;
     }
-    if (message.invalidCommand !== false) {
-      obj.invalidCommand = message.invalidCommand;
+    if (message.unknownCommandReceived !== false) {
+      obj.unknownCommandReceived = message.unknownCommandReceived;
+    }
+    if (message.launchCommandReceived !== false) {
+      obj.launchCommandReceived = message.launchCommandReceived;
+    }
+    if (message.mavCommandReceived !== false) {
+      obj.mavCommandReceived = message.mavCommandReceived;
+    }
+    if (message.svCommandReceived !== false) {
+      obj.svCommandReceived = message.svCommandReceived;
+    }
+    if (message.safeCommandReceived !== false) {
+      obj.safeCommandReceived = message.safeCommandReceived;
+    }
+    if (message.resetCardCommandReceived !== false) {
+      obj.resetCardCommandReceived = message.resetCardCommandReceived;
+    }
+    if (message.resetFramCommandReceived !== false) {
+      obj.resetFramCommandReceived = message.resetFramCommandReceived;
+    }
+    if (message.stateChangeCommandReceived !== false) {
+      obj.stateChangeCommandReceived = message.stateChangeCommandReceived;
+    }
+    if (message.umbilicalDisconnected !== false) {
+      obj.umbilicalDisconnected = message.umbilicalDisconnected;
     }
     return obj;
   },
@@ -1021,13 +1361,10 @@ export const Events: MessageFns<Events> = {
     message.imuReadingFailed = object.imuReadingFailed ?? false;
     message.accelerometerInitFailed = object.accelerometerInitFailed ?? false;
     message.accelerometerReadingFailed = object.accelerometerReadingFailed ?? false;
-    message.thermometerInitFailed = object.thermometerInitFailed ?? false;
-    message.thermometerReadingFailed = object.thermometerReadingFailed ?? false;
-    message.voltageInitFailed = object.voltageInitFailed ?? false;
-    message.voltageReadingFailed = object.voltageReadingFailed ?? false;
     message.adcInitFailed = object.adcInitFailed ?? false;
     message.adcReadingFailed = object.adcReadingFailed ?? false;
     message.framInitFailed = object.framInitFailed ?? false;
+    message.framReadFailed = object.framReadFailed ?? false;
     message.framWriteFailed = object.framWriteFailed ?? false;
     message.sdInitFailed = object.sdInitFailed ?? false;
     message.sdWriteFailed = object.sdWriteFailed ?? false;
@@ -1036,7 +1373,15 @@ export const Events: MessageFns<Events> = {
     message.mainDeployWaitEnd = object.mainDeployWaitEnd ?? false;
     message.mainLogShutoff = object.mainLogShutoff ?? false;
     message.cycleOverflow = object.cycleOverflow ?? false;
-    message.invalidCommand = object.invalidCommand ?? false;
+    message.unknownCommandReceived = object.unknownCommandReceived ?? false;
+    message.launchCommandReceived = object.launchCommandReceived ?? false;
+    message.mavCommandReceived = object.mavCommandReceived ?? false;
+    message.svCommandReceived = object.svCommandReceived ?? false;
+    message.safeCommandReceived = object.safeCommandReceived ?? false;
+    message.resetCardCommandReceived = object.resetCardCommandReceived ?? false;
+    message.resetFramCommandReceived = object.resetFramCommandReceived ?? false;
+    message.stateChangeCommandReceived = object.stateChangeCommandReceived ?? false;
+    message.umbilicalDisconnected = object.umbilicalDisconnected ?? false;
     return message;
   },
 };
@@ -2033,17 +2378,7 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
 };
 
 function createBaseRocketUmbTelemetry(): RocketUmbTelemetry {
-  return {
-    metadata: undefined,
-    msSinceBoot: 0,
-    events: undefined,
-    radioState: false,
-    transmitState: false,
-    voltage: 0,
-    pt3: 0,
-    pt4: 0,
-    rtdTemp: 0,
-  };
+  return { metadata: undefined, msSinceBoot: 0, events: undefined, batteryVoltage: 0, pt3: 0, pt4: 0, rtdTemp: 0 };
 }
 
 export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
@@ -2057,23 +2392,17 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     if (message.events !== undefined) {
       Events.encode(message.events, writer.uint32(26).fork()).join();
     }
-    if (message.radioState !== false) {
-      writer.uint32(32).bool(message.radioState);
-    }
-    if (message.transmitState !== false) {
-      writer.uint32(40).bool(message.transmitState);
-    }
-    if (message.voltage !== 0) {
-      writer.uint32(53).float(message.voltage);
+    if (message.batteryVoltage !== 0) {
+      writer.uint32(37).float(message.batteryVoltage);
     }
     if (message.pt3 !== 0) {
-      writer.uint32(61).float(message.pt3);
+      writer.uint32(45).float(message.pt3);
     }
     if (message.pt4 !== 0) {
-      writer.uint32(69).float(message.pt4);
+      writer.uint32(53).float(message.pt4);
     }
     if (message.rtdTemp !== 0) {
-      writer.uint32(77).float(message.rtdTemp);
+      writer.uint32(61).float(message.rtdTemp);
     }
     return writer;
   },
@@ -2110,19 +2439,19 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
           continue;
         }
         case 4: {
-          if (tag !== 32) {
+          if (tag !== 37) {
             break;
           }
 
-          message.radioState = reader.bool();
+          message.batteryVoltage = reader.float();
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 45) {
             break;
           }
 
-          message.transmitState = reader.bool();
+          message.pt3 = reader.float();
           continue;
         }
         case 6: {
@@ -2130,27 +2459,11 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
             break;
           }
 
-          message.voltage = reader.float();
+          message.pt4 = reader.float();
           continue;
         }
         case 7: {
           if (tag !== 61) {
-            break;
-          }
-
-          message.pt3 = reader.float();
-          continue;
-        }
-        case 8: {
-          if (tag !== 69) {
-            break;
-          }
-
-          message.pt4 = reader.float();
-          continue;
-        }
-        case 9: {
-          if (tag !== 77) {
             break;
           }
 
@@ -2171,9 +2484,7 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
       metadata: isSet(object.metadata) ? RocketMetadata.fromJSON(object.metadata) : undefined,
       msSinceBoot: isSet(object.msSinceBoot) ? globalThis.Number(object.msSinceBoot) : 0,
       events: isSet(object.events) ? Events.fromJSON(object.events) : undefined,
-      radioState: isSet(object.radioState) ? globalThis.Boolean(object.radioState) : false,
-      transmitState: isSet(object.transmitState) ? globalThis.Boolean(object.transmitState) : false,
-      voltage: isSet(object.voltage) ? globalThis.Number(object.voltage) : 0,
+      batteryVoltage: isSet(object.batteryVoltage) ? globalThis.Number(object.batteryVoltage) : 0,
       pt3: isSet(object.pt3) ? globalThis.Number(object.pt3) : 0,
       pt4: isSet(object.pt4) ? globalThis.Number(object.pt4) : 0,
       rtdTemp: isSet(object.rtdTemp) ? globalThis.Number(object.rtdTemp) : 0,
@@ -2191,14 +2502,8 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     if (message.events !== undefined) {
       obj.events = Events.toJSON(message.events);
     }
-    if (message.radioState !== false) {
-      obj.radioState = message.radioState;
-    }
-    if (message.transmitState !== false) {
-      obj.transmitState = message.transmitState;
-    }
-    if (message.voltage !== 0) {
-      obj.voltage = message.voltage;
+    if (message.batteryVoltage !== 0) {
+      obj.batteryVoltage = message.batteryVoltage;
     }
     if (message.pt3 !== 0) {
       obj.pt3 = message.pt3;
@@ -2224,9 +2529,7 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     message.events = (object.events !== undefined && object.events !== null)
       ? Events.fromPartial(object.events)
       : undefined;
-    message.radioState = object.radioState ?? false;
-    message.transmitState = object.transmitState ?? false;
-    message.voltage = object.voltage ?? 0;
+    message.batteryVoltage = object.batteryVoltage ?? 0;
     message.pt3 = object.pt3 ?? 0;
     message.pt4 = object.pt4 ?? 0;
     message.rtdTemp = object.rtdTemp ?? 0;
@@ -2315,7 +2618,7 @@ export const RocketTelemetry: MessageFns<RocketTelemetry> = {
 };
 
 function createBaseFillStationTelemetry(): FillStationTelemetry {
-  return { timestamp: 0, pt1: 0, pt2: 0, lc1: 0, sv1Cont: 0, ign1Cont: 0, ign2Cont: 0 };
+  return { timestamp: 0, pt1: 0, pt2: 0, lc1: 0, ign1Cont: 0, ign2Cont: 0 };
 }
 
 export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
@@ -2332,14 +2635,11 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     if (message.lc1 !== 0) {
       writer.uint32(37).float(message.lc1);
     }
-    if (message.sv1Cont !== 0) {
-      writer.uint32(45).float(message.sv1Cont);
-    }
     if (message.ign1Cont !== 0) {
-      writer.uint32(53).float(message.ign1Cont);
+      writer.uint32(45).float(message.ign1Cont);
     }
     if (message.ign2Cont !== 0) {
-      writer.uint32(61).float(message.ign2Cont);
+      writer.uint32(53).float(message.ign2Cont);
     }
     return writer;
   },
@@ -2388,19 +2688,11 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
             break;
           }
 
-          message.sv1Cont = reader.float();
+          message.ign1Cont = reader.float();
           continue;
         }
         case 6: {
           if (tag !== 53) {
-            break;
-          }
-
-          message.ign1Cont = reader.float();
-          continue;
-        }
-        case 7: {
-          if (tag !== 61) {
             break;
           }
 
@@ -2422,7 +2714,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
       pt1: isSet(object.pt1) ? globalThis.Number(object.pt1) : 0,
       pt2: isSet(object.pt2) ? globalThis.Number(object.pt2) : 0,
       lc1: isSet(object.lc1) ? globalThis.Number(object.lc1) : 0,
-      sv1Cont: isSet(object.sv1Cont) ? globalThis.Number(object.sv1Cont) : 0,
       ign1Cont: isSet(object.ign1Cont) ? globalThis.Number(object.ign1Cont) : 0,
       ign2Cont: isSet(object.ign2Cont) ? globalThis.Number(object.ign2Cont) : 0,
     };
@@ -2442,9 +2733,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     if (message.lc1 !== 0) {
       obj.lc1 = message.lc1;
     }
-    if (message.sv1Cont !== 0) {
-      obj.sv1Cont = message.sv1Cont;
-    }
     if (message.ign1Cont !== 0) {
       obj.ign1Cont = message.ign1Cont;
     }
@@ -2463,7 +2751,6 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     message.pt1 = object.pt1 ?? 0;
     message.pt2 = object.pt2 ?? 0;
     message.lc1 = object.lc1 ?? 0;
-    message.sv1Cont = object.sv1Cont ?? 0;
     message.ign1Cont = object.ign1Cont ?? 0;
     message.ign2Cont = object.ign2Cont ?? 0;
     return message;

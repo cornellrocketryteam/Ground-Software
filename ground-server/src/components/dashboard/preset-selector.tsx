@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { PRESETS } from "@/lib/dashboard-presets";
 
-import { type TelemetryChannel, type Preset } from "@/lib/definitions";
+import type { TelemetryChannel, Preset } from "@/lib/definitions";
 import { type Layout } from "react-grid-layout";
 
 export function PresetSelector({

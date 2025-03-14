@@ -1,4 +1,5 @@
-import { auth } from "@/app/auth";
+"use client";
+
 import ActuationBox from "@/components/conops/actuation-box";
 import { LiveValueWithHistoricalGraph } from "@/components/conops/live-value-with-historical-graph";
 import { CameraBox } from "@/components/conops/camera-box";
@@ -15,15 +16,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button";
 
-export default async function Page5() {
-  const session = await auth();
-
-  if (!session) {
-    return <div>Not authenticated</div>;
-  }
-
+export default function Page5() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200">
       {/* Page Title */}
@@ -32,10 +27,13 @@ export default async function Page5() {
       {/* Live Value with Historical Graph and Camera Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
         <LiveValueWithHistoricalGraph
-          label="Pressure Transducer 2 (PT2)"
-          dbField="pt2"
-          duration={15}
+          channel={{
+            label: "Pressure Transducer 2 (PT2)",
+            dbField: "pt2",
+          }}
+          duration={1}
         />
+
         <CameraBox text="Camera pointing at QD" />
       </div>
 
@@ -60,6 +58,7 @@ export default async function Page5() {
           initialStateLabel="No Data"
           useSwitch={false}
         />
+
         <ActuationBox
           title="Quick Disconnect Motor"
           buttons={[
@@ -75,23 +74,23 @@ export default async function Page5() {
         />
       </div>
 
-            {/* Previous Page Button */}
-        <PreviousButton
+      {/* Previous Page Button */}
+      <PreviousButton
         label="Previous Page"
         confirmMessage="Are you sure you want to move to the previous page?"
         href="/conops/page4" // Adjust to the correct previous page URL
         className="left-6 right-auto"
-        />
+      />
 
       {/* Alert Dialog Button */}
       <AlertDialog>
         <AlertDialogTrigger asChild>
-            <Button
-                    variant="default"
-                    className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
-                >
-                    {"Next Page"}
-            </Button>
+          <Button
+            variant="default"
+            className="fixed bottom-6 right-6 px-6 py-6 text-lg rounded-lg shadow-lg"
+          >
+            {"Next Page"}
+          </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

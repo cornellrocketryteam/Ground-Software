@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
@@ -35,8 +34,8 @@ interface ActuationBoxProps {
   switchOnCommand?: Command;
   switchOffCommand?: Command;
   small?: boolean; // For small size (vertical layout)
-  medium?: boolean; // For medium size (scaled 0.75 internally)
   compactLayout?: boolean; // Compact layout adjustments
+  children?: React.ReactNode; // Accepts slider or any custom child component
 }
 
 export default function ActuationBox({
@@ -48,8 +47,8 @@ export default function ActuationBox({
   switchOnCommand,
   switchOffCommand,
   small = false,
-  medium = false,
   compactLayout = false,
+  children,
 }: ActuationBoxProps) {
   const [currentState, setCurrentState] = useState<string | null>(null);
   const [isOnState, setIsOnState] = useState<boolean | null>(null);
@@ -64,14 +63,10 @@ export default function ActuationBox({
   const buttonOn = "on";
   const buttonOff = "off";
 
-  // ran once to get local storage values
+  // Load stored values on mount
   useEffect(() => {
     const storedCurrentState = localStorage.getItem(currentStateKey);
-    if (storedCurrentState) {
-      setCurrentState(storedCurrentState);
-    } else {
-      setCurrentState(initialStateLabel);
-    }
+    setCurrentState(storedCurrentState ? storedCurrentState : initialStateLabel);
 
     const storedIsOnState = localStorage.getItem(isOnStateKey);
     if (storedIsOnState === buttonOn) {
@@ -93,12 +88,7 @@ export default function ActuationBox({
     setIsOnState(button.isOn);
 
     localStorage.setItem(currentStateKey, button.stateLabel);
-
-    if (button.isOn) {
-      localStorage.setItem(isOnStateKey, buttonOn);
-    } else {
-      localStorage.setItem(isOnStateKey, buttonOff);
-    }
+    localStorage.setItem(isOnStateKey, button.isOn ? buttonOn : buttonOff);
 
     sendCommand(button.command)
       .then((res) => {
@@ -117,15 +107,9 @@ export default function ActuationBox({
 
   const handleSwitchChange = (checked: boolean) => {
     setIsSwitchOn(checked);
-
-    if (checked) {
-      localStorage.setItem(isSwitchOnKey, buttonOn);
-    } else {
-      localStorage.setItem(isSwitchOnKey, buttonOff);
-    }
+    localStorage.setItem(isSwitchOnKey, checked ? buttonOn : buttonOff);
 
     const command = checked ? switchOnCommand : switchOffCommand;
-
     if (command) {
       sendCommand(command)
         .then((res) => {
@@ -144,14 +128,10 @@ export default function ActuationBox({
   };
 
   const isSmall = small === true;
-  const isMedium = !isSmall && medium === true;
-  // const isDefault = !isSmall && !isMedium; // Not used directly, but could be for clarity
 
   // Container classes
   const containerClasses = isSmall
-    ? "border border-gray-300 p-4 rounded-lg flex flex-col items-center"
-    : isMedium
-    ? "border border-gray-300 p-8 rounded-lg flex flex-col items-center"
+    ? "border border-gray-300 p-4 w-[250px] h-[200px] rounded-lg flex flex-col items-center"
     : "border border-gray-300 p-8 rounded-lg flex flex-col items-center";
 
   // Title classes
@@ -175,14 +155,14 @@ export default function ActuationBox({
 
   // Button sizes
   const buttonClasses = isSmall
-    ? "h-6 w-[6.5rem] text-base"
+    ? "h-7 w-[10rem] text-base"
     : "h-12 w-52 text-lg";
 
   // State box classes
   const stateBoxClasses = compactLayout
-    ? "h-[60px] w-[80px] text-sm font-bold flex items-center justify-center border"
+    ? "h-[80px] w-[100px] text-sm font-bold flex items-center justify-center border"
     : isSmall
-    ? "h-[50px] w-[75px] flex items-center justify-center text-base font-bold"
+    ? "h-[60px] w-[100px] flex items-center justify-center text-base font-bold"
     : "h-[100px] w-[150px] flex items-center justify-center text-lg font-bold";
 
   // Switch wrapper classes
@@ -197,19 +177,8 @@ export default function ActuationBox({
     ? "text-xs font-medium"
     : "text-sm font-medium";
 
-  // For medium layout scaling of interior elements only (not border)
-  const contentWrapperStart = isMedium ? (
-    <div className="transform scale-75 origin-center">
-      {" "}
-      : <></>; const contentWrapperEnd = isMedium ?{" "}
-    </div>
-  ) : (
-    <></>
-  );
-
   return (
     <div className={containerClasses}>
-      {contentWrapperStart}
       {/* Title */}
       <h2 className={titleClasses}>{title}</h2>
 
@@ -247,7 +216,7 @@ export default function ActuationBox({
             ))}
           </div>
 
-          {/* State below buttons */}
+          {/* Current State */}
           <div className="flex flex-col items-center">
             <h4 className="text-xs font-medium mb-1 text-center">
               Current State
@@ -329,6 +298,13 @@ export default function ActuationBox({
             onCheckedChange={handleSwitchChange}
           />
           <span className={switchLabelClasses}>{switchLabel}</span>
+        </div>
+      )}
+
+      {/* Render any children passed in (e.g. a slider) */}
+      {children && (
+        <div className="mt-8 w-full flex flex-col items-center">
+          {children}
         </div>
       )}
 

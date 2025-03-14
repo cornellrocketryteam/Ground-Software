@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { TELEMETRY_CHANNELS } from "@/lib/telemetry-channels";
 
-import { type TelemetryChannel } from "@/lib/definitions";
+import type { TelemetryChannel } from "@/lib/definitions";
 import { type Layout } from "react-grid-layout";
 
 export function TelemetryAdder({

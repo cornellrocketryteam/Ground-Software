@@ -105,6 +105,7 @@ class CommanderServiceImpl final : public Commander::Service
                 ball_valve.powerOn();
             }
         }
+
         if(request->has_sv1_open()){
             if(request->sv1_open()){
                 sv1.openAsync();
@@ -112,10 +113,20 @@ class CommanderServiceImpl final : public Commander::Service
                 sv1.close();
             }
         }
+        
         if (request->has_ignite()){
             if (request->ignite()){
                 ignitor.Actuate();
             }
+        }
+
+        if (request->has_vent_and_ignite()) {
+            auto sleep_duration = request->vent_and_ignite().ignite_delay();
+            std::thread ignite_sender([sleep_duration](){
+                sleep(sleep_duration); 
+                ignitor.Actuate();
+            });
+            ignite_sender.detach();
         }
     
         protoBuild.sendCommand(request);

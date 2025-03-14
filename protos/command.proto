@@ -38,7 +38,21 @@ message Command {
     optional bool sv2_close = 6;
     optional bool mav_open = 7;
     optional bool launch = 8;
-    // optional bool clear_sd = 9;
+    optional VentCommand vent = 9;
+    optional VentIgniteCommand vent_and_ignite = 10;
+    optional bool payload_start = 11;
+    optional bool sd_clear = 12;
+    optional bool fram_reset = 13;
+    optional bool reboot = 14;
+}
+
+message VentCommand {
+    uint32 vent_duration = 1;
+}
+
+message VentIgniteCommand {
+    uint32 vent_duration = 1;
+    uint32 ignite_delay = 2;
 }
 
 // The response message containing an ack
@@ -72,22 +86,27 @@ message Events {
     bool imu_reading_failed = 7;
     bool accelerometer_init_failed = 8;
     bool accelerometer_reading_failed = 9;
-    bool thermometer_init_failed = 10;
-    bool thermometer_reading_failed = 11;
-    bool voltage_init_failed = 12;
-    bool voltage_reading_failed = 13;
-    bool adc_init_failed = 14;
-    bool adc_reading_failed = 15; 
-    bool fram_init_failed = 16;
-    bool fram_write_failed = 17; 
-    bool sd_init_failed = 18;
-    bool sd_write_failed = 19;
-    bool mav_was_actuated = 20; 
-    bool sv_was_actuated = 21; 
-    bool main_deploy_wait_end = 22;
-    bool main_log_shutoff = 23;
-    bool cycle_overflow = 24; 
-    bool invalid_command = 25; 
+    bool adc_init_failed = 10;
+    bool adc_reading_failed = 11;
+    bool fram_init_failed = 12;
+    bool fram_read_failed = 13;
+    bool fram_write_failed = 14; 
+    bool sd_init_failed = 15;
+    bool sd_write_failed = 16;
+    bool mav_was_actuated = 17; 
+    bool sv_was_actuated = 18; 
+    bool main_deploy_wait_end = 19;
+    bool main_log_shutoff = 20;
+    bool cycle_overflow = 21;
+    bool unknown_command_received = 22;
+    bool launch_command_received = 23;
+    bool mav_command_received = 24;
+    bool sv_command_received = 25;
+    bool safe_command_received = 26;
+    bool reset_card_command_received = 27;
+    bool reset_fram_command_received = 28;
+    bool state_change_command_received = 29;
+    bool umbilical_disconnected = 30;
 }
 
 message RocketMetadata {
@@ -154,12 +173,10 @@ message RocketUmbTelemetry {
     RocketMetadata metadata = 1;
     uint32 ms_since_boot = 2;
     Events events = 3;
-    bool radio_state = 4;
-    bool transmit_state = 5;
-    float voltage = 6;
-    float pt3 = 7;
-    float pt4 = 8;
-    float rtd_temp = 9;
+    float battery_voltage = 4;
+    float pt3 = 5;
+    float pt4 = 6;
+    float rtd_temp = 7;
 }
 
 message RocketTelemetry{

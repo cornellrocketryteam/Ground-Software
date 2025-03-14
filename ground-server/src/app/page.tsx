@@ -13,18 +13,18 @@ import { DashboardWidget } from "@/components/dashboard/dashboard-widget";
 import { TelemetryAdder } from "@/components/dashboard/telemetry-adder";
 import { PresetSelector } from "@/components/dashboard/preset-selector";
 
-import { type TelemetryChannel } from "@/lib/definitions";
+import type { TelemetryChannel } from "@/lib/definitions";
 
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
+type Channel = {
+  id: string;
+  channel: TelemetryChannel;
+  layout: Layout;
+};
+
 export default function Home() {
-  const [channels, setChannels] = useState<
-    {
-      id: string;
-      channel: TelemetryChannel;
-      layout: Layout;
-    }[]
-  >([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
 
   // Load layouts and channels from localStorage on mount
   useEffect(() => {
@@ -32,20 +32,33 @@ export default function Home() {
 
     if (storedChannels) {
       const parsedChannels = JSON.parse(storedChannels);
-      const channels = parsedChannels.map(
-        (channel: { id: string; channel_id: string, layout: Layout }) => ({
-          id: channel.id,
-          channel: TELEMETRY_CHANNELS.find((c) => c.id === channel.channel_id)!,
-          layout: channel.layout
+      const rehydratedChannels: Channel[] = parsedChannels
+        .map((ch: any) => {
+          const tc = TELEMETRY_CHANNELS.find(
+            (tc) => tc.dbField === ch.channel.dbField
+          );
+          if (tc === undefined) return undefined;
+
+          return {
+            ...ch,
+            channel: {
+              ...ch.channel,
+              widgets: ch.channel.widgets
+                .map((widget: any) =>
+                  tc.widgets.find((w) => w.mode === widget.mode)
+                )
+                .filter((w: any) => w !== undefined),
+            },
+          };
         })
-      );
-      setChannels(channels);
+        .filter((ch: any) => ch !== undefined);
+      setChannels(rehydratedChannels);
     }
   }, []);
 
   const onLayoutChange = (layout: Layout[]) => {
     setChannels((prevChannels) => {
-      const newLayout = prevChannels.map((prevChannel) => {
+      const newChannels = prevChannels.map((prevChannel) => {
         const updatedLayout = layout.find((l) => l.i === prevChannel.id);
         if (updatedLayout) {
           return {
@@ -56,21 +69,9 @@ export default function Home() {
         return prevChannel;
       });
 
-      localStorage.setItem("layouts", JSON.stringify(newLayout));
-      localStorage.setItem(
-        "channels",
-        JSON.stringify(
-          channels.map((c) => {
-            return {
-              id: c.id,
-              channel_id: c.channel.id,
-              layout: c.layout,
-            };
-          })
-        )
-      );
+      localStorage.setItem("channels", JSON.stringify(newChannels));
 
-      return newLayout;
+      return newChannels;
     });
   };
 
@@ -78,7 +79,9 @@ export default function Home() {
     return channels.map((channel) => {
       const deleteWidget = () => {
         console.log("Deleting widget", channel.id);
-        setChannels((prevChannels) => prevChannels.filter((c) => c.id !== channel.id));
+        setChannels((prevChannels) =>
+          prevChannels.filter((c) => c.id !== channel.id)
+        );
       };
 
       return (

@@ -9,8 +9,8 @@ QD::QD(){
     pinMode(DIR_PIN, OUTPUT);
     pinMode(ENA_PIN, OUTPUT);
 
-    // Disable the driver by setting the enable pin low
-    digitalWrite(ENA_PIN, LOW);
+    // TEMPORARY FIX: Set ENABLE to HIGH on default, b/c arduino will rely on falling edge 
+    digitalWrite(ENA_PIN, HIGH);
     // pulse should be default high
     digitalWrite(PUL_PIN, HIGH); 
 
@@ -35,18 +35,11 @@ void QD::turnMotor(){
     actuating = true; 
 
     // Enable the driver 
-    digitalWrite(ENA_PIN, HIGH);
-    delay(201); // necessary to set enable correctly 
-    
-    for (int step = 0; step < 1200; step++) {
-        // Generate one pulse with 50% duty cycle
-        digitalWrite(PUL_PIN, LOW);  
-        delay(10);             
-        digitalWrite(PUL_PIN, HIGH);  
-        delay(10);                
-    }
-
     digitalWrite(ENA_PIN, LOW);
+
+    delay(500); 
+
+    digitalWrite(ENA_PIN, HIGH);
     actuating = false; 
 
     return;

@@ -2,11 +2,17 @@ import type { Widget, WidgetProps } from "@/lib/definitions";
 import { useData } from "@/contexts/data-context";
 
 export default function EventCounterWidget(): Widget {
-  const EventCounterWidgetComponent = ({ channel }: WidgetProps) => {
+  const EventCounterWidgetComponent = ({
+    measurement,
+    channel,
+  }: WidgetProps) => {
     const { data } = useData();
-    const fieldData = data[channel.dbField];
 
-    if (!fieldData || fieldData.length === 0) {
+    if (
+      !data[measurement] ||
+      !data[measurement][channel.dbField] ||
+      data[measurement][channel.dbField].length === 0
+    ) {
       return (
         <div className="w-full h-full flex flex-col justify-center items-center gap-2">
           <p className="font-semibold text-lg">{channel.label}</p>
@@ -15,7 +21,8 @@ export default function EventCounterWidget(): Widget {
       );
     }
 
-    const count = fieldData.filter(dp => (dp.value as boolean)).length;
+    const fieldData = data[measurement][channel.dbField];
+    const count = fieldData.filter((dp) => dp.value as boolean).length;
     return (
       <div className="w-full h-full flex flex-col justify-center items-center gap-2">
         <p className="font-semibold text-lg">{channel.label}</p>
@@ -27,5 +34,5 @@ export default function EventCounterWidget(): Widget {
   return {
     mode: "Count",
     component: EventCounterWidgetComponent,
-  }
+  };
 }

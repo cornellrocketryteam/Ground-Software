@@ -6,6 +6,7 @@ export type DataPoint = {
 };
 
 export type WidgetProps = {
+  measurement: string;
   channel: TelemetryChannel;
 };
 
@@ -17,6 +18,7 @@ export type Widget = {
 export type TelemetryChannel = {
   label: string;
   unit?: string;
+  dbMeasurements: string[];
   dbField: string;
   widgets: Widget[];
 };

@@ -21,7 +21,9 @@ export default function Page6() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold mb-6 text-center">Page 6: Arm Igniter</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Page 6: Arm Igniter
+      </h1>
 
       {/* Row with Live Value and Actuation Box */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl">
@@ -29,6 +31,7 @@ export default function Page6() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "Igniter Current",
+            dbMeasurement: "Umbilical",
             dbField: "igniterCurrent",
           }}
           duration={1}

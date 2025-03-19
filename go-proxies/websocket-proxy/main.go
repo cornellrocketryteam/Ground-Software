@@ -10,9 +10,7 @@ import (
 	"time"
 
 	"github.com/cornellrocketryteam/Ground-Software/go-proxies/pkg/types"
-	pb "github.com/cornellrocketryteam/Ground-Software/go-proxies/proto-out"
 	"github.com/gorilla/websocket"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type WebClients struct {
@@ -149,24 +147,4 @@ func main() {
 	webClients.Start(ctx)
 
 	select {}
-}
-
-// HandlePacket parses and processes a telemetry packet
-// then stores it to InfluxDB and sends it to all active websocket connections.
-func HandlePacket(ctx context.Context, packet *pb.FillStationTelemetry, w *WebClients) {
-	// Write to InfluxDB
-	datastore.FillStationTelemetryStore(packet)
-
-	marshaler := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Include fields with zero values
-	}
-
-	// Marshal the Protobuf message to JSON using the custom marshaler
-	jsonData, err := marshaler.Marshal(packet)
-	if err != nil {
-		log.Println("Error marshaling Protobuf to JSON:", err)
-		return
-	}
-
-	w.Send(jsonData)
 }

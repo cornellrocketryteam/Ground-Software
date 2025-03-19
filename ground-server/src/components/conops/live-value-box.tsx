@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
 import { useData } from "@/contexts/data-context";
+import type { WidgetProps } from "@/lib/definitions";
 
-interface LiveValueBoxProps {
-  channel: { label: string; dbField: string; unit?: string };
-}
-
-export function LiveValueBox({ channel }: LiveValueBoxProps) {
+export function LiveValueBox({ measurement, channel }: WidgetProps) {
   const { data } = useData();
-  const fieldData = data[channel.dbField];
 
-  if (!fieldData || fieldData.length === 0) {
+  if (
+    !data[measurement] ||
+    !data[measurement][channel.dbField] ||
+    data[measurement][channel.dbField].length === 0
+  ) {
     return (
       <div className="p-4 border dark:border-white rounded-lg shadow-md w-full h-24 flex flex-col justify-center items-center">
         <h2 className="text-sm font-bold">{channel.label}</h2>
@@ -19,6 +19,7 @@ export function LiveValueBox({ channel }: LiveValueBoxProps) {
     );
   }
 
+  const fieldData = data[measurement][channel.dbField];
   const latestReading = fieldData[fieldData.length - 1].value;
   const formattedValue =
     typeof latestReading === "number" ? latestReading.toFixed(3) : "--";

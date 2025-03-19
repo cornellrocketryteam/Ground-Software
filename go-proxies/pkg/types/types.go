@@ -17,9 +17,10 @@ import (
 )
 
 type HistoricalDataRequest struct {
-	Start       int    `json:"start"` // Minutes ago
-	Stop        int    `json:"stop"`  // Minutes ago
+	Measurement string `json:"measurement"`
 	Field       string `json:"field"`
+	Start       int    `json:"start"`       // Minutes ago
+	Stop        int    `json:"stop"`        // Minutes ago
 	Aggregation string `json:"aggregation"` //e.g., "mean", "max", etc.
 	Every       int    `json:"every"`       // Seconds for aggregateWindow
 }
@@ -30,10 +31,11 @@ type DataPoint struct {
 }
 
 type HistoricalDataResponse struct {
-	Field      string      `json:"field"`
-	Data       []DataPoint `json:"data"`
-	Historical bool        `json:"historical"`
-	Error      string      `json:"error"`
+	Measurement string      `json:"measurement"`
+	Field       string      `json:"field"`
+	Data        []DataPoint `json:"data"`
+	Historical  bool        `json:"historical"`
+	Error       string      `json:"error"`
 }
 
 type Datastore struct {
@@ -47,6 +49,9 @@ type Datastore struct {
 	queryAPI     api.QueryAPI
 }
 
+var legalMeasurements = []string{
+	"fill", "rocket",
+}
 var legalFields = []string{
 	"rocket_time", "altitude", "temp", "voltage", "current", "pt3", "blims_state",
 	"latitude", "longitude", "num_satellites",
@@ -91,7 +96,7 @@ func (d *Datastore) FillStationTelemetryStore(packet *pb.FillStationTelemetry) {
 		"ign2_cont": packet.Ign2Cont,
 	}
 
-	point := write.NewPoint("telemetry", tags, fields, time.Unix(int64(packet.Timestamp), 0))
+	point := write.NewPoint("Fill Station", tags, fields, time.Unix(int64(packet.Timestamp), 0))
 	log.Printf("Writing fill station telemetry to influxDB: %v", point)
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
@@ -120,11 +125,10 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 		fields["pt4"] = umbTelem.Pt4
 		fields["rtd_temp"] = umbTelem.RtdTemp
 
-		log.Printf("PT3 Value: %f\n\n\n", umbTelem.Pt3)
+		// TODO: Find a better way of flattening (or removing the flattening) so that this does not have to be manually updated
 
 		if umbTelem.Metadata != nil {
 			metaData := umbTelem.Metadata
-
 			fields["alt_armed"] = metaData.AltArmed
 			fields["alt_valid"] = metaData.AltValid
 			fields["gps_valid"] = metaData.GpsValid
@@ -176,7 +180,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 		}
 	}
 
-	point := write.NewPoint("telemetry", tags, fields, timestamp)
+	point := write.NewPoint("Umbilical", tags, fields, timestamp)
 	// log.Printf("Writing rocket telemetry to influxDB: %v", point)
 	writeCtx, writeCancel := context.WithTimeout(d.ctx, time.Second)
 	defer writeCancel()
@@ -188,6 +192,11 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 // Query parses and executes a json request for historical data
 func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Validate input (important to prevent injection attacks!)
+	if req.Measurement == "" || !slices.Contains(legalMeasurements, req.Measurement) {
+		response := HistoricalDataResponse{Error: "Measurement does not exist"}
+		return response
+	}
+
 	if req.Field == "" || !slices.Contains(legalFields, req.Field) {
 		response := HistoricalDataResponse{Error: "Field does not exist"}
 		return response
@@ -210,15 +219,16 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Construct query
 	query := fmt.Sprintf(`from(bucket: "telemetry")
 	  |> range(start: %dm, stop: %dm)
+	  |> filter(fn: (r) => r._measurement == "%s")
 	  |> filter(fn: (r) => r._field == "%s")
 	  |> aggregateWindow(every: %ds, fn: %s, createEmpty: false)
-	  |> drop(columns: ["table", "_measurement", "_start", "_stop"])
-	  |> yield(name: "last")`, req.Start, req.Stop, req.Field, req.Every, req.Aggregation)
+	  |> yield(name: "last")`, req.Start, req.Stop, req.Measurement, req.Field, req.Every, req.Aggregation)
 
 	// Process historical data request.
 	log.Printf("Querying with: %s", query)
 	results, err := d.queryAPI.Query(d.ctx, query)
 	response := HistoricalDataResponse{Historical: true}
+	response.Measurement = req.Measurement
 	response.Field = req.Field
 	if err != nil {
 		response.Error = err.Error()
@@ -237,9 +247,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 
 func (d *Datastore) GetLastPoint() ([]byte, error) {
 	query := `from(bucket: "telemetry")
-		|> range(start: -2s)
-		|> filter(fn: (r) => r["_measurement"] == "telemetry")
-		|> drop(columns: ["table", "_measurement", "_start", "_stop", "_time"])
+		|> range(start: 0)
 		|> last()`
 
 	results, err := d.queryAPI.Query(d.ctx, query)
@@ -254,17 +262,21 @@ func (d *Datastore) GetLastPoint() ([]byte, error) {
 	var jsonData []byte
 
 	//Use a map to accumulate all fields for a single data point
-	data := make(map[string]interface{})
+	data := make(map[string]map[string]interface{})
 
 	for results.Next() {
 		record := results.Record()
 		if record == nil {
 			continue
 		}
+		measurement := record.Measurement()
 		fieldName := record.Field()
 		fieldValue := record.Value()
 
-		data[fieldName] = fieldValue
+		if data[measurement] == nil {
+			data[measurement] = make(map[string]interface{})
+		}
+		data[measurement][fieldName] = fieldValue
 	}
 
 	if err := results.Err(); err != nil {

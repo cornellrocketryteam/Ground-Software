@@ -94,7 +94,7 @@ export default function Page3() {
         {/* PT1 Live Value Box */}
         <div className="flex-grow max-w-[300px]">
           {pt1Channel ? (
-            <LiveValueBox channel={pt1Channel} />
+            <LiveValueBox measurement={pt1Channel.dbMeasurements[0]} channel={pt1Channel} />
           ) : (
             <p>Error: PT1 telemetry channel not found</p>
           )}

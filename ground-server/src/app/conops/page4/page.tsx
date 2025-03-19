@@ -30,6 +30,7 @@ export default function Page4() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "RTD Temperature",
+            dbMeasurement: "Umbilical",
             dbField: "rtd_temp",
           }}
           duration={1}
@@ -38,6 +39,7 @@ export default function Page4() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "Load Cell 1 (LC1)",
+            dbMeasurement: "Fill Station",
             dbField: "lc1",
           }}
           duration={1}
@@ -46,6 +48,7 @@ export default function Page4() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "Pressure Transducer 4 (PT4)",
+            dbMeasurement: "Umbilical",
             dbField: "pt4",
           }}
           duration={1}
@@ -54,6 +57,7 @@ export default function Page4() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "Pressure Transducer 1 (PT1)",
+            dbMeasurement: "Fill Station",
             dbField: "pt1",
           }}
           duration={1}

@@ -45,8 +45,6 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
 
-
-
   // ----------------------------
   // Umbilical Telemetry
   // ----------------------------
@@ -61,7 +59,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "Battery Voltage",
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
     dbField: "battery_voltage",
-    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)]
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Pressure Transducer 3",
@@ -157,7 +155,9 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     widgets: [ValueWidget()],
   },
 
+  // ----------------------------
   // Events
+  // ----------------------------
   {
     label: "Altitude Armed",
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
@@ -337,10 +337,154 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
     dbField: "umbilical_disconnected",
     widgets: [BoolStateWidget("True", "False"), EventCounterWidget()],
-  },  
+  },
 
+  // ----------------------------
+  // Radio Telemetry
+  // ----------------------------
+  {
+    label: "Altitude",
+    unit: "m",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "altimeter_altitude",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Temperature",
+    unit: "C",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "altimeter_temperature",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Latitude",
+    unit: "deg",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "gps_latitude",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Longitude",
+    unit: "deg",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "gps_longitude",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Satellites in view",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "gps_satellites_in_view",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Unix time",
+    unit: "seconds",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "gps_unix_time",
+    widgets: [ValueWidget(3)],
+  },
+  {
+    label: "Horizontal accuracy",
+    unit: "mm",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "gps_horizontal_accuracy",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration X",
+    unit: "m/s^2",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_acceleration_x",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration Y",
+    unit: "m/s^2",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_acceleration_y",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration Z",
+    unit: "m/s^2",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_acceleration_z",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Gyro X",
+    unit: "deg/s",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_gyro_x",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Gyro Y",
+    unit: "deg/s",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_gyro_y",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Gyro Z",
+    unit: "deg/s",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_gyro_z",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Orientation X",
+    unit: "deg",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_orientation_x",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Orientation Y",
+    unit: "deg",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_orientation_y",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Orientation Z",
+    unit: "deg",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "imu_orientation_z",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration X",
+    unit: "g",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "accelerometer_acceleration_x",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration Y",
+    unit: "g",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "accelerometer_acceleration_y",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Acceleration Z",
+    unit: "g",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "accelerometer_acceleration_z",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Motor state",
+    unit: "inches",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbField: "blims_motor_state",
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
 
+  // ----------------------------
   // Fake widgets
+  // ----------------------------
   {
     label: "Fuel",
     dbMeasurements: ["FAKE"],

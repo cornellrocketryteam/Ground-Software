@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
@@ -32,15 +32,18 @@ function tickFormatter(tick: number) {
 }
 
 export default function GraphWidget(minuteDuration: number): Widget {
-  const GraphWidgetComponent = ({ channel }: WidgetProps) => {
+  const GraphWidgetComponent = ({ measurement, channel }: WidgetProps) => {
     const { data, sendHistoricalDataReq } = useData();
-    const fieldData = data[channel.dbField];
 
     useEffect(() => {
       sendHistoricalDataReq(-minuteDuration, 0, channel.dbField);
     }, []);
 
-    if (fieldData === undefined || fieldData.length === 0) {
+    if (
+      !data[measurement] ||
+      !data[measurement][channel.dbField] ||
+      data[measurement][channel.dbField].length === 0
+    ) {
       return (
         <div className="w-full h-full flex flex-col justify-center items-center gap-2">
           <p className="font-semibold text-lg">{channel.label}</p>
@@ -49,6 +52,7 @@ export default function GraphWidget(minuteDuration: number): Widget {
       );
     }
 
+    const fieldData = data[measurement][channel.dbField];
     const latestValue = fieldData[fieldData.length - 1].value;
     if (typeof latestValue !== "number") {
       return (

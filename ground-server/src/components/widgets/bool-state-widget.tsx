@@ -1,12 +1,18 @@
 import type { Widget, WidgetProps } from "@/lib/definitions";
 import { useData } from "@/contexts/data-context";
 
-export default function BoolStateWidget(onStateLabel: string, offStateLabel: string): Widget {
-  const BoolStateWidgetComponent = ({ channel }: WidgetProps) => {
+export default function BoolStateWidget(
+  onStateLabel: string,
+  offStateLabel: string
+): Widget {
+  const BoolStateWidgetComponent = ({ measurement, channel }: WidgetProps) => {
     const { data } = useData();
-    const fieldData = data[channel.dbField];
 
-    if (!fieldData || fieldData.length === 0) {
+    if (
+      !data[measurement] ||
+      !data[measurement][channel.dbField] ||
+      data[measurement][channel.dbField].length === 0
+    ) {
       return (
         <div className="w-full h-full flex flex-col justify-center items-center gap-2">
           <p className="font-semibold text-lg">{channel.label}</p>
@@ -15,6 +21,7 @@ export default function BoolStateWidget(onStateLabel: string, offStateLabel: str
       );
     }
 
+    const fieldData = data[measurement][channel.dbField];
     const latestValue = fieldData[fieldData.length - 1].value as boolean;
     const displayValue = latestValue ? onStateLabel : offStateLabel;
 
@@ -29,5 +36,5 @@ export default function BoolStateWidget(onStateLabel: string, offStateLabel: str
   return {
     mode: "State",
     component: BoolStateWidgetComponent,
-  }
+  };
 }

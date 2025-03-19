@@ -24,11 +24,17 @@ export default function Conops() {
 
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black relative">
-      <h1 className="text-3xl font-bold mb-6 text-center">Page 1: Sensor Checks</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Page 1: Sensor Checks
+      </h1>
 
       <div className="grid grid-cols-3 gap-8 w-full max-w-6xl">
         {channels.map((channel) => (
-          <LiveValueBox key={channel.dbField} channel={channel} />
+          <LiveValueBox
+            key={channel.dbField}
+            measurement={channel.dbMeasurements[0]}
+            channel={channel}
+          />
         ))}
       </div>
 

@@ -68,6 +68,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     const allModes = useMemo(() => Object.keys(modeMap), [modeMap]);
 
     const [mode, setMode] = useState(allModes[0]);
+    const [measurement, setMeasurement] = useState(channel.dbMeasurements[0]);
 
     const activeWidget = modeMap[mode];
     if (!activeWidget) {
@@ -84,7 +85,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <ActiveComponent channel={channel} />
+        <ActiveComponent measurement={measurement} channel={channel} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -102,6 +103,17 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
               ))}
             </DropdownMenuRadioGroup>
             {allModes.length > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuRadioGroup
+              value={measurement}
+              onValueChange={setMeasurement}
+            >
+              {channel.dbMeasurements.map((m) => (
+                <DropdownMenuRadioItem key={m} value={m}>
+                  {m}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+            {channel.dbMeasurements.length > 0 && <DropdownMenuSeparator />}
             <DropdownMenuItem
               inset
               className="text-red-600"

@@ -29,6 +29,7 @@ export default function Page5() {
         <LiveValueWithHistoricalGraph
           channel={{
             label: "Pressure Transducer 2 (PT2)",
+            dbMeasurement: "Fill Station",
             dbField: "pt2",
           }}
           duration={1}

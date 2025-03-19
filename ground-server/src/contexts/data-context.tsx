@@ -12,8 +12,8 @@ import {
 
 type DataContextType = {
   connected: boolean;
-  data: { [field: string]: DataPoint[] };
-  sendHistoricalDataReq: (start: number, stop: number, field: string) => void
+  data: Record<string, Record<string, DataPoint[]>>; // has type measurement -> field -> DataPoint[]
+  sendHistoricalDataReq: (start: number, stop: number, field: string) => void;
 };
 
 const DataContext = createContext<DataContextType>({
@@ -23,7 +23,9 @@ const DataContext = createContext<DataContextType>({
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<{ [field: string]: DataPoint[] }>({});
+  const [data, setData] = useState<Record<string, Record<string, DataPoint[]>>>(
+    {}
+  );
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -63,9 +65,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (message.data === null) {
           console.log("No data received from historical message");
           return;
-        } 
-        
+        }
+
         setData((prevData) => {
+          const measurement = message.measurement;
           const field = message.field;
           const widgetData: DataPoint[] = message.data.map(
             (item: { timestamp: string; value: number }) => {
@@ -78,25 +81,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
           return {
             ...prevData,
-            [field]: widgetData,
-          }
+            [measurement]: {
+              ...prevData[measurement],
+              [field]: widgetData,
+            },
+          };
         });
       } else {
         // Live data
 
         setData((prevData) => {
-          const newData = {...prevData};
-          for (const field in message) {
-            newData[field] = [
-              ...(newData[field] || []),
-              {
-                timestamp: new Date(),
-                value: message[field],
-              },
-            ];
+          const newData = { ...prevData };
+          for (const measurement in message) {
+            if (!(measurement in newData)) {
+              newData[measurement] = {};
+            }
+
+            for (const field in message[measurement]) {
+              newData[measurement][field] = [
+                ...(newData[measurement][field] || []),
+                {
+                  timestamp: new Date(),
+                  value: message[measurement][field],
+                },
+              ];
+            }
           }
           return newData;
-        })
+        });
       }
     };
 
@@ -111,7 +123,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(connect, []);
 
-  const sendHistoricalDataReq = (start: number, stop: number, field: string) => {
+  const sendHistoricalDataReq = (
+    start: number,
+    stop: number,
+    field: string
+  ) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
@@ -121,14 +137,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })
       );
     } else {
-      console.error(
-        "WebSocket not connected. Cannot request historical data."
-      );
+      console.error("WebSocket not connected. Cannot request historical data.");
     }
-  }
+  };
 
   return (
-    <DataContext.Provider value={{ connected,  data, sendHistoricalDataReq }}>
+    <DataContext.Provider value={{ connected, data, sendHistoricalDataReq }}>
       {children}
     </DataContext.Provider>
   );

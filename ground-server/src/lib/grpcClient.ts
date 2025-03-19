@@ -9,14 +9,14 @@ import * as grpc from "@grpc/grpc-js";
 import { auth } from "@/app/auth";
 
 const client = new CommanderClient(
-  process.env.NODE_ENV === "development" ? "192.168.1.201:50051" : "192.168.1.201:50051", // TODO look at
+  "192.168.1.201:50051",
   grpc.credentials.createInsecure()
 );
 
 export async function isConnected() {
   const channel = client.getChannel();
   const state = channel.getConnectivityState(true); // pass true to try connecting if idle
-  return state === grpc.connectivityState.READY;
+  return state === grpc.connectivityState.READY || state === grpc.connectivityState.CONNECTING;
 }
 
 export async function sendCommand(command: Command) {

@@ -12,8 +12,9 @@ import {
 // If you already have TelemetryChannel defined elsewhere, import it here:
 interface TelemetryChannel {
   label: string;
+  dbMeasurement: string;
   dbField: string;
-  unit?: string; 
+  unit?: string;
 }
 
 interface DataPoint {
@@ -53,11 +54,12 @@ export function LiveValueWithHistoricalGraph({
 }: LiveValueWithHistoricalGraphProps) {
   const { data } = useData();
 
-  // Pull data from your websocket/db using channel.dbField
-  const fieldData = data[channel.dbField] as DataPoint[] | undefined;
-
   // If there's no data, show "No data"
-  if (!fieldData || fieldData.length === 0) {
+  if (
+    !data[channel.dbMeasurement] ||
+    !data[channel.dbMeasurement][channel.dbField] ||
+    data[channel.dbMeasurement][channel.dbField].length === 0
+  ) {
     return (
       <div className="border p-4 rounded-lg shadow-md flex flex-col items-center">
         <h2 className="text-sm font-bold mb-2">{channel.label}</h2>
@@ -65,6 +67,9 @@ export function LiveValueWithHistoricalGraph({
       </div>
     );
   }
+
+  // Pull data from your websocket/db using channel.dbField
+  const fieldData = data[channel.dbMeasurement][channel.dbField] as DataPoint[];
 
   // Filter data to the last 'duration' minutes
   const now = Date.now();
@@ -99,7 +104,10 @@ export function LiveValueWithHistoricalGraph({
 
       <div className="flex flex-row space-x-4">
         {/* Left: Chart Container */}
-        <ChartContainer config={getConfig(channel)} className="w-[400px] h-[300px]">
+        <ChartContainer
+          config={getConfig(channel)}
+          className="w-[400px] h-[300px]"
+        >
           <LineChart
             data={filteredData.map((d) => ({
               // Recharts expects numeric timestamps

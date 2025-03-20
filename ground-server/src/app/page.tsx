@@ -102,11 +102,12 @@ export default function Home() {
         layouts={{
           lg: channels.map((channel) => channel.layout),
         }}
-        cols={{ lg: 24, md: 20, sm: 14, xs: 10, xxs: 6 }}
+        cols={{ lg: 36, md: 30, sm: 21, xs: 15, xxs: 9 }}
         rowHeight={50}
         autoSize={false}
         onLayoutChange={onLayoutChange}
         resizeHandle={<WidgetHandle />}
+        margin={[5, 5]}
       >
         {children}
       </ResponsiveReactGridLayout>

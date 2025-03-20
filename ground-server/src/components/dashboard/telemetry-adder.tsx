@@ -103,10 +103,10 @@ function TelemetryChannelList({
           i: id,
           x: 0,
           y: 0,
-          w: 3,
+          w: 4,
           h: 3,
-          minW: 3,
-          minH: 3,
+          minW: 2,
+          minH: 2,
         },
       },
     ]);

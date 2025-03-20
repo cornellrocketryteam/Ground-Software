@@ -16,7 +16,7 @@ const client = new CommanderClient(
 export async function isConnected() {
   const channel = client.getChannel();
   const state = channel.getConnectivityState(true); // pass true to try connecting if idle
-  return state === grpc.connectivityState.READY || state === grpc.connectivityState.CONNECTING;
+  return state === grpc.connectivityState.READY;
 }
 
 export async function sendCommand(command: Command) {

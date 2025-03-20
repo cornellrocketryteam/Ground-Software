@@ -19,7 +19,7 @@ import Link from "next/link";
 export default function Conops() {
   // Precompute channels so we only do the lookup once
   const channels = TELEMETRY_CHANNELS.filter((c) =>
-    ["pt1", "pt2", "lc1", "rtd_temp", "pt3", "pt4"].includes(c.dbField)
+    ["pt1", "pt2", "lc1", "rtd_temp", "pt3", "pt4"].includes(c.dbField),
   );
 
   return (

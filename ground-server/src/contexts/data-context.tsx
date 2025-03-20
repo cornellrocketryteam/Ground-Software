@@ -24,7 +24,7 @@ const DataContext = createContext<DataContextType>({
 
 export function DataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Record<string, Record<string, DataPoint[]>>>(
-    {}
+    {},
   );
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -76,7 +76,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 timestamp: new Date(item.timestamp),
                 value: item.value,
               };
-            }
+            },
           );
 
           return {
@@ -126,7 +126,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const sendHistoricalDataReq = (
     start: number,
     stop: number,
-    field: string
+    field: string,
   ) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
@@ -134,7 +134,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           start,
           stop,
           field,
-        })
+        }),
       );
     } else {
       console.error("WebSocket not connected. Cannot request historical data.");

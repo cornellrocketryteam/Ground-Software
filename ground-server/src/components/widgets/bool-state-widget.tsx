@@ -3,7 +3,7 @@ import { useData } from "@/contexts/data-context";
 
 export default function BoolStateWidget(
   onStateLabel: string,
-  offStateLabel: string
+  offStateLabel: string,
 ): Widget {
   const BoolStateWidgetComponent = ({ measurement, channel }: WidgetProps) => {
     const { data } = useData();

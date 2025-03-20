@@ -71,10 +71,7 @@ export function TelemetryAdder({
           </DrawerDescription>
         </DrawerHeader>
         <div className="border-t">
-          <TelemetryChannelList
-            setOpen={setOpen}
-            setChannels={setChannels}
-          />
+          <TelemetryChannelList setOpen={setOpen} setChannels={setChannels} />
         </div>
       </DrawerContent>
     </Drawer>

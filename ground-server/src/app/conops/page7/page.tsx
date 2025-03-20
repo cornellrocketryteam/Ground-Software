@@ -2,7 +2,7 @@
 
 import ActuationBox from "@/components/conops/actuation-box";
 import { CameraBox } from "@/components/conops/camera-box";
-import PreviousButton from "@/components/conops/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button";
 
 export default function Page7() {
   return (

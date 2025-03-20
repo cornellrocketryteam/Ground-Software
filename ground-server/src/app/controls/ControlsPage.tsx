@@ -168,7 +168,9 @@ export default function ControlsPage() {
                 max={4}
                 step={1}
                 value={[ventSliderValue]}
-                onValueChange={(value: number[]) => setVentSliderValue(value[0])}
+                onValueChange={(value: number[]) =>
+                  setVentSliderValue(value[0])
+                }
               />
               <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
                 {ventSliderValue} {ventSliderValue === 1 ? "second" : "seconds"}
@@ -181,7 +183,12 @@ export default function ControlsPage() {
               {
                 label: "Vent + Ignite",
                 stateLabel: "Vented & Ignited",
-                command: { ventAndIgnite: { ventDuration: ventIgniteSliderValue, igniteDelay: igniteDelay } },
+                command: {
+                  ventAndIgnite: {
+                    ventDuration: ventIgniteSliderValue,
+                    igniteDelay: igniteDelay,
+                  },
+                },
                 isOn: true,
               },
             ]}
@@ -197,10 +204,13 @@ export default function ControlsPage() {
                 max={4}
                 step={1}
                 value={[ventIgniteSliderValue]}
-                onValueChange={(value: number[]) => setVentIgniteSliderValue(value[0])}
+                onValueChange={(value: number[]) =>
+                  setVentIgniteSliderValue(value[0])
+                }
               />
               <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                {ventIgniteSliderValue} {ventIgniteSliderValue === 1 ? "second" : "seconds"}
+                {ventIgniteSliderValue}{" "}
+                {ventIgniteSliderValue === 1 ? "second" : "seconds"}
               </p>
               <h4 className="mt-4 text-sm font-bold mb-4 text-center">
                 Ignite Delay

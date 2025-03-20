@@ -1,4 +1,14 @@
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -9,7 +19,12 @@ interface ConfirmNavigationButtonProps {
   className?: string;
 }
 
-const ConfirmNavigationButton: React.FC<ConfirmNavigationButtonProps> = ({ label, confirmMessage, href, className }) => {
+const ConfirmNavigationButton: React.FC<ConfirmNavigationButtonProps> = ({
+  label,
+  confirmMessage,
+  href,
+  className,
+}) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -23,9 +38,7 @@ const ConfirmNavigationButton: React.FC<ConfirmNavigationButtonProps> = ({ label
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{label}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {confirmMessage}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{confirmMessage}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>No</AlertDialogCancel>

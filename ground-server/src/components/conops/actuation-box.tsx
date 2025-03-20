@@ -66,7 +66,9 @@ export default function ActuationBox({
   // Load stored values on mount
   useEffect(() => {
     const storedCurrentState = localStorage.getItem(currentStateKey);
-    setCurrentState(storedCurrentState ? storedCurrentState : initialStateLabel);
+    setCurrentState(
+      storedCurrentState ? storedCurrentState : initialStateLabel,
+    );
 
     const storedIsOnState = localStorage.getItem(isOnStateKey);
     if (storedIsOnState === buttonOn) {
@@ -143,15 +145,15 @@ export default function ActuationBox({
   const layoutClasses = compactLayout
     ? "flex items-center justify-between w-full space-x-4"
     : isSmall
-    ? "flex flex-col items-center w-full space-y-3"
-    : "flex items-center justify-around w-full space-x-10";
+      ? "flex flex-col items-center w-full space-y-3"
+      : "flex items-center justify-around w-full space-x-10";
 
   // Button container classes
   const buttonContainerClasses = compactLayout
     ? "flex flex-col items-start space-y-2 w-1/2"
     : isSmall
-    ? "flex flex-col items-center space-y-3"
-    : "flex flex-col items-center space-y-6";
+      ? "flex flex-col items-center space-y-3"
+      : "flex flex-col items-center space-y-6";
 
   // Button sizes
   const buttonClasses = isSmall
@@ -162,15 +164,15 @@ export default function ActuationBox({
   const stateBoxClasses = compactLayout
     ? "h-[80px] w-[100px] text-sm font-bold flex items-center justify-center border"
     : isSmall
-    ? "h-[60px] w-[100px] flex items-center justify-center text-base font-bold"
-    : "h-[100px] w-[150px] flex items-center justify-center text-lg font-bold";
+      ? "h-[60px] w-[100px] flex items-center justify-center text-base font-bold"
+      : "h-[100px] w-[150px] flex items-center justify-center text-lg font-bold";
 
   // Switch wrapper classes
   const switchWrapperClasses = compactLayout
     ? "flex items-center space-x-2 mt-2"
     : isSmall
-    ? "flex items-center space-x-1 mt-2 transform scale-75"
-    : "flex items-center space-x-2 mt-4";
+      ? "flex items-center space-x-1 mt-2 transform scale-75"
+      : "flex items-center space-x-2 mt-4";
 
   // Switch label classes
   const switchLabelClasses = isSmall
@@ -226,8 +228,8 @@ export default function ActuationBox({
                 isOnState === true
                   ? "bg-green-500 text-white"
                   : isOnState === false
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-300 dark:bg-gray-800"
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-300 dark:bg-gray-800"
               }`}
             >
               {currentState || initialStateLabel}
@@ -279,8 +281,8 @@ export default function ActuationBox({
                 isOnState === true
                   ? "bg-green-500 text-white"
                   : isOnState === false
-                  ? "bg-red-500 text-white"
-                  : "bg-gray-300 dark:bg-gray-800"
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-300 dark:bg-gray-800"
               }`}
             >
               {currentState || initialStateLabel}
@@ -303,9 +305,7 @@ export default function ActuationBox({
 
       {/* Render any children passed in (e.g. a slider) */}
       {children && (
-        <div className="mt-8 w-full flex flex-col items-center">
-          {children}
-        </div>
+        <div className="mt-8 w-full flex flex-col items-center">{children}</div>
       )}
 
       {/* Extra Spacing */}

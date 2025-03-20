@@ -35,7 +35,7 @@ export default function Home() {
       const rehydratedChannels: Channel[] = parsedChannels
         .map((ch: any) => {
           const tc = TELEMETRY_CHANNELS.find(
-            (tc) => tc.dbField === ch.channel.dbField
+            (tc) => tc.dbField === ch.channel.dbField,
           );
           if (tc === undefined) return undefined;
 
@@ -45,7 +45,7 @@ export default function Home() {
               ...ch.channel,
               widgets: ch.channel.widgets
                 .map((widget: any) =>
-                  tc.widgets.find((w) => w.mode === widget.mode)
+                  tc.widgets.find((w) => w.mode === widget.mode),
                 )
                 .filter((w: any) => w !== undefined),
             },
@@ -80,7 +80,7 @@ export default function Home() {
       const deleteWidget = () => {
         console.log("Deleting widget", channel.id);
         setChannels((prevChannels) =>
-          prevChannels.filter((c) => c.id !== channel.id)
+          prevChannels.filter((c) => c.id !== channel.id),
         );
       };
 

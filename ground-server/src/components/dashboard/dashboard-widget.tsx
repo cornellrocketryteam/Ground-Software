@@ -46,7 +46,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
       onTouchEnd,
       children,
     },
-    ref
+    ref,
   ) => {
     if (channel.widgets.length === 0) {
       throw new Error("No widgets found for telemetry channel");
@@ -58,7 +58,9 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
       for (const widget of channel.widgets) {
         const mode = widget.mode;
         if (modeMap[mode]) {
-          throw new Error(`Duplicate mode found in 'widgets' list for telemetry channel: ${mode}`);
+          throw new Error(
+            `Duplicate mode found in 'widgets' list for telemetry channel: ${mode}`,
+          );
         }
         modeMap[mode] = widget;
       }
@@ -72,7 +74,9 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
 
     const activeWidget = modeMap[mode];
     if (!activeWidget) {
-      throw new Error(`No widget found for mode: ${mode}. Should be unreachable.`);
+      throw new Error(
+        `No widget found for mode: ${mode}. Should be unreachable.`,
+      );
     }
     const ActiveComponent = activeWidget.component;
 
@@ -92,10 +96,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
             <DotsVerticalIcon className="drag-ignore absolute top-2 right-1 h-4 cursor-pointer" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-34 drag-ignore">
-            <DropdownMenuRadioGroup
-              value={mode}
-              onValueChange={setMode}
-            >
+            <DropdownMenuRadioGroup value={mode} onValueChange={setMode}>
               {allModes.map((m) => (
                 <DropdownMenuRadioItem key={m} value={m}>
                   {m}
@@ -127,7 +128,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 
 DashboardWidget.displayName = "DashboardWidget";

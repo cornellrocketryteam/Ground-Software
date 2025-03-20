@@ -14,21 +14,33 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import PreviousButton from "@/components/conops/previous-button"; 
+import PreviousButton from "@/components/conops/previous-button";
 
 export default function Page2() {
   return (
     <div className="flex flex-col items-center p-6 min-h-screen bg-white dark:bg-black relative text-gray-900 dark:text-gray-200">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold mb-6 text-center">Page 2: Actuation Checks</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">
+        Page 2: Actuation Checks
+      </h1>
 
       {/* Actuation Boxes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5 p-5">
         <ActuationBox
           title="MAV"
           buttons={[
-            { label: "Open", stateLabel: "Opened", command: { mavOpen: true }, isOn: true },
-            { label: "Close", stateLabel: "Closed", command: { mavOpen: false }, isOn: false },
+            {
+              label: "Open",
+              stateLabel: "Opened",
+              command: { mavOpen: true },
+              isOn: true,
+            },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { mavOpen: false },
+              isOn: false,
+            },
           ]}
           initialStateLabel="No Data"
           useSwitch={false}
@@ -36,8 +48,18 @@ export default function Page2() {
         <ActuationBox
           title="Solenoid Valve 1 (SV1)"
           buttons={[
-            { label: "Open", stateLabel: "Opened", command: { sv1Open: true }, isOn: true },
-            { label: "Close", stateLabel: "Closed", command: { sv1Open: false }, isOn: false },
+            {
+              label: "Open",
+              stateLabel: "Opened",
+              command: { sv1Open: true },
+              isOn: true,
+            },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { sv1Open: false },
+              isOn: false,
+            },
           ]}
           initialStateLabel="No Data"
           useSwitch={false}
@@ -45,7 +67,12 @@ export default function Page2() {
         <ActuationBox
           title="Quick Disconnect Motor (QD)"
           buttons={[
-            { label: "Retract", stateLabel: "Retracted", command: { qdRetract: true }, isOn: true },
+            {
+              label: "Retract",
+              stateLabel: "Retracted",
+              command: { qdRetract: true },
+              isOn: true,
+            },
           ]}
           initialStateLabel="No Data"
           useSwitch={false}
@@ -75,8 +102,18 @@ export default function Page2() {
         <ActuationBox
           title="Solenoid Valve 2 (SV2)"
           buttons={[
-            { label: "Open", stateLabel: "Opened", command: { sv2Close: false }, isOn: true },
-            { label: "Close", stateLabel: "Closed", command: { sv2Close: true }, isOn: false },
+            {
+              label: "Open",
+              stateLabel: "Opened",
+              command: { sv2Close: false },
+              isOn: true,
+            },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { sv2Close: true },
+              isOn: false,
+            },
           ]}
           initialStateLabel="No Data"
           useSwitch={false}

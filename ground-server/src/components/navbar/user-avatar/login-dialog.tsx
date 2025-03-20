@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { passwordSchema } from "@/lib/zod";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 import {
   Dialog,
@@ -49,7 +49,7 @@ export default function LoginDialog() {
           },
           {
             shouldFocus: true,
-          }
+          },
         );
       } else if (!response || response.error) {
         form.setError(
@@ -60,7 +60,7 @@ export default function LoginDialog() {
           },
           {
             shouldFocus: true,
-          }
+          },
         );
       }
 

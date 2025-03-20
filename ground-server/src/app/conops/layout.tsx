@@ -1,7 +1,11 @@
 // app/conops/layout.tsx
 import { auth } from "@/app/auth";
 
-export default async function ConopsLayout({ children }: { children: React.ReactNode }) {
+export default async function ConopsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth();
 
   if (!session) {

@@ -20,7 +20,7 @@ export default function UserMenu() {
   const signOutClicked = () => {
     signOut({ redirect: false }).then(() => {
       refresh();
-    })
+    });
   };
 
   return (

@@ -13,7 +13,7 @@ export type WidgetProps = {
 export type Widget = {
   mode: string;
   component: ComponentType<WidgetProps>;
-}
+};
 
 export type TelemetryChannel = {
   label: string;

@@ -34,7 +34,7 @@ export const WidgetHandle = forwardRef<HTMLDivElement, WidgetHandleProps>(
         </svg>
       </span>
     );
-  }
+  },
 );
 
 WidgetHandle.displayName = "WidgetHandle";

@@ -10,7 +10,7 @@ import { auth } from "@/app/auth";
 
 const client = new CommanderClient(
   "192.168.1.201:50051",
-  grpc.credentials.createInsecure()
+  grpc.credentials.createInsecure(),
 );
 
 export async function isConnected() {

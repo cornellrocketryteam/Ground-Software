@@ -75,7 +75,7 @@ export function LiveValueWithHistoricalGraph({
   const now = Date.now();
   const cutoff = now - duration * 60_000;
   const filteredData = fieldData.filter(
-    (point) => point.timestamp.getTime() >= cutoff
+    (point) => point.timestamp.getTime() >= cutoff,
   );
 
   // If no recent data, show a simple message

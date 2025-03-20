@@ -32,7 +32,12 @@ export default function Page3() {
         <ActuationBox
           title="Solenoid Valve 1"
           buttons={[
-            { label: "Close", stateLabel: "Closed", command: { sv1Open: false }, isOn: false },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { sv1Open: false },
+              isOn: false,
+            },
           ]}
           initialStateLabel="Closed"
           small={true}
@@ -41,7 +46,12 @@ export default function Page3() {
         <ActuationBox
           title="Ball Valve 1 (BV1)"
           buttons={[
-            { label: "Close", stateLabel: "Closed", command: { bv1Open: false }, isOn: false },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { bv1Open: false },
+              isOn: false,
+            },
           ]}
           initialStateLabel="Closed"
           small={true}
@@ -50,7 +60,12 @@ export default function Page3() {
         <ActuationBox
           title="MAV"
           buttons={[
-            { label: "Close", stateLabel: "Closed", command: { mavOpen: false }, isOn: false },
+            {
+              label: "Close",
+              stateLabel: "Closed",
+              command: { mavOpen: false },
+              isOn: false,
+            },
           ]}
           initialStateLabel="Closed"
           small={true}
@@ -59,7 +74,12 @@ export default function Page3() {
         <ActuationBox
           title="Solenoid Valve 2"
           buttons={[
-            { label: "Open", stateLabel: "Opened", command: { sv2Close: false }, isOn: true },
+            {
+              label: "Open",
+              stateLabel: "Opened",
+              command: { sv2Close: false },
+              isOn: true,
+            },
           ]}
           initialStateLabel="Open"
           small={true}
@@ -68,7 +88,12 @@ export default function Page3() {
         <ActuationBox
           title="Quick Disconnect"
           buttons={[
-            { label: "Connect", stateLabel: "Connected", command: { qdRetract: false }, isOn: true },
+            {
+              label: "Connect",
+              stateLabel: "Connected",
+              command: { qdRetract: false },
+              isOn: true,
+            },
           ]}
           initialStateLabel="Connected"
           small={true}
@@ -83,8 +108,18 @@ export default function Page3() {
           <ActuationBox
             title="MAV Control"
             buttons={[
-              { label: "Open", stateLabel: "Opened", command: { mavOpen: true }, isOn: true },
-              { label: "Close", stateLabel: "Closed", command: { mavOpen: false }, isOn: false },
+              {
+                label: "Open",
+                stateLabel: "Opened",
+                command: { mavOpen: true },
+                isOn: true,
+              },
+              {
+                label: "Close",
+                stateLabel: "Closed",
+                command: { mavOpen: false },
+                isOn: false,
+              },
             ]}
             initialStateLabel="Closed"
             useSwitch={false}
@@ -94,7 +129,10 @@ export default function Page3() {
         {/* PT1 Live Value Box */}
         <div className="flex-grow max-w-[300px]">
           {pt1Channel ? (
-            <LiveValueBox measurement={pt1Channel.dbMeasurements[0]} channel={pt1Channel} />
+            <LiveValueBox
+              measurement={pt1Channel.dbMeasurements[0]}
+              channel={pt1Channel}
+            />
           ) : (
             <p>Error: PT1 telemetry channel not found</p>
           )}

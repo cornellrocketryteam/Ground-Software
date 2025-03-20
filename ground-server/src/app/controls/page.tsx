@@ -1,7 +1,6 @@
 import { auth } from "@/app/auth";
 import ControlsPage from "./ControlsPage";
 
-
 export default async function Controls() {
   const session = await auth();
 
@@ -9,5 +8,5 @@ export default async function Controls() {
     return <div>Not authenticated</div>;
   }
 
-  return <ControlsPage />
+  return <ControlsPage />;
 }

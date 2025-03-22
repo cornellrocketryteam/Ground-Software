@@ -1,7 +1,7 @@
 #ifndef PROTO_BUILD_H
 #define PROTO_BUILD_H
 
-#define LAUNCH '0'
+#define LAUNCH '9'
 #define OPEN_MAV '1'
 #define CLOSE_MAV '2'
 #define OPEN_SV '3'

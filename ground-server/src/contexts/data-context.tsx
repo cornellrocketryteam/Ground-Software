@@ -100,10 +100,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
             for (const field in message[measurement]) {
               newData[measurement][field] = [
                 ...(newData[measurement][field] || []),
-                {
-                  timestamp: new Date(),
-                  value: message[measurement][field],
-                },
+                message[measurement][field],
               ];
             }
           }

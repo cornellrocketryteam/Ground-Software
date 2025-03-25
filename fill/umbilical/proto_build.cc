@@ -208,21 +208,21 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         memcpy(&pt4, packet + 18, sizeof(pt4));
         memcpy(&rtd_temp, packet + 22, sizeof(rtd_temp));
 
-        rocketMetadata->set_alt_armed(static_cast<bool>(metadata & 0x1)); 
-        rocketMetadata->set_alt_valid(static_cast<bool>((metadata & 0x2) >> 1)); 
-        rocketMetadata->set_gps_valid(static_cast<bool>((metadata & 0x4) >> 2)); 
-        rocketMetadata->set_imu_valid(static_cast<bool>((metadata & 0x8) >> 3)); 
-        rocketMetadata->set_acc_valid(static_cast<bool>((metadata & 0x10) >> 4)); 
-        rocketMetadata->set_therm_valid(static_cast<bool>((metadata & 0x20) >> 5)); 
-        rocketMetadata->set_voltage_valid(static_cast<bool>((metadata & 0x40) >> 6)); 
-        rocketMetadata->set_adc_valid(static_cast<bool>((metadata & 0x80) >> 7)); 
-        rocketMetadata->set_fram_valid(static_cast<bool>((metadata & 0x100) >> 8)); 
-        rocketMetadata->set_sd_valid(static_cast<bool>((metadata & 0x200) >> 9)); 
-        rocketMetadata->set_gps_msg_valid(static_cast<bool>((metadata & 0x400) >> 10)); 
-        rocketMetadata->set_mav_state(static_cast<bool>((metadata & 0x800) >> 11)); 
-        rocketMetadata->set_sv2_state(static_cast<bool>((metadata & 0x1000) >> 12)); 
+        rocketMetadata->set_alt_armed(static_cast<bool>((metadata >> 0) & 0x1));
+        rocketMetadata->set_alt_valid(static_cast<bool>((metadata >> 1) & 0x1));
+        rocketMetadata->set_gps_valid(static_cast<bool>((metadata >> 2) & 0x1));
+        rocketMetadata->set_imu_valid(static_cast<bool>((metadata >> 3) & 0x1));
+        rocketMetadata->set_acc_valid(static_cast<bool>((metadata >> 4) & 0x1));
+        // bit index 5 is unused
+        rocketMetadata->set_adc_valid(static_cast<bool>((metadata >> 6) & 0x1));
+        rocketMetadata->set_fram_valid(static_cast<bool>((metadata >> 7) & 0x1));
+        rocketMetadata->set_sd_valid(static_cast<bool>((metadata >> 8) & 0x1));
+        rocketMetadata->set_gps_msg_fresh(static_cast<bool>((metadata >> 9) & 0x1));
+        rocketMetadata->set_rocket_was_safed(static_cast<bool>((metadata >> 10) & 0x1));
+        rocketMetadata->set_mav_state(static_cast<bool>((metadata >> 11) & 0x1));
+        rocketMetadata->set_sv2_state(static_cast<bool>((metadata >> 12) & 0x1));
 
-        switch((metadata & 0xE000) >> 13) {
+        switch((metadata >> 13) & 0b111) {
             case 0b000:
                 rocketMetadata->set_flight_mode(command::STARTUP);
                 break; 

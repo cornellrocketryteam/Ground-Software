@@ -164,11 +164,21 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     ],
   },
   {
-    label: "GPS Message Valid",
+    label: "GPS Message Fresh",
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "gps_msg_valid",
+    dbField: "gps_msg_fresh",
     widgets: [
       BoolStateWidget("Fresh", "Stale"),
+      BoolLightWidget(),
+      EventCounterWidget(),
+    ],
+  },
+  {
+    label: "Rocket was Safed",
+    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
+    dbField: "rocket_was_safed",
+    widgets: [
+      BoolStateWidget("Safed", "Primed"),
       BoolLightWidget(),
       EventCounterWidget(),
     ],

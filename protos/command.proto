@@ -115,12 +115,12 @@ message RocketMetadata {
     bool gps_valid = 3;
     bool imu_valid = 4;
     bool acc_valid = 5;
-    bool therm_valid = 6;
-    bool voltage_valid = 7;
-    bool adc_valid = 8;
-    bool fram_valid = 9;
-    bool sd_valid = 10;
-    bool gps_msg_valid = 11;
+    // bit index 5 is unused
+    bool adc_valid = 7;
+    bool fram_valid = 8;
+    bool sd_valid = 9;
+    bool gps_msg_fresh = 10;
+    bool rocket_was_safed = 11;
     bool mav_state = 12;
     bool sv2_state = 13;
     FlightMode flight_mode = 14;

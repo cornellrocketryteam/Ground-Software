@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import ActuationBox from "@/components/conops/actuation-box";
+import StateChangeBox from "@/components/conops/state-change-box";
 import { Slider } from "@/components/ui/slider";
 
 export default function ControlsPage() {
@@ -227,6 +228,7 @@ export default function ControlsPage() {
               </p>
             </div>
           </ActuationBox>
+          <StateChangeBox />
           <ActuationBox
             title="Payload"
             buttons={[

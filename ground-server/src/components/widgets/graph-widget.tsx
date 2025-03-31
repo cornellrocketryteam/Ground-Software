@@ -40,8 +40,8 @@ export default function GraphWidget(minuteDuration: number): Widget {
     }, []);
 
     if (
-      !data[measurement] ||
-      !data[measurement][channel.dbField] ||
+      data[measurement] === undefined||
+      data[measurement][channel.dbField] === undefined ||
       data[measurement][channel.dbField].length === 0
     ) {
       return (

@@ -6,8 +6,8 @@ export default function BoolLightWidget(): Widget {
     const { data } = useData();
 
     if (
-      !data[measurement] ||
-      !data[measurement][channel.dbField] ||
+      data[measurement] === undefined ||
+      data[measurement][channel.dbField] === undefined ||
       data[measurement][channel.dbField].length === 0
     ) {
       return (

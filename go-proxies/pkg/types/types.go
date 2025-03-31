@@ -134,12 +134,12 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["gps_valid"] = metaData.GpsValid
 			fields["imu_valid"] = metaData.ImuValid
 			fields["acc_valid"] = metaData.AccValid
-			fields["therm_valid"] = metaData.ThermValid
-			fields["voltage_valid"] = metaData.VoltageValid
+			// bit index 5 is unused
 			fields["adc_valid"] = metaData.AdcValid
 			fields["fram_valid"] = metaData.FramValid
 			fields["sd_valid"] = metaData.SdValid
-			fields["gps_msg_valid"] = metaData.GpsMsgValid
+			fields["gps_msg_fresh"] = metaData.GpsMsgFresh
+			fields["rocket_was_safed"] = metaData.RocketWasSafed
 			fields["mav_state"] = metaData.MavState
 			fields["sv2_state"] = metaData.Sv2State
 			fields["flight_mode"] = metaData.FlightMode

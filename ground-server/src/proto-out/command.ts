@@ -114,10 +114,12 @@ export interface VentIgniteCommand {
  * The response message containing an ack
  * TODO(Zach) add relevant reply values?
  */
-export interface CommandReply {}
+export interface CommandReply {
+}
 
 /** The telemetry request message */
-export interface FillStationTelemetryRequest {}
+export interface FillStationTelemetryRequest {
+}
 
 /** Rocket Telemetry Request */
 export interface RocketTelemetryRequest {
@@ -163,12 +165,12 @@ export interface RocketMetadata {
   gpsValid: boolean;
   imuValid: boolean;
   accValid: boolean;
-  thermValid: boolean;
-  voltageValid: boolean;
+  /** bit index 5 is unused */
   adcValid: boolean;
   framValid: boolean;
   sdValid: boolean;
-  gpsMsgValid: boolean;
+  gpsMsgFresh: boolean;
+  rocketWasSafed: boolean;
   mavState: boolean;
   sv2State: boolean;
   flightMode: FlightMode;
@@ -262,10 +264,7 @@ function createBaseCommand(): Command {
 }
 
 export const Command: MessageFns<Command> = {
-  encode(
-    message: Command,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: Command, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.sv1Open !== undefined) {
       writer.uint32(8).bool(message.sv1Open);
     }
@@ -294,10 +293,7 @@ export const Command: MessageFns<Command> = {
       VentCommand.encode(message.vent, writer.uint32(74).fork()).join();
     }
     if (message.ventAndIgnite !== undefined) {
-      VentIgniteCommand.encode(
-        message.ventAndIgnite,
-        writer.uint32(82).fork(),
-      ).join();
+      VentIgniteCommand.encode(message.ventAndIgnite, writer.uint32(82).fork()).join();
     }
     if (message.payloadStart !== undefined) {
       writer.uint32(88).bool(message.payloadStart);
@@ -315,8 +311,7 @@ export const Command: MessageFns<Command> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): Command {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCommand();
     while (reader.pos < end) {
@@ -399,10 +394,7 @@ export const Command: MessageFns<Command> = {
             break;
           }
 
-          message.ventAndIgnite = VentIgniteCommand.decode(
-            reader,
-            reader.uint32(),
-          );
+          message.ventAndIgnite = VentIgniteCommand.decode(reader, reader.uint32());
           continue;
         }
         case 11: {
@@ -448,46 +440,20 @@ export const Command: MessageFns<Command> = {
 
   fromJSON(object: any): Command {
     return {
-      sv1Open: isSet(object.sv1Open)
-        ? globalThis.Boolean(object.sv1Open)
-        : undefined,
-      bv1Open: isSet(object.bv1Open)
-        ? globalThis.Boolean(object.bv1Open)
-        : undefined,
-      bv1Off: isSet(object.bv1Off)
-        ? globalThis.Boolean(object.bv1Off)
-        : undefined,
-      qdRetract: isSet(object.qdRetract)
-        ? globalThis.Boolean(object.qdRetract)
-        : undefined,
-      ignite: isSet(object.ignite)
-        ? globalThis.Boolean(object.ignite)
-        : undefined,
-      sv2Close: isSet(object.sv2Close)
-        ? globalThis.Boolean(object.sv2Close)
-        : undefined,
-      mavOpen: isSet(object.mavOpen)
-        ? globalThis.Boolean(object.mavOpen)
-        : undefined,
-      launch: isSet(object.launch)
-        ? globalThis.Boolean(object.launch)
-        : undefined,
+      sv1Open: isSet(object.sv1Open) ? globalThis.Boolean(object.sv1Open) : undefined,
+      bv1Open: isSet(object.bv1Open) ? globalThis.Boolean(object.bv1Open) : undefined,
+      bv1Off: isSet(object.bv1Off) ? globalThis.Boolean(object.bv1Off) : undefined,
+      qdRetract: isSet(object.qdRetract) ? globalThis.Boolean(object.qdRetract) : undefined,
+      ignite: isSet(object.ignite) ? globalThis.Boolean(object.ignite) : undefined,
+      sv2Close: isSet(object.sv2Close) ? globalThis.Boolean(object.sv2Close) : undefined,
+      mavOpen: isSet(object.mavOpen) ? globalThis.Boolean(object.mavOpen) : undefined,
+      launch: isSet(object.launch) ? globalThis.Boolean(object.launch) : undefined,
       vent: isSet(object.vent) ? VentCommand.fromJSON(object.vent) : undefined,
-      ventAndIgnite: isSet(object.ventAndIgnite)
-        ? VentIgniteCommand.fromJSON(object.ventAndIgnite)
-        : undefined,
-      payloadStart: isSet(object.payloadStart)
-        ? globalThis.Boolean(object.payloadStart)
-        : undefined,
-      sdClear: isSet(object.sdClear)
-        ? globalThis.Boolean(object.sdClear)
-        : undefined,
-      framReset: isSet(object.framReset)
-        ? globalThis.Boolean(object.framReset)
-        : undefined,
-      reboot: isSet(object.reboot)
-        ? globalThis.Boolean(object.reboot)
-        : undefined,
+      ventAndIgnite: isSet(object.ventAndIgnite) ? VentIgniteCommand.fromJSON(object.ventAndIgnite) : undefined,
+      payloadStart: isSet(object.payloadStart) ? globalThis.Boolean(object.payloadStart) : undefined,
+      sdClear: isSet(object.sdClear) ? globalThis.Boolean(object.sdClear) : undefined,
+      framReset: isSet(object.framReset) ? globalThis.Boolean(object.framReset) : undefined,
+      reboot: isSet(object.reboot) ? globalThis.Boolean(object.reboot) : undefined,
     };
   },
 
@@ -551,14 +517,12 @@ export const Command: MessageFns<Command> = {
     message.sv2Close = object.sv2Close ?? undefined;
     message.mavOpen = object.mavOpen ?? undefined;
     message.launch = object.launch ?? undefined;
-    message.vent =
-      object.vent !== undefined && object.vent !== null
-        ? VentCommand.fromPartial(object.vent)
-        : undefined;
-    message.ventAndIgnite =
-      object.ventAndIgnite !== undefined && object.ventAndIgnite !== null
-        ? VentIgniteCommand.fromPartial(object.ventAndIgnite)
-        : undefined;
+    message.vent = (object.vent !== undefined && object.vent !== null)
+      ? VentCommand.fromPartial(object.vent)
+      : undefined;
+    message.ventAndIgnite = (object.ventAndIgnite !== undefined && object.ventAndIgnite !== null)
+      ? VentIgniteCommand.fromPartial(object.ventAndIgnite)
+      : undefined;
     message.payloadStart = object.payloadStart ?? undefined;
     message.sdClear = object.sdClear ?? undefined;
     message.framReset = object.framReset ?? undefined;
@@ -572,10 +536,7 @@ function createBaseVentCommand(): VentCommand {
 }
 
 export const VentCommand: MessageFns<VentCommand> = {
-  encode(
-    message: VentCommand,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: VentCommand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.ventDuration !== 0) {
       writer.uint32(8).uint32(message.ventDuration);
     }
@@ -583,8 +544,7 @@ export const VentCommand: MessageFns<VentCommand> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): VentCommand {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVentCommand();
     while (reader.pos < end) {
@@ -608,11 +568,7 @@ export const VentCommand: MessageFns<VentCommand> = {
   },
 
   fromJSON(object: any): VentCommand {
-    return {
-      ventDuration: isSet(object.ventDuration)
-        ? globalThis.Number(object.ventDuration)
-        : 0,
-    };
+    return { ventDuration: isSet(object.ventDuration) ? globalThis.Number(object.ventDuration) : 0 };
   },
 
   toJSON(message: VentCommand): unknown {
@@ -626,9 +582,7 @@ export const VentCommand: MessageFns<VentCommand> = {
   create<I extends Exact<DeepPartial<VentCommand>, I>>(base?: I): VentCommand {
     return VentCommand.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<VentCommand>, I>>(
-    object: I,
-  ): VentCommand {
+  fromPartial<I extends Exact<DeepPartial<VentCommand>, I>>(object: I): VentCommand {
     const message = createBaseVentCommand();
     message.ventDuration = object.ventDuration ?? 0;
     return message;
@@ -640,10 +594,7 @@ function createBaseVentIgniteCommand(): VentIgniteCommand {
 }
 
 export const VentIgniteCommand: MessageFns<VentIgniteCommand> = {
-  encode(
-    message: VentIgniteCommand,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: VentIgniteCommand, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.ventDuration !== 0) {
       writer.uint32(8).uint32(message.ventDuration);
     }
@@ -654,8 +605,7 @@ export const VentIgniteCommand: MessageFns<VentIgniteCommand> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): VentIgniteCommand {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseVentIgniteCommand();
     while (reader.pos < end) {
@@ -688,12 +638,8 @@ export const VentIgniteCommand: MessageFns<VentIgniteCommand> = {
 
   fromJSON(object: any): VentIgniteCommand {
     return {
-      ventDuration: isSet(object.ventDuration)
-        ? globalThis.Number(object.ventDuration)
-        : 0,
-      igniteDelay: isSet(object.igniteDelay)
-        ? globalThis.Number(object.igniteDelay)
-        : 0,
+      ventDuration: isSet(object.ventDuration) ? globalThis.Number(object.ventDuration) : 0,
+      igniteDelay: isSet(object.igniteDelay) ? globalThis.Number(object.igniteDelay) : 0,
     };
   },
 
@@ -708,14 +654,10 @@ export const VentIgniteCommand: MessageFns<VentIgniteCommand> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(
-    base?: I,
-  ): VentIgniteCommand {
+  create<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(base?: I): VentIgniteCommand {
     return VentIgniteCommand.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(
-    object: I,
-  ): VentIgniteCommand {
+  fromPartial<I extends Exact<DeepPartial<VentIgniteCommand>, I>>(object: I): VentIgniteCommand {
     const message = createBaseVentIgniteCommand();
     message.ventDuration = object.ventDuration ?? 0;
     message.igniteDelay = object.igniteDelay ?? 0;
@@ -728,16 +670,12 @@ function createBaseCommandReply(): CommandReply {
 }
 
 export const CommandReply: MessageFns<CommandReply> = {
-  encode(
-    _: CommandReply,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(_: CommandReply, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): CommandReply {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseCommandReply();
     while (reader.pos < end) {
@@ -761,14 +699,10 @@ export const CommandReply: MessageFns<CommandReply> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<CommandReply>, I>>(
-    base?: I,
-  ): CommandReply {
+  create<I extends Exact<DeepPartial<CommandReply>, I>>(base?: I): CommandReply {
     return CommandReply.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<CommandReply>, I>>(
-    _: I,
-  ): CommandReply {
+  fromPartial<I extends Exact<DeepPartial<CommandReply>, I>>(_: I): CommandReply {
     const message = createBaseCommandReply();
     return message;
   },
@@ -778,78 +712,59 @@ function createBaseFillStationTelemetryRequest(): FillStationTelemetryRequest {
   return {};
 }
 
-export const FillStationTelemetryRequest: MessageFns<FillStationTelemetryRequest> =
-  {
-    encode(
-      _: FillStationTelemetryRequest,
-      writer: BinaryWriter = new BinaryWriter(),
-    ): BinaryWriter {
-      return writer;
-    },
+export const FillStationTelemetryRequest: MessageFns<FillStationTelemetryRequest> = {
+  encode(_: FillStationTelemetryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    return writer;
+  },
 
-    decode(
-      input: BinaryReader | Uint8Array,
-      length?: number,
-    ): FillStationTelemetryRequest {
-      const reader =
-        input instanceof BinaryReader ? input : new BinaryReader(input);
-      let end = length === undefined ? reader.len : reader.pos + length;
-      const message = createBaseFillStationTelemetryRequest();
-      while (reader.pos < end) {
-        const tag = reader.uint32();
-        switch (tag >>> 3) {
-        }
-        if ((tag & 7) === 4 || tag === 0) {
-          break;
-        }
-        reader.skip(tag & 7);
+  decode(input: BinaryReader | Uint8Array, length?: number): FillStationTelemetryRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseFillStationTelemetryRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
       }
-      return message;
-    },
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
 
-    fromJSON(_: any): FillStationTelemetryRequest {
-      return {};
-    },
+  fromJSON(_: any): FillStationTelemetryRequest {
+    return {};
+  },
 
-    toJSON(_: FillStationTelemetryRequest): unknown {
-      const obj: any = {};
-      return obj;
-    },
+  toJSON(_: FillStationTelemetryRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
 
-    create<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(
-      base?: I,
-    ): FillStationTelemetryRequest {
-      return FillStationTelemetryRequest.fromPartial(base ?? ({} as any));
-    },
-    fromPartial<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(
-      _: I,
-    ): FillStationTelemetryRequest {
-      const message = createBaseFillStationTelemetryRequest();
-      return message;
-    },
-  };
+  create<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(base?: I): FillStationTelemetryRequest {
+    return FillStationTelemetryRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<FillStationTelemetryRequest>, I>>(_: I): FillStationTelemetryRequest {
+    const message = createBaseFillStationTelemetryRequest();
+    return message;
+  },
+};
 
 function createBaseRocketTelemetryRequest(): RocketTelemetryRequest {
   return { isRocketTelemetryRequest: false };
 }
 
 export const RocketTelemetryRequest: MessageFns<RocketTelemetryRequest> = {
-  encode(
-    message: RocketTelemetryRequest,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: RocketTelemetryRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.isRocketTelemetryRequest !== false) {
       writer.uint32(8).bool(message.isRocketTelemetryRequest);
     }
     return writer;
   },
 
-  decode(
-    input: BinaryReader | Uint8Array,
-    length?: number,
-  ): RocketTelemetryRequest {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): RocketTelemetryRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRocketTelemetryRequest();
     while (reader.pos < end) {
@@ -888,14 +803,10 @@ export const RocketTelemetryRequest: MessageFns<RocketTelemetryRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(
-    base?: I,
-  ): RocketTelemetryRequest {
+  create<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(base?: I): RocketTelemetryRequest {
     return RocketTelemetryRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(
-    object: I,
-  ): RocketTelemetryRequest {
+  fromPartial<I extends Exact<DeepPartial<RocketTelemetryRequest>, I>>(object: I): RocketTelemetryRequest {
     const message = createBaseRocketTelemetryRequest();
     message.isRocketTelemetryRequest = object.isRocketTelemetryRequest ?? false;
     return message;
@@ -938,10 +849,7 @@ function createBaseEvents(): Events {
 }
 
 export const Events: MessageFns<Events> = {
-  encode(
-    message: Events,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: Events, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.altitudeArmed !== false) {
       writer.uint32(8).bool(message.altitudeArmed);
     }
@@ -1036,8 +944,7 @@ export const Events: MessageFns<Events> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): Events {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseEvents();
     while (reader.pos < end) {
@@ -1294,84 +1201,42 @@ export const Events: MessageFns<Events> = {
 
   fromJSON(object: any): Events {
     return {
-      altitudeArmed: isSet(object.altitudeArmed)
-        ? globalThis.Boolean(object.altitudeArmed)
-        : false,
-      altimeterInitFailed: isSet(object.altimeterInitFailed)
-        ? globalThis.Boolean(object.altimeterInitFailed)
-        : false,
+      altitudeArmed: isSet(object.altitudeArmed) ? globalThis.Boolean(object.altitudeArmed) : false,
+      altimeterInitFailed: isSet(object.altimeterInitFailed) ? globalThis.Boolean(object.altimeterInitFailed) : false,
       altimeterReadingFailed: isSet(object.altimeterReadingFailed)
         ? globalThis.Boolean(object.altimeterReadingFailed)
         : false,
-      gpsInitFailed: isSet(object.gpsInitFailed)
-        ? globalThis.Boolean(object.gpsInitFailed)
-        : false,
-      gpsReadingFailed: isSet(object.gpsReadingFailed)
-        ? globalThis.Boolean(object.gpsReadingFailed)
-        : false,
-      imuInitFailed: isSet(object.imuInitFailed)
-        ? globalThis.Boolean(object.imuInitFailed)
-        : false,
-      imuReadingFailed: isSet(object.imuReadingFailed)
-        ? globalThis.Boolean(object.imuReadingFailed)
-        : false,
+      gpsInitFailed: isSet(object.gpsInitFailed) ? globalThis.Boolean(object.gpsInitFailed) : false,
+      gpsReadingFailed: isSet(object.gpsReadingFailed) ? globalThis.Boolean(object.gpsReadingFailed) : false,
+      imuInitFailed: isSet(object.imuInitFailed) ? globalThis.Boolean(object.imuInitFailed) : false,
+      imuReadingFailed: isSet(object.imuReadingFailed) ? globalThis.Boolean(object.imuReadingFailed) : false,
       accelerometerInitFailed: isSet(object.accelerometerInitFailed)
         ? globalThis.Boolean(object.accelerometerInitFailed)
         : false,
       accelerometerReadingFailed: isSet(object.accelerometerReadingFailed)
         ? globalThis.Boolean(object.accelerometerReadingFailed)
         : false,
-      adcInitFailed: isSet(object.adcInitFailed)
-        ? globalThis.Boolean(object.adcInitFailed)
-        : false,
-      adcReadingFailed: isSet(object.adcReadingFailed)
-        ? globalThis.Boolean(object.adcReadingFailed)
-        : false,
-      framInitFailed: isSet(object.framInitFailed)
-        ? globalThis.Boolean(object.framInitFailed)
-        : false,
-      framReadFailed: isSet(object.framReadFailed)
-        ? globalThis.Boolean(object.framReadFailed)
-        : false,
-      framWriteFailed: isSet(object.framWriteFailed)
-        ? globalThis.Boolean(object.framWriteFailed)
-        : false,
-      sdInitFailed: isSet(object.sdInitFailed)
-        ? globalThis.Boolean(object.sdInitFailed)
-        : false,
-      sdWriteFailed: isSet(object.sdWriteFailed)
-        ? globalThis.Boolean(object.sdWriteFailed)
-        : false,
-      mavWasActuated: isSet(object.mavWasActuated)
-        ? globalThis.Boolean(object.mavWasActuated)
-        : false,
-      svWasActuated: isSet(object.svWasActuated)
-        ? globalThis.Boolean(object.svWasActuated)
-        : false,
-      mainDeployWaitEnd: isSet(object.mainDeployWaitEnd)
-        ? globalThis.Boolean(object.mainDeployWaitEnd)
-        : false,
-      mainLogShutoff: isSet(object.mainLogShutoff)
-        ? globalThis.Boolean(object.mainLogShutoff)
-        : false,
-      cycleOverflow: isSet(object.cycleOverflow)
-        ? globalThis.Boolean(object.cycleOverflow)
-        : false,
+      adcInitFailed: isSet(object.adcInitFailed) ? globalThis.Boolean(object.adcInitFailed) : false,
+      adcReadingFailed: isSet(object.adcReadingFailed) ? globalThis.Boolean(object.adcReadingFailed) : false,
+      framInitFailed: isSet(object.framInitFailed) ? globalThis.Boolean(object.framInitFailed) : false,
+      framReadFailed: isSet(object.framReadFailed) ? globalThis.Boolean(object.framReadFailed) : false,
+      framWriteFailed: isSet(object.framWriteFailed) ? globalThis.Boolean(object.framWriteFailed) : false,
+      sdInitFailed: isSet(object.sdInitFailed) ? globalThis.Boolean(object.sdInitFailed) : false,
+      sdWriteFailed: isSet(object.sdWriteFailed) ? globalThis.Boolean(object.sdWriteFailed) : false,
+      mavWasActuated: isSet(object.mavWasActuated) ? globalThis.Boolean(object.mavWasActuated) : false,
+      svWasActuated: isSet(object.svWasActuated) ? globalThis.Boolean(object.svWasActuated) : false,
+      mainDeployWaitEnd: isSet(object.mainDeployWaitEnd) ? globalThis.Boolean(object.mainDeployWaitEnd) : false,
+      mainLogShutoff: isSet(object.mainLogShutoff) ? globalThis.Boolean(object.mainLogShutoff) : false,
+      cycleOverflow: isSet(object.cycleOverflow) ? globalThis.Boolean(object.cycleOverflow) : false,
       unknownCommandReceived: isSet(object.unknownCommandReceived)
         ? globalThis.Boolean(object.unknownCommandReceived)
         : false,
       launchCommandReceived: isSet(object.launchCommandReceived)
         ? globalThis.Boolean(object.launchCommandReceived)
         : false,
-      mavCommandReceived: isSet(object.mavCommandReceived)
-        ? globalThis.Boolean(object.mavCommandReceived)
-        : false,
-      svCommandReceived: isSet(object.svCommandReceived)
-        ? globalThis.Boolean(object.svCommandReceived)
-        : false,
-      safeCommandReceived: isSet(object.safeCommandReceived)
-        ? globalThis.Boolean(object.safeCommandReceived)
-        : false,
+      mavCommandReceived: isSet(object.mavCommandReceived) ? globalThis.Boolean(object.mavCommandReceived) : false,
+      svCommandReceived: isSet(object.svCommandReceived) ? globalThis.Boolean(object.svCommandReceived) : false,
+      safeCommandReceived: isSet(object.safeCommandReceived) ? globalThis.Boolean(object.safeCommandReceived) : false,
       resetCardCommandReceived: isSet(object.resetCardCommandReceived)
         ? globalThis.Boolean(object.resetCardCommandReceived)
         : false,
@@ -1495,8 +1360,7 @@ export const Events: MessageFns<Events> = {
     message.imuInitFailed = object.imuInitFailed ?? false;
     message.imuReadingFailed = object.imuReadingFailed ?? false;
     message.accelerometerInitFailed = object.accelerometerInitFailed ?? false;
-    message.accelerometerReadingFailed =
-      object.accelerometerReadingFailed ?? false;
+    message.accelerometerReadingFailed = object.accelerometerReadingFailed ?? false;
     message.adcInitFailed = object.adcInitFailed ?? false;
     message.adcReadingFailed = object.adcReadingFailed ?? false;
     message.framInitFailed = object.framInitFailed ?? false;
@@ -1516,8 +1380,7 @@ export const Events: MessageFns<Events> = {
     message.safeCommandReceived = object.safeCommandReceived ?? false;
     message.resetCardCommandReceived = object.resetCardCommandReceived ?? false;
     message.resetFramCommandReceived = object.resetFramCommandReceived ?? false;
-    message.stateChangeCommandReceived =
-      object.stateChangeCommandReceived ?? false;
+    message.stateChangeCommandReceived = object.stateChangeCommandReceived ?? false;
     message.umbilicalDisconnected = object.umbilicalDisconnected ?? false;
     return message;
   },
@@ -1530,12 +1393,11 @@ function createBaseRocketMetadata(): RocketMetadata {
     gpsValid: false,
     imuValid: false,
     accValid: false,
-    thermValid: false,
-    voltageValid: false,
     adcValid: false,
     framValid: false,
     sdValid: false,
-    gpsMsgValid: false,
+    gpsMsgFresh: false,
+    rocketWasSafed: false,
     mavState: false,
     sv2State: false,
     flightMode: 0,
@@ -1543,10 +1405,7 @@ function createBaseRocketMetadata(): RocketMetadata {
 }
 
 export const RocketMetadata: MessageFns<RocketMetadata> = {
-  encode(
-    message: RocketMetadata,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: RocketMetadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.altArmed !== false) {
       writer.uint32(8).bool(message.altArmed);
     }
@@ -1562,23 +1421,20 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     if (message.accValid !== false) {
       writer.uint32(40).bool(message.accValid);
     }
-    if (message.thermValid !== false) {
-      writer.uint32(48).bool(message.thermValid);
-    }
-    if (message.voltageValid !== false) {
-      writer.uint32(56).bool(message.voltageValid);
-    }
     if (message.adcValid !== false) {
-      writer.uint32(64).bool(message.adcValid);
+      writer.uint32(56).bool(message.adcValid);
     }
     if (message.framValid !== false) {
-      writer.uint32(72).bool(message.framValid);
+      writer.uint32(64).bool(message.framValid);
     }
     if (message.sdValid !== false) {
-      writer.uint32(80).bool(message.sdValid);
+      writer.uint32(72).bool(message.sdValid);
     }
-    if (message.gpsMsgValid !== false) {
-      writer.uint32(88).bool(message.gpsMsgValid);
+    if (message.gpsMsgFresh !== false) {
+      writer.uint32(80).bool(message.gpsMsgFresh);
+    }
+    if (message.rocketWasSafed !== false) {
+      writer.uint32(88).bool(message.rocketWasSafed);
     }
     if (message.mavState !== false) {
       writer.uint32(96).bool(message.mavState);
@@ -1593,8 +1449,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): RocketMetadata {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRocketMetadata();
     while (reader.pos < end) {
@@ -1640,20 +1495,12 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
           message.accValid = reader.bool();
           continue;
         }
-        case 6: {
-          if (tag !== 48) {
-            break;
-          }
-
-          message.thermValid = reader.bool();
-          continue;
-        }
         case 7: {
           if (tag !== 56) {
             break;
           }
 
-          message.voltageValid = reader.bool();
+          message.adcValid = reader.bool();
           continue;
         }
         case 8: {
@@ -1661,7 +1508,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
             break;
           }
 
-          message.adcValid = reader.bool();
+          message.framValid = reader.bool();
           continue;
         }
         case 9: {
@@ -1669,7 +1516,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
             break;
           }
 
-          message.framValid = reader.bool();
+          message.sdValid = reader.bool();
           continue;
         }
         case 10: {
@@ -1677,7 +1524,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
             break;
           }
 
-          message.sdValid = reader.bool();
+          message.gpsMsgFresh = reader.bool();
           continue;
         }
         case 11: {
@@ -1685,7 +1532,7 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
             break;
           }
 
-          message.gpsMsgValid = reader.bool();
+          message.rocketWasSafed = reader.bool();
           continue;
         }
         case 12: {
@@ -1723,48 +1570,19 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
 
   fromJSON(object: any): RocketMetadata {
     return {
-      altArmed: isSet(object.altArmed)
-        ? globalThis.Boolean(object.altArmed)
-        : false,
-      altValid: isSet(object.altValid)
-        ? globalThis.Boolean(object.altValid)
-        : false,
-      gpsValid: isSet(object.gpsValid)
-        ? globalThis.Boolean(object.gpsValid)
-        : false,
-      imuValid: isSet(object.imuValid)
-        ? globalThis.Boolean(object.imuValid)
-        : false,
-      accValid: isSet(object.accValid)
-        ? globalThis.Boolean(object.accValid)
-        : false,
-      thermValid: isSet(object.thermValid)
-        ? globalThis.Boolean(object.thermValid)
-        : false,
-      voltageValid: isSet(object.voltageValid)
-        ? globalThis.Boolean(object.voltageValid)
-        : false,
-      adcValid: isSet(object.adcValid)
-        ? globalThis.Boolean(object.adcValid)
-        : false,
-      framValid: isSet(object.framValid)
-        ? globalThis.Boolean(object.framValid)
-        : false,
-      sdValid: isSet(object.sdValid)
-        ? globalThis.Boolean(object.sdValid)
-        : false,
-      gpsMsgValid: isSet(object.gpsMsgValid)
-        ? globalThis.Boolean(object.gpsMsgValid)
-        : false,
-      mavState: isSet(object.mavState)
-        ? globalThis.Boolean(object.mavState)
-        : false,
-      sv2State: isSet(object.sv2State)
-        ? globalThis.Boolean(object.sv2State)
-        : false,
-      flightMode: isSet(object.flightMode)
-        ? flightModeFromJSON(object.flightMode)
-        : 0,
+      altArmed: isSet(object.altArmed) ? globalThis.Boolean(object.altArmed) : false,
+      altValid: isSet(object.altValid) ? globalThis.Boolean(object.altValid) : false,
+      gpsValid: isSet(object.gpsValid) ? globalThis.Boolean(object.gpsValid) : false,
+      imuValid: isSet(object.imuValid) ? globalThis.Boolean(object.imuValid) : false,
+      accValid: isSet(object.accValid) ? globalThis.Boolean(object.accValid) : false,
+      adcValid: isSet(object.adcValid) ? globalThis.Boolean(object.adcValid) : false,
+      framValid: isSet(object.framValid) ? globalThis.Boolean(object.framValid) : false,
+      sdValid: isSet(object.sdValid) ? globalThis.Boolean(object.sdValid) : false,
+      gpsMsgFresh: isSet(object.gpsMsgFresh) ? globalThis.Boolean(object.gpsMsgFresh) : false,
+      rocketWasSafed: isSet(object.rocketWasSafed) ? globalThis.Boolean(object.rocketWasSafed) : false,
+      mavState: isSet(object.mavState) ? globalThis.Boolean(object.mavState) : false,
+      sv2State: isSet(object.sv2State) ? globalThis.Boolean(object.sv2State) : false,
+      flightMode: isSet(object.flightMode) ? flightModeFromJSON(object.flightMode) : 0,
     };
   },
 
@@ -1785,12 +1603,6 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     if (message.accValid !== false) {
       obj.accValid = message.accValid;
     }
-    if (message.thermValid !== false) {
-      obj.thermValid = message.thermValid;
-    }
-    if (message.voltageValid !== false) {
-      obj.voltageValid = message.voltageValid;
-    }
     if (message.adcValid !== false) {
       obj.adcValid = message.adcValid;
     }
@@ -1800,8 +1612,11 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     if (message.sdValid !== false) {
       obj.sdValid = message.sdValid;
     }
-    if (message.gpsMsgValid !== false) {
-      obj.gpsMsgValid = message.gpsMsgValid;
+    if (message.gpsMsgFresh !== false) {
+      obj.gpsMsgFresh = message.gpsMsgFresh;
+    }
+    if (message.rocketWasSafed !== false) {
+      obj.rocketWasSafed = message.rocketWasSafed;
     }
     if (message.mavState !== false) {
       obj.mavState = message.mavState;
@@ -1815,26 +1630,21 @@ export const RocketMetadata: MessageFns<RocketMetadata> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RocketMetadata>, I>>(
-    base?: I,
-  ): RocketMetadata {
+  create<I extends Exact<DeepPartial<RocketMetadata>, I>>(base?: I): RocketMetadata {
     return RocketMetadata.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RocketMetadata>, I>>(
-    object: I,
-  ): RocketMetadata {
+  fromPartial<I extends Exact<DeepPartial<RocketMetadata>, I>>(object: I): RocketMetadata {
     const message = createBaseRocketMetadata();
     message.altArmed = object.altArmed ?? false;
     message.altValid = object.altValid ?? false;
     message.gpsValid = object.gpsValid ?? false;
     message.imuValid = object.imuValid ?? false;
     message.accValid = object.accValid ?? false;
-    message.thermValid = object.thermValid ?? false;
-    message.voltageValid = object.voltageValid ?? false;
     message.adcValid = object.adcValid ?? false;
     message.framValid = object.framValid ?? false;
     message.sdValid = object.sdValid ?? false;
-    message.gpsMsgValid = object.gpsMsgValid ?? false;
+    message.gpsMsgFresh = object.gpsMsgFresh ?? false;
+    message.rocketWasSafed = object.rocketWasSafed ?? false;
     message.mavState = object.mavState ?? false;
     message.sv2State = object.sv2State ?? false;
     message.flightMode = object.flightMode ?? 0;
@@ -1847,10 +1657,7 @@ function createBaseGPSTelemetry(): GPSTelemetry {
 }
 
 export const GPSTelemetry: MessageFns<GPSTelemetry> = {
-  encode(
-    message: GPSTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: GPSTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.latitude !== 0) {
       writer.uint32(8).int32(message.latitude);
     }
@@ -1867,8 +1674,7 @@ export const GPSTelemetry: MessageFns<GPSTelemetry> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): GPSTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGPSTelemetry();
     while (reader.pos < end) {
@@ -1918,12 +1724,8 @@ export const GPSTelemetry: MessageFns<GPSTelemetry> = {
   fromJSON(object: any): GPSTelemetry {
     return {
       latitude: isSet(object.latitude) ? globalThis.Number(object.latitude) : 0,
-      longitude: isSet(object.longitude)
-        ? globalThis.Number(object.longitude)
-        : 0,
-      numSatellites: isSet(object.numSatellites)
-        ? globalThis.Number(object.numSatellites)
-        : 0,
+      longitude: isSet(object.longitude) ? globalThis.Number(object.longitude) : 0,
+      numSatellites: isSet(object.numSatellites) ? globalThis.Number(object.numSatellites) : 0,
       utcTime: isSet(object.utcTime) ? globalThis.Number(object.utcTime) : 0,
     };
   },
@@ -1945,14 +1747,10 @@ export const GPSTelemetry: MessageFns<GPSTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<GPSTelemetry>, I>>(
-    base?: I,
-  ): GPSTelemetry {
+  create<I extends Exact<DeepPartial<GPSTelemetry>, I>>(base?: I): GPSTelemetry {
     return GPSTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<GPSTelemetry>, I>>(
-    object: I,
-  ): GPSTelemetry {
+  fromPartial<I extends Exact<DeepPartial<GPSTelemetry>, I>>(object: I): GPSTelemetry {
     const message = createBaseGPSTelemetry();
     message.latitude = object.latitude ?? 0;
     message.longitude = object.longitude ?? 0;
@@ -1967,10 +1765,7 @@ function createBaseAccelerometerTelemetry(): AccelerometerTelemetry {
 }
 
 export const AccelerometerTelemetry: MessageFns<AccelerometerTelemetry> = {
-  encode(
-    message: AccelerometerTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: AccelerometerTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.accelX !== 0) {
       writer.uint32(13).float(message.accelX);
     }
@@ -1983,12 +1778,8 @@ export const AccelerometerTelemetry: MessageFns<AccelerometerTelemetry> = {
     return writer;
   },
 
-  decode(
-    input: BinaryReader | Uint8Array,
-    length?: number,
-  ): AccelerometerTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): AccelerometerTelemetry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseAccelerometerTelemetry();
     while (reader.pos < end) {
@@ -2049,14 +1840,10 @@ export const AccelerometerTelemetry: MessageFns<AccelerometerTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<AccelerometerTelemetry>, I>>(
-    base?: I,
-  ): AccelerometerTelemetry {
+  create<I extends Exact<DeepPartial<AccelerometerTelemetry>, I>>(base?: I): AccelerometerTelemetry {
     return AccelerometerTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<AccelerometerTelemetry>, I>>(
-    object: I,
-  ): AccelerometerTelemetry {
+  fromPartial<I extends Exact<DeepPartial<AccelerometerTelemetry>, I>>(object: I): AccelerometerTelemetry {
     const message = createBaseAccelerometerTelemetry();
     message.accelX = object.accelX ?? 0;
     message.accelY = object.accelY ?? 0;
@@ -2083,10 +1870,7 @@ function createBaseIMUTelemetry(): IMUTelemetry {
 }
 
 export const IMUTelemetry: MessageFns<IMUTelemetry> = {
-  encode(
-    message: IMUTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: IMUTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.gyroX !== 0) {
       writer.uint32(13).float(message.gyroX);
     }
@@ -2127,8 +1911,7 @@ export const IMUTelemetry: MessageFns<IMUTelemetry> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): IMUTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseIMUTelemetry();
     while (reader.pos < end) {
@@ -2297,14 +2080,10 @@ export const IMUTelemetry: MessageFns<IMUTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<IMUTelemetry>, I>>(
-    base?: I,
-  ): IMUTelemetry {
+  create<I extends Exact<DeepPartial<IMUTelemetry>, I>>(base?: I): IMUTelemetry {
     return IMUTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<IMUTelemetry>, I>>(
-    object: I,
-  ): IMUTelemetry {
+  fromPartial<I extends Exact<DeepPartial<IMUTelemetry>, I>>(object: I): IMUTelemetry {
     const message = createBaseIMUTelemetry();
     message.gyroX = object.gyroX ?? 0;
     message.gyroY = object.gyroY ?? 0;
@@ -2340,10 +2119,7 @@ function createBaseRocketLoRaTelemetry(): RocketLoRaTelemetry {
 }
 
 export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
-  encode(
-    message: RocketLoRaTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: RocketLoRaTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.metadata !== undefined) {
       RocketMetadata.encode(message.metadata, writer.uint32(10).fork()).join();
     }
@@ -2363,10 +2139,7 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
       IMUTelemetry.encode(message.imuTelem, writer.uint32(50).fork()).join();
     }
     if (message.accelTelem !== undefined) {
-      AccelerometerTelemetry.encode(
-        message.accelTelem,
-        writer.uint32(58).fork(),
-      ).join();
+      AccelerometerTelemetry.encode(message.accelTelem, writer.uint32(58).fork()).join();
     }
     if (message.temp !== 0) {
       writer.uint32(69).float(message.temp);
@@ -2386,12 +2159,8 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
     return writer;
   },
 
-  decode(
-    input: BinaryReader | Uint8Array,
-    length?: number,
-  ): RocketLoRaTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): RocketLoRaTelemetry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRocketLoRaTelemetry();
     while (reader.pos < end) {
@@ -2450,10 +2219,7 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
             break;
           }
 
-          message.accelTelem = AccelerometerTelemetry.decode(
-            reader,
-            reader.uint32(),
-          );
+          message.accelTelem = AccelerometerTelemetry.decode(reader, reader.uint32());
           continue;
         }
         case 8: {
@@ -2507,30 +2273,18 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
 
   fromJSON(object: any): RocketLoRaTelemetry {
     return {
-      metadata: isSet(object.metadata)
-        ? RocketMetadata.fromJSON(object.metadata)
-        : undefined,
-      msSinceBoot: isSet(object.msSinceBoot)
-        ? globalThis.Number(object.msSinceBoot)
-        : 0,
+      metadata: isSet(object.metadata) ? RocketMetadata.fromJSON(object.metadata) : undefined,
+      msSinceBoot: isSet(object.msSinceBoot) ? globalThis.Number(object.msSinceBoot) : 0,
       events: isSet(object.events) ? Events.fromJSON(object.events) : undefined,
       altitude: isSet(object.altitude) ? globalThis.Number(object.altitude) : 0,
-      gpsTelem: isSet(object.gpsTelem)
-        ? GPSTelemetry.fromJSON(object.gpsTelem)
-        : undefined,
-      imuTelem: isSet(object.imuTelem)
-        ? IMUTelemetry.fromJSON(object.imuTelem)
-        : undefined,
-      accelTelem: isSet(object.accelTelem)
-        ? AccelerometerTelemetry.fromJSON(object.accelTelem)
-        : undefined,
+      gpsTelem: isSet(object.gpsTelem) ? GPSTelemetry.fromJSON(object.gpsTelem) : undefined,
+      imuTelem: isSet(object.imuTelem) ? IMUTelemetry.fromJSON(object.imuTelem) : undefined,
+      accelTelem: isSet(object.accelTelem) ? AccelerometerTelemetry.fromJSON(object.accelTelem) : undefined,
       temp: isSet(object.temp) ? globalThis.Number(object.temp) : 0,
       voltage: isSet(object.voltage) ? globalThis.Number(object.voltage) : 0,
       pt3: isSet(object.pt3) ? globalThis.Number(object.pt3) : 0,
       pt4: isSet(object.pt4) ? globalThis.Number(object.pt4) : 0,
-      blimsState: isSet(object.blimsState)
-        ? globalThis.Number(object.blimsState)
-        : 0,
+      blimsState: isSet(object.blimsState) ? globalThis.Number(object.blimsState) : 0,
     };
   },
 
@@ -2575,37 +2329,28 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RocketLoRaTelemetry>, I>>(
-    base?: I,
-  ): RocketLoRaTelemetry {
+  create<I extends Exact<DeepPartial<RocketLoRaTelemetry>, I>>(base?: I): RocketLoRaTelemetry {
     return RocketLoRaTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RocketLoRaTelemetry>, I>>(
-    object: I,
-  ): RocketLoRaTelemetry {
+  fromPartial<I extends Exact<DeepPartial<RocketLoRaTelemetry>, I>>(object: I): RocketLoRaTelemetry {
     const message = createBaseRocketLoRaTelemetry();
-    message.metadata =
-      object.metadata !== undefined && object.metadata !== null
-        ? RocketMetadata.fromPartial(object.metadata)
-        : undefined;
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? RocketMetadata.fromPartial(object.metadata)
+      : undefined;
     message.msSinceBoot = object.msSinceBoot ?? 0;
-    message.events =
-      object.events !== undefined && object.events !== null
-        ? Events.fromPartial(object.events)
-        : undefined;
+    message.events = (object.events !== undefined && object.events !== null)
+      ? Events.fromPartial(object.events)
+      : undefined;
     message.altitude = object.altitude ?? 0;
-    message.gpsTelem =
-      object.gpsTelem !== undefined && object.gpsTelem !== null
-        ? GPSTelemetry.fromPartial(object.gpsTelem)
-        : undefined;
-    message.imuTelem =
-      object.imuTelem !== undefined && object.imuTelem !== null
-        ? IMUTelemetry.fromPartial(object.imuTelem)
-        : undefined;
-    message.accelTelem =
-      object.accelTelem !== undefined && object.accelTelem !== null
-        ? AccelerometerTelemetry.fromPartial(object.accelTelem)
-        : undefined;
+    message.gpsTelem = (object.gpsTelem !== undefined && object.gpsTelem !== null)
+      ? GPSTelemetry.fromPartial(object.gpsTelem)
+      : undefined;
+    message.imuTelem = (object.imuTelem !== undefined && object.imuTelem !== null)
+      ? IMUTelemetry.fromPartial(object.imuTelem)
+      : undefined;
+    message.accelTelem = (object.accelTelem !== undefined && object.accelTelem !== null)
+      ? AccelerometerTelemetry.fromPartial(object.accelTelem)
+      : undefined;
     message.temp = object.temp ?? 0;
     message.voltage = object.voltage ?? 0;
     message.pt3 = object.pt3 ?? 0;
@@ -2616,22 +2361,11 @@ export const RocketLoRaTelemetry: MessageFns<RocketLoRaTelemetry> = {
 };
 
 function createBaseRocketUmbTelemetry(): RocketUmbTelemetry {
-  return {
-    metadata: undefined,
-    msSinceBoot: 0,
-    events: undefined,
-    batteryVoltage: 0,
-    pt3: 0,
-    pt4: 0,
-    rtdTemp: 0,
-  };
+  return { metadata: undefined, msSinceBoot: 0, events: undefined, batteryVoltage: 0, pt3: 0, pt4: 0, rtdTemp: 0 };
 }
 
 export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
-  encode(
-    message: RocketUmbTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: RocketUmbTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.metadata !== undefined) {
       RocketMetadata.encode(message.metadata, writer.uint32(10).fork()).join();
     }
@@ -2656,12 +2390,8 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     return writer;
   },
 
-  decode(
-    input: BinaryReader | Uint8Array,
-    length?: number,
-  ): RocketUmbTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): RocketUmbTelemetry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRocketUmbTelemetry();
     while (reader.pos < end) {
@@ -2734,16 +2464,10 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
 
   fromJSON(object: any): RocketUmbTelemetry {
     return {
-      metadata: isSet(object.metadata)
-        ? RocketMetadata.fromJSON(object.metadata)
-        : undefined,
-      msSinceBoot: isSet(object.msSinceBoot)
-        ? globalThis.Number(object.msSinceBoot)
-        : 0,
+      metadata: isSet(object.metadata) ? RocketMetadata.fromJSON(object.metadata) : undefined,
+      msSinceBoot: isSet(object.msSinceBoot) ? globalThis.Number(object.msSinceBoot) : 0,
       events: isSet(object.events) ? Events.fromJSON(object.events) : undefined,
-      batteryVoltage: isSet(object.batteryVoltage)
-        ? globalThis.Number(object.batteryVoltage)
-        : 0,
+      batteryVoltage: isSet(object.batteryVoltage) ? globalThis.Number(object.batteryVoltage) : 0,
       pt3: isSet(object.pt3) ? globalThis.Number(object.pt3) : 0,
       pt4: isSet(object.pt4) ? globalThis.Number(object.pt4) : 0,
       rtdTemp: isSet(object.rtdTemp) ? globalThis.Number(object.rtdTemp) : 0,
@@ -2776,24 +2500,18 @@ export const RocketUmbTelemetry: MessageFns<RocketUmbTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RocketUmbTelemetry>, I>>(
-    base?: I,
-  ): RocketUmbTelemetry {
+  create<I extends Exact<DeepPartial<RocketUmbTelemetry>, I>>(base?: I): RocketUmbTelemetry {
     return RocketUmbTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RocketUmbTelemetry>, I>>(
-    object: I,
-  ): RocketUmbTelemetry {
+  fromPartial<I extends Exact<DeepPartial<RocketUmbTelemetry>, I>>(object: I): RocketUmbTelemetry {
     const message = createBaseRocketUmbTelemetry();
-    message.metadata =
-      object.metadata !== undefined && object.metadata !== null
-        ? RocketMetadata.fromPartial(object.metadata)
-        : undefined;
+    message.metadata = (object.metadata !== undefined && object.metadata !== null)
+      ? RocketMetadata.fromPartial(object.metadata)
+      : undefined;
     message.msSinceBoot = object.msSinceBoot ?? 0;
-    message.events =
-      object.events !== undefined && object.events !== null
-        ? Events.fromPartial(object.events)
-        : undefined;
+    message.events = (object.events !== undefined && object.events !== null)
+      ? Events.fromPartial(object.events)
+      : undefined;
     message.batteryVoltage = object.batteryVoltage ?? 0;
     message.pt3 = object.pt3 ?? 0;
     message.pt4 = object.pt4 ?? 0;
@@ -2807,28 +2525,18 @@ function createBaseRocketTelemetry(): RocketTelemetry {
 }
 
 export const RocketTelemetry: MessageFns<RocketTelemetry> = {
-  encode(
-    message: RocketTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: RocketTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.loraTelem !== undefined) {
-      RocketLoRaTelemetry.encode(
-        message.loraTelem,
-        writer.uint32(10).fork(),
-      ).join();
+      RocketLoRaTelemetry.encode(message.loraTelem, writer.uint32(10).fork()).join();
     }
     if (message.umbTelem !== undefined) {
-      RocketUmbTelemetry.encode(
-        message.umbTelem,
-        writer.uint32(18).fork(),
-      ).join();
+      RocketUmbTelemetry.encode(message.umbTelem, writer.uint32(18).fork()).join();
     }
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): RocketTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRocketTelemetry();
     while (reader.pos < end) {
@@ -2839,10 +2547,7 @@ export const RocketTelemetry: MessageFns<RocketTelemetry> = {
             break;
           }
 
-          message.loraTelem = RocketLoRaTelemetry.decode(
-            reader,
-            reader.uint32(),
-          );
+          message.loraTelem = RocketLoRaTelemetry.decode(reader, reader.uint32());
           continue;
         }
         case 2: {
@@ -2864,12 +2569,8 @@ export const RocketTelemetry: MessageFns<RocketTelemetry> = {
 
   fromJSON(object: any): RocketTelemetry {
     return {
-      loraTelem: isSet(object.loraTelem)
-        ? RocketLoRaTelemetry.fromJSON(object.loraTelem)
-        : undefined,
-      umbTelem: isSet(object.umbTelem)
-        ? RocketUmbTelemetry.fromJSON(object.umbTelem)
-        : undefined,
+      loraTelem: isSet(object.loraTelem) ? RocketLoRaTelemetry.fromJSON(object.loraTelem) : undefined,
+      umbTelem: isSet(object.umbTelem) ? RocketUmbTelemetry.fromJSON(object.umbTelem) : undefined,
     };
   },
 
@@ -2884,23 +2585,17 @@ export const RocketTelemetry: MessageFns<RocketTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RocketTelemetry>, I>>(
-    base?: I,
-  ): RocketTelemetry {
+  create<I extends Exact<DeepPartial<RocketTelemetry>, I>>(base?: I): RocketTelemetry {
     return RocketTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RocketTelemetry>, I>>(
-    object: I,
-  ): RocketTelemetry {
+  fromPartial<I extends Exact<DeepPartial<RocketTelemetry>, I>>(object: I): RocketTelemetry {
     const message = createBaseRocketTelemetry();
-    message.loraTelem =
-      object.loraTelem !== undefined && object.loraTelem !== null
-        ? RocketLoRaTelemetry.fromPartial(object.loraTelem)
-        : undefined;
-    message.umbTelem =
-      object.umbTelem !== undefined && object.umbTelem !== null
-        ? RocketUmbTelemetry.fromPartial(object.umbTelem)
-        : undefined;
+    message.loraTelem = (object.loraTelem !== undefined && object.loraTelem !== null)
+      ? RocketLoRaTelemetry.fromPartial(object.loraTelem)
+      : undefined;
+    message.umbTelem = (object.umbTelem !== undefined && object.umbTelem !== null)
+      ? RocketUmbTelemetry.fromPartial(object.umbTelem)
+      : undefined;
     return message;
   },
 };
@@ -2910,10 +2605,7 @@ function createBaseFillStationTelemetry(): FillStationTelemetry {
 }
 
 export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
-  encode(
-    message: FillStationTelemetry,
-    writer: BinaryWriter = new BinaryWriter(),
-  ): BinaryWriter {
+  encode(message: FillStationTelemetry, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
     if (message.timestamp !== 0) {
       writer.uint32(8).uint32(message.timestamp);
     }
@@ -2935,12 +2627,8 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     return writer;
   },
 
-  decode(
-    input: BinaryReader | Uint8Array,
-    length?: number,
-  ): FillStationTelemetry {
-    const reader =
-      input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(input: BinaryReader | Uint8Array, length?: number): FillStationTelemetry {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFillStationTelemetry();
     while (reader.pos < end) {
@@ -3005,9 +2693,7 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
 
   fromJSON(object: any): FillStationTelemetry {
     return {
-      timestamp: isSet(object.timestamp)
-        ? globalThis.Number(object.timestamp)
-        : 0,
+      timestamp: isSet(object.timestamp) ? globalThis.Number(object.timestamp) : 0,
       pt1: isSet(object.pt1) ? globalThis.Number(object.pt1) : 0,
       pt2: isSet(object.pt2) ? globalThis.Number(object.pt2) : 0,
       lc1: isSet(object.lc1) ? globalThis.Number(object.lc1) : 0,
@@ -3039,14 +2725,10 @@ export const FillStationTelemetry: MessageFns<FillStationTelemetry> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FillStationTelemetry>, I>>(
-    base?: I,
-  ): FillStationTelemetry {
+  create<I extends Exact<DeepPartial<FillStationTelemetry>, I>>(base?: I): FillStationTelemetry {
     return FillStationTelemetry.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FillStationTelemetry>, I>>(
-    object: I,
-  ): FillStationTelemetry {
+  fromPartial<I extends Exact<DeepPartial<FillStationTelemetry>, I>>(object: I): FillStationTelemetry {
     const message = createBaseFillStationTelemetry();
     message.timestamp = object.timestamp ?? 0;
     message.pt1 = object.pt1 ?? 0;
@@ -3068,21 +2750,15 @@ export const FillStationTelemeterService = {
     responseStream: true,
     requestSerialize: (value: FillStationTelemetryRequest) =>
       Buffer.from(FillStationTelemetryRequest.encode(value).finish()),
-    requestDeserialize: (value: Buffer) =>
-      FillStationTelemetryRequest.decode(value),
-    responseSerialize: (value: FillStationTelemetry) =>
-      Buffer.from(FillStationTelemetry.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => FillStationTelemetryRequest.decode(value),
+    responseSerialize: (value: FillStationTelemetry) => Buffer.from(FillStationTelemetry.encode(value).finish()),
     responseDeserialize: (value: Buffer) => FillStationTelemetry.decode(value),
   },
 } as const;
 
-export interface FillStationTelemeterServer
-  extends UntypedServiceImplementation {
+export interface FillStationTelemeterServer extends UntypedServiceImplementation {
   /** Sends telemetry */
-  streamTelemetry: handleServerStreamingCall<
-    FillStationTelemetryRequest,
-    FillStationTelemetry
-  >;
+  streamTelemetry: handleServerStreamingCall<FillStationTelemetryRequest, FillStationTelemetry>;
 }
 
 export interface FillStationTelemeterClient extends Client {
@@ -3102,11 +2778,7 @@ export const FillStationTelemeterClient = makeGenericClientConstructor(
   FillStationTelemeterService,
   "command.FillStationTelemeter",
 ) as unknown as {
-  new (
-    address: string,
-    credentials: ChannelCredentials,
-    options?: Partial<ClientOptions>,
-  ): FillStationTelemeterClient;
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): FillStationTelemeterClient;
   service: typeof FillStationTelemeterService;
   serviceName: string;
 };
@@ -3119,21 +2791,16 @@ export const RocketTelemeterService = {
     path: "/command.RocketTelemeter/StreamTelemetry",
     requestStream: false,
     responseStream: true,
-    requestSerialize: (value: RocketTelemetryRequest) =>
-      Buffer.from(RocketTelemetryRequest.encode(value).finish()),
+    requestSerialize: (value: RocketTelemetryRequest) => Buffer.from(RocketTelemetryRequest.encode(value).finish()),
     requestDeserialize: (value: Buffer) => RocketTelemetryRequest.decode(value),
-    responseSerialize: (value: RocketTelemetry) =>
-      Buffer.from(RocketTelemetry.encode(value).finish()),
+    responseSerialize: (value: RocketTelemetry) => Buffer.from(RocketTelemetry.encode(value).finish()),
     responseDeserialize: (value: Buffer) => RocketTelemetry.decode(value),
   },
 } as const;
 
 export interface RocketTelemeterServer extends UntypedServiceImplementation {
   /** Sends telemetry */
-  streamTelemetry: handleServerStreamingCall<
-    RocketTelemetryRequest,
-    RocketTelemetry
-  >;
+  streamTelemetry: handleServerStreamingCall<RocketTelemetryRequest, RocketTelemetry>;
 }
 
 export interface RocketTelemeterClient extends Client {
@@ -3153,11 +2820,7 @@ export const RocketTelemeterClient = makeGenericClientConstructor(
   RocketTelemeterService,
   "command.RocketTelemeter",
 ) as unknown as {
-  new (
-    address: string,
-    credentials: ChannelCredentials,
-    options?: Partial<ClientOptions>,
-  ): RocketTelemeterClient;
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): RocketTelemeterClient;
   service: typeof RocketTelemeterService;
   serviceName: string;
 };
@@ -3170,11 +2833,9 @@ export const CommanderService = {
     path: "/command.Commander/SendCommand",
     requestStream: false,
     responseStream: false,
-    requestSerialize: (value: Command) =>
-      Buffer.from(Command.encode(value).finish()),
+    requestSerialize: (value: Command) => Buffer.from(Command.encode(value).finish()),
     requestDeserialize: (value: Buffer) => Command.decode(value),
-    responseSerialize: (value: CommandReply) =>
-      Buffer.from(CommandReply.encode(value).finish()),
+    responseSerialize: (value: CommandReply) => Buffer.from(CommandReply.encode(value).finish()),
     responseDeserialize: (value: Buffer) => CommandReply.decode(value),
   },
 } as const;
@@ -3203,44 +2864,23 @@ export interface CommanderClient extends Client {
   ): ClientUnaryCall;
 }
 
-export const CommanderClient = makeGenericClientConstructor(
-  CommanderService,
-  "command.Commander",
-) as unknown as {
-  new (
-    address: string,
-    credentials: ChannelCredentials,
-    options?: Partial<ClientOptions>,
-  ): CommanderClient;
+export const CommanderClient = makeGenericClientConstructor(CommanderService, "command.Commander") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): CommanderClient;
   service: typeof CommanderService;
   serviceName: string;
 };
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends globalThis.Array<infer U>
-    ? globalThis.Array<DeepPartial<U>>
-    : T extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartial<U>>
-      : T extends {}
-        ? { [K in keyof T]?: DeepPartial<T[K]> }
-        : Partial<T>;
+export type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
-      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
-    };
+export type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

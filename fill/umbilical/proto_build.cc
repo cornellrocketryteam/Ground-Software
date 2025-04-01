@@ -35,22 +35,23 @@ ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t ma
             break;
         }
     }
-    spdlog::info("Number of bytes read: {}\n", index);
-    return index;  // Return the number of bytes read
+
+    // Return the number of bytes read
+    return index;
 }
 
 void RocketTelemetryProtoBuilder::openfile(){
-    if ((serial_data = open ("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
-        spdlog::error("Error opening /dev/rocket.\n"); 
+    if ((serial_data = open("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
+        spdlog::error("Umb: Error opening /dev/rocket"); 
     }
 
-    fcntl (serial_data, F_SETFL, O_RDWR) ;
+    fcntl(serial_data, F_SETFL, O_RDWR) ;
 
     struct termios tty;
     memset(&tty, 0, sizeof(tty));
 
     if (tcgetattr(serial_data, &tty) != 0) {
-        spdlog::error("Error getting termios attributes for file descriptor.\n");
+        spdlog::error("Umb: Error getting termios attributes for file descriptor");
         close(serial_data);
     }
 
@@ -79,11 +80,10 @@ void RocketTelemetryProtoBuilder::openfile(){
     tty.c_cc[VTIME] = 10;
 
     if (tcsetattr(serial_data, TCSANOW, &tty) != 0) {
-        spdlog::error("Error setting termios attributes\n");
+        spdlog::error("Umb: Error setting termios attributes");
     }
 
-    usleep(10); 
-
+    usleep(10);
 }
 
 RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(){
@@ -102,31 +102,32 @@ void RocketTelemetryProtoBuilder::write_command(char com){
 void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     if (com->has_sv2_close()){
         if (com->sv2_close()) {
-            spdlog::info("Received SV2 Close Command");
+            spdlog::critical("SV2: Close command received");
             write_command(CLOSE_SV);
         } else {
-            spdlog::info("Received SV2 Open Command");
+            spdlog::critical("SV2: Open command received");
             write_command(OPEN_SV);
         }
     }
 
     if (com->has_mav_open()){
         if (com->mav_open()){
-            spdlog::info("Received MAV Open Command");
+            spdlog::critical("MAV: Open command received");
             write_command(OPEN_MAV);
         } else {     
-            spdlog::info("Received MAV Close Command");
+            spdlog::critical("MAV: Close command received");
             write_command(CLOSE_MAV);
         }
     }
 
     if (com->launch()){
-        spdlog::info("Received LAUNCH Command");
+        spdlog::critical("MAV: Launch command received");
         write_command(LAUNCH);
     }
 
     if (com->has_vent()) {
-        spdlog::info("Received VENT command");
+        spdlog::critical("SV2: Vent command received");
+
         auto sleep_duration = com->vent().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
             write_command(OPEN_SV);
@@ -137,7 +138,8 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 
     if (com->has_vent_and_ignite()) {
-        spdlog::info("Received VENT AND IGNITE command");
+        spdlog::critical("SV2: Vent and ignite command received");
+
         auto sleep_duration = com->vent_and_ignite().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
             write_command(OPEN_SV);
@@ -148,17 +150,17 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 
     if (com->sd_clear()){
-        spdlog::info("Received SD_CLEAR command");
+        spdlog::critical("SD: Clear command received");
         write_command(CLEAR_SD); 
     }
 
     if (com->fram_reset()){
-        spdlog::info("Received FRAM_RESET command");
+        spdlog::critical("SV2: Reset command received");
         write_command(FRAM_RESET);
     }
     
     if (com->reboot()){
-        spdlog::info("Received REBOOT command");
+        spdlog::critical("Rocket: Reboot command received");
         write_command(REBOOT); 
     }
 }
@@ -170,6 +172,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
 
     if (recycle_count == 100){
         recycle_count = 0;
+        spdlog::info("Umb: Recycle limit reached. Opening file again");
         openfile();
     }
 
@@ -182,9 +185,6 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         uint32_t ms_since_boot; 
         uint32_t events_val; 
 
-        bool radio_state; 
-        bool transmit_state; 
-
         float battery_voltage;
         float pt3;
         float pt4; 
@@ -193,12 +193,13 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         char packet[UMB_PACKET_SIZE]; 
 
         int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
+        spdlog::info("Umb: Packet: [{}]", packet);
+
         if (status == -1 || status < UMB_PACKET_SIZE - 1){
             // This means we did not read enough bytes 
+            spdlog::error("Umb: {} bytes read", status); 
             return absl::InternalError("Not enough Bytes"); 
         }
-        // For Debugging 
-        spdlog::debug("Packet: {}\n", packet); 
 
         memcpy(&metadata, packet, sizeof(metadata));
         memcpy(&ms_since_boot, packet + 2, sizeof(ms_since_boot));
@@ -280,8 +281,14 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(rtd_temp);
 
+        spdlog::info("Umb: Metadata: {:032b}", metadata);
+        spdlog::info("Umb: Events: {:032b}", events_val);
+        spdlog::info("Umb: MS since boot: {}", ms_since_boot);
+        spdlog::info("Umb: Battery voltage: {}", battery_voltage);
+        spdlog::info("Umb: PT 3: {}, PT 4: {}, RTD: {}", pt3, pt4, rtd_temp);
+
     } else {
-        spdlog::error("Serial port is not open. Trying to open again.\n");
+        spdlog::error("Umb: Serial port is not open. Trying again");
         openfile();
     }
     return rocketTelemetry;

@@ -8,12 +8,15 @@ Ignitor::Ignitor(){
     // write low initially 
     digitalWrite(IG_0, LOW);
     digitalWrite(IG_1, LOW);
+
+    spdlog::info("Ign: Initialized");
 }
 
 Ignitor::~Ignitor(){}
 
 bool Ignitor::Actuate(){
-    spdlog::info("Igniting\n");
+    spdlog::info("Ign: Igniting");
+    
     digitalWrite(IG_0, HIGH);
     digitalWrite(IG_1, HIGH);
     delay(1000);

@@ -86,7 +86,7 @@ export default function StateChangeBox() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
-                Enter
+                Send
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -121,7 +121,7 @@ export default function StateChangeBox() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
-                Enter
+                Send
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -154,7 +154,7 @@ export default function StateChangeBox() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
-                Enter
+                Send
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -187,7 +187,7 @@ export default function StateChangeBox() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
-                Enter
+                Send
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -226,7 +226,7 @@ export default function StateChangeBox() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="default" size="sm">
-                  Enter
+                  Send
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -261,7 +261,7 @@ export default function StateChangeBox() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="default" size="sm">
-                  Enter
+                  Send
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -317,7 +317,7 @@ export default function StateChangeBox() {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
-                Enter
+                Send
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>

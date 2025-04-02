@@ -6,7 +6,11 @@
 #include <thread>
 #include <cstdlib>
 #include <random>
+#include <filesystem>
+
 #include <spdlog/spdlog.h>
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 #include "actuators/qd.h"
 #include "actuators/ball_valve.h"
@@ -82,40 +86,49 @@ class CommanderServiceImpl final : public Commander::Service
                        CommandReply *reply) override
     {
         if (request->qd_retract()) {
-             qd.Actuate();
+            spdlog::critical("QD: Retract command received");
+            qd.Actuate();
         }
 
-        if (request->has_bv1_open()){ // ensure request contains bv1_open
-            if (request->bv1_open()){
+        if (request->has_bv1_open()) {
+            if (request->bv1_open()) {
+                spdlog::critical("BV: Open command received");
                 ball_valve.open();
             } else {
+                spdlog::critical("QD: Close command received");
                 ball_valve.close();
             }
         }
 
-        if (request->has_bv1_off()){ // ensure request contains bv1_off
-            if (request->bv1_off()){
+        if (request->has_bv1_off()) {
+            if (request->bv1_off()) {
+                spdlog::critical("BV: Off command received");
                 ball_valve.powerOff();
             } else {
+                spdlog::critical("BV: On command received");
                 ball_valve.powerOn();
             }
         }
 
         if(request->has_sv1_open()){
             if(request->sv1_open()){
+                spdlog::critical("SV1: Open command received");
                 sv1.openAsync();
             } else{
+                spdlog::critical("SV1: Close command received");
                 sv1.close();
             }
         }
         
         if (request->has_ignite()){
             if (request->ignite()){
+                spdlog::critical("Ignitor: Ignite command received");
                 ignitor.Actuate();
             }
         }
 
         if (request->has_vent_and_ignite()) {
+            spdlog::critical("Ignitor: Vent and ignite command received");
             auto sleep_duration = request->vent_and_ignite().ignite_delay();
             std::thread ignite_sender([sleep_duration](){
                 sleep(sleep_duration); 
@@ -153,7 +166,7 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const RocketTelemetryRequest *request,
                        ServerWriter<RocketTelemetry> *writer) override
     {
-        spdlog::info("Received initial connection point for the rocket telemetry service.\n");
+        spdlog::critical("Received initial connection point for rocket telemetry");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
             absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
@@ -165,8 +178,7 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                     return Status::CANCELLED; 
                 }
             } else {
-                spdlog::error("Error reading the full packet with message:\n");      
-                std::cout << t.status() << std::endl;           
+                spdlog::error("Error reading rocket packet: {}", t.status().ToString());      
             }
         }
         return Status::OK;
@@ -200,6 +212,35 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     server->Wait();
 }
 
+void setup_logging() {
+    // Create the log file
+    std::filesystem::create_directories("logs");
+
+    auto t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << "logs/log_" << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".txt";
+
+    // Write all logs to the file
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(oss.str(), true);
+
+    // Only show warning or higher in terminal
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_level(spdlog::level::warn);  
+
+    std::vector<spdlog::sink_ptr> sinks {file_sink, console_sink};
+    auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks.begin(), sinks.end());
+
+    logger->set_level(spdlog::level::debug);
+    logger->flush_on(spdlog::level::warn);
+
+    spdlog::set_default_logger(logger);
+
+    spdlog::set_pattern("[%H:%M:%S] [%^%l%$] [%s:%#] %v");
+    spdlog::info("Logging system initialized");
+}
+
 /*
 MAIN
 */
@@ -207,6 +248,10 @@ MAIN
 int main(int argc, char **argv)
 {
     absl::ParseCommandLine(argc, argv);
+
+    // Set up spdlog
+    setup_logging();
+
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);

@@ -7,6 +7,8 @@ SolValve::SolValve(){
     // starting state set to low 
     digitalWrite(SV_SIGNAL, LOW);
     isOpen=false;
+
+    spdlog::info("SV1: Initialized");
 }
 
 SolValve::~SolValve(){}
@@ -22,10 +24,11 @@ void SolValve::open(){
     pwmWrite(SV_SIGNAL, 1707); 
 }
 void SolValve::openAsync(){
-    spdlog::info("Opening the Solenoid Valve\n");
+    spdlog::info("SV1: Opening");
 
-    if (isOpen){
-     return; // cannot actuate a sensor that is already actuating 
+    if (isOpen) {
+        spdlog::error("SV1: Already opening");
+        return; // cannot actuate a sensor that is already actuating 
     }
 
     std::thread open_thread(&SolValve::open, this);
@@ -34,7 +37,7 @@ void SolValve::openAsync(){
     return;
 }
 void SolValve::close(){
-    spdlog::info("Closing the Solenoid Valve\n");
+    spdlog::info("SV1: Closing");
 
     pinMode(SV_SIGNAL, OUTPUT);
     digitalWrite(SV_SIGNAL, LOW);

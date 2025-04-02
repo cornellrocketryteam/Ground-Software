@@ -9,27 +9,29 @@ BallValve::BallValve(){
     // starting state set to low 
     digitalWrite(BV_ON_OFF, LOW);
     digitalWrite(BV_SIGNAL, LOW);
+
+    spdlog::info("BV: Initialized");
 }
 
 BallValve::~BallValve(){}
 
 void BallValve::powerOff(){
-    spdlog::info("Powering off the Ball Valve\n");
+    spdlog::info("BV: Turning off");
     digitalWrite(BV_ON_OFF, HIGH);
 }
 
 void BallValve::powerOn(){
-    spdlog::info("Powering on the Ball Valve\n");
+    spdlog::info("BV: Turning on");
     digitalWrite(BV_ON_OFF, LOW);
 }
 
 void BallValve::open(){
-    spdlog::info("Opening the Ball Valve\n");
+    spdlog::info("BV: Opening");
     digitalWrite(BV_SIGNAL, HIGH);
 }
 
 void BallValve::close(){
-    spdlog::info("Closing the Ball Valve\n");
+    spdlog::info("BV: Closing");
     digitalWrite(BV_SIGNAL, LOW);
 }
 

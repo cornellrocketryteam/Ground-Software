@@ -3,11 +3,12 @@
 import {
   forwardRef,
   useState,
+  useEffect,
+  useMemo,
   type ReactNode,
   type MouseEvent,
   type TouchEvent,
   type CSSProperties,
-  useMemo,
 } from "react";
 import { DotsVerticalIcon } from "@radix-ui/react-icons";
 import {
@@ -19,7 +20,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-
+import { useData } from "@/contexts/data-context";
 import { cn } from "@/lib/utils";
 import type { Widget, TelemetryChannel } from "@/lib/definitions";
 
@@ -46,25 +47,29 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
       onTouchEnd,
       children,
     },
-    ref,
+    ref
   ) => {
     if (channel.widgets.length === 0) {
       throw new Error("No widgets found for telemetry channel");
     }
 
-    // Build a lookup for modes to make re-rendering faster
+    const { data, registerLiveDbField, deregisterLiveDbField } = useData();
+
+    useEffect(() => {
+      registerLiveDbField(channel.dbField);
+      console.log(`Registering field ${channel.dbField}`);
+      return () => deregisterLiveDbField(channel.dbField);
+    }, [channel.dbField, registerLiveDbField, deregisterLiveDbField]);
+
+    // Build a lookup for widget modes
     const modeMap = useMemo(() => {
-      const modeMap: Record<string, Widget> = {};
-      for (const widget of channel.widgets) {
-        const mode = widget.mode;
-        if (modeMap[mode]) {
-          throw new Error(
-            `Duplicate mode found in 'widgets' list for telemetry channel: ${mode}`,
-          );
+      return channel.widgets.reduce<Record<string, Widget>>((acc, widget) => {
+        if (acc[widget.mode]) {
+          throw new Error(`Duplicate mode found: ${widget.mode}`);
         }
-        modeMap[mode] = widget;
-      }
-      return modeMap;
+        acc[widget.mode] = widget;
+        return acc;
+      }, {});
     }, [channel.widgets]);
 
     const allModes = useMemo(() => Object.keys(modeMap), [modeMap]);
@@ -74,22 +79,37 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
 
     const activeWidget = modeMap[mode];
     if (!activeWidget) {
-      throw new Error(
-        `No widget found for mode: ${mode}. Should be unreachable.`,
-      );
+      throw new Error(`No widget found for mode: ${mode}`);
     }
-    const ActiveComponent = activeWidget.component;
+
+    const hasData = Object.keys(
+      data[measurement]?.[channel.dbField] ?? {}
+    ).length;
+    const ActiveComponent = hasData
+      ? activeWidget.component
+      : () => (
+          <div className="w-full h-full flex flex-col justify-center items-center gap-2">
+            <p className="font-semibold text-lg">{channel.label}</p>
+            <p className="font-normal text-lg">No data</p>
+          </div>
+        );
+
+    const fieldData = data[measurement]?.[channel.dbField];
 
     return (
       <div
+        ref={ref}
         style={style}
         className={cn("border border-gray-200 rounded p-2", className)}
-        ref={ref}
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
         onTouchEnd={onTouchEnd}
       >
-        <ActiveComponent measurement={measurement} channel={channel} />
+        <ActiveComponent
+          fieldData={fieldData}
+          measurement={measurement}
+          channel={channel}
+        />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -128,7 +148,7 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 DashboardWidget.displayName = "DashboardWidget";

@@ -26,7 +26,7 @@ type HistoricalDataRequest struct {
 }
 
 type DataPoint struct {
-	Timestamp time.Time   `json:"timestamp"`
+	Timestamp string      `json:"timestamp"`
 	Value     interface{} `json:"value"`
 }
 
@@ -67,6 +67,8 @@ var legalFields = []string{
 	"rfm_init_failed", "rfm_transmit_failed",
 }
 var legalAggregation = []string{"mean", "median", "mode"}
+
+var timestampLayout = "2006-01-02T15:04:05.99Z07:00"
 
 // Init initializes the struct with default values
 func (d *Datastore) Init(ctx context.Context) {
@@ -237,7 +239,7 @@ func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 		for results.Next() {
 			log.Println(results.Record())
 			response.Data = append(response.Data, DataPoint{
-				Timestamp: results.Record().Time(),
+				Timestamp: results.Record().Time().Format(timestampLayout),
 				Value:     results.Record().Value(),
 			})
 		}
@@ -277,7 +279,7 @@ func (d *Datastore) GetLastPoint() ([]byte, error) {
 			data[measurement] = make(map[string]DataPoint)
 		}
 		data[measurement][fieldName] = DataPoint{
-			Timestamp: record.Time(),
+			Timestamp: record.Time().Format(timestampLayout),
 			Value:     fieldValue,
 		}
 	}

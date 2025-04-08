@@ -4,7 +4,7 @@ cc_library(
     srcs  = ["Adafruit_ADS1015.cpp"], 
     deps = ["//fill/lib/MockWiringPi:mock_wiringpi"],
     includes = ["."],
-    linkopts = ["-lwiringPi"],
+    #linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],

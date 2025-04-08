@@ -15,5 +15,7 @@ cc_binary(
         "@abseil-cpp//absl/strings:str_format",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",
+        "//fill/lib/MockWiringPi:mock_wiringpi_lib"
     ],
+    linkopts = ["-lsdbus-c++"],
 )

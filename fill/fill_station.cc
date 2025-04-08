@@ -32,6 +32,10 @@
 
 #include "protos/command.grpc.pb.h"
 
+#include <sdbus-c++/sdbus-c++.h>
+
+// #include <sdbus-c++/sdbus-c++.h>
+
 using command::Command;
 using command::Commander;
 using command::FillStationTelemeter;
@@ -78,6 +82,40 @@ FillStationTelemetry readTelemetry() {
     t.set_lc1(sensor_suite.ReadLoadCell());
     return t;
 }
+
+// Function to send a Bluetooth message to start the payload
+void sendPayloadStartCommand() {
+    try {
+        // Connect to the system bus
+        auto connection = sdbus::createSystemBusConnection();
+        connection->enterEventLoopAsync();
+
+        const std::string devicePath = "/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX"; // Raspberry Pico W's object path
+        const std::string charPath = devicePath + "/service0010/char0011";      // Characteristic for payload command
+
+        // Create a proxy for the GATT characteristic
+        auto characteristicProxy = sdbus::createProxy(*connection, "org.bluez", charPath);
+
+        // Prepare the command value to send
+        const std::vector<uint8_t> commandValue = { 0x01 };
+
+        // Prepare an empty options dictionary
+        std::map<std::string, sdbus::Variant> options;
+
+        std::cout<<"Sending Payload Start Command\n";
+
+        // Invoke the WriteValue method on the GATT characteristic
+        characteristicProxy->callMethod("WriteValue")
+            .onInterface("org.bluez.GattCharacteristic1")
+            .withArguments(commandValue, options);
+
+        spdlog::info("Payload start command sent successfully");
+    }
+    catch (const sdbus::Error &e) {
+        spdlog::error("Failed to send payload start command: {}", e.what());
+    }
+}
+
 
 // Fill Station service to accept commands.
 class CommanderServiceImpl final : public Commander::Service
@@ -136,8 +174,15 @@ class CommanderServiceImpl final : public Commander::Service
             });
             ignite_sender.detach();
         }
+
+        // If request to start payload on rocket
+        if (request->payload_start()) {
+            spdlog::critical("Payload: Start command received");
+            sendPayloadStartCommand();
+            // TODO: Implement payload start command
+        }
     
-        protoBuild.sendCommand(request);
+        // protoBuild.sendCommand(request);
 
         return Status::OK;
     }
@@ -169,17 +214,17 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
         spdlog::critical("Received initial connection point for rocket telemetry");
         while (true) {
             auto now = std::chrono::high_resolution_clock::now();
-            absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
+            // absl::StatusOr<RocketTelemetry> t = protoBuild.buildProto();
             
-            if (t.ok()) {
-                // Operation was successful, access the value
-                if (!writer->Write(*t)) {
-                    // Broken stream
-                    return Status::CANCELLED; 
-                }
-            } else {
-                spdlog::error("Error reading rocket packet: {}", t.status().ToString());      
-            }
+            // if (t.ok()) {
+            //     // Operation was successful, access the value
+            //     if (!writer->Write(*t)) {
+            //         // Broken stream
+            //         return Status::CANCELLED; 
+            //     }
+            // } else {
+            //     spdlog::error("Error reading rocket packet: {}", t.status().ToString());      
+            // }
         }
         return Status::OK;
     }
@@ -241,12 +286,20 @@ void setup_logging() {
     spdlog::info("Logging system initialized");
 }
 
+
+
+
+
+
 /*
 MAIN
 */
 // Start server and client services
 int main(int argc, char **argv)
 {
+    std::cout<<"Fill Station Server\n";
+    sendPayloadStartCommand();
+
     absl::ParseCommandLine(argc, argv);
 
     // Set up spdlog

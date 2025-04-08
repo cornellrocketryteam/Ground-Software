@@ -13,7 +13,7 @@ cc_library(
     srcs = ["qd.cc"],
     hdrs = ["qd.h"],
     deps = [":actuator", "//fill/lib/MockWiringPi:mock_wiringpi",],
-    linkopts = ["-lwiringPi"],
+    #linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],
@@ -25,7 +25,7 @@ cc_library(
     srcs  = ["ball_valve.cc"], 
     deps = ["//fill/lib/MockWiringPi:mock_wiringpi", "//fill/lib/spdlog:spdlog",],
     includes = ["."],
-    linkopts = ["-lwiringPi"],
+    #linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],
@@ -37,7 +37,7 @@ cc_library(
     hdrs = ["sol_valve.h"],
     deps = ["//fill/lib/MockWiringPi:mock_wiringpi", "//fill/lib/spdlog:spdlog", ],
     includes = ["."],
-    linkopts = ["-lwiringPi"],
+    #linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],
@@ -49,7 +49,7 @@ cc_library(
     hdrs = ["ignitor.h"],
     deps = [":actuator","//fill/lib/MockWiringPi:mock_wiringpi"],
     includes = ["."],
-    linkopts = ["-lwiringPi"],
+    #linkopts = ["-lwiringPi"],
     visibility = [
         "//fill:__subpackages__",
         ],

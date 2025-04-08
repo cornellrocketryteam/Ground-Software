@@ -1,16 +1,6 @@
 #ifndef PROTO_BUILD_H
 #define PROTO_BUILD_H
 
-#define LAUNCH '9'
-#define OPEN_MAV '1'
-#define CLOSE_MAV '2'
-#define OPEN_SV '3'
-#define CLOSE_SV '4'
-#define SAFE '5'
-#define CLEAR_SD '6'
-#define FRAM_RESET '7'
-#define REBOOT '8'
-
 // 28 to account for 26 byte packet, then /r/n characters
 #define UMB_PACKET_SIZE 28
 
@@ -40,6 +30,25 @@ using command::Command;
 
 class RocketTelemetryProtoBuilder {
     private:
+        typedef enum {
+            LAUNCH,
+            OPEN_MAV,
+            CLOSE_MAV,
+            OPEN_SV,
+            CLOSE_SV,
+            SAFE,
+            CLEAR_SD,
+            FRAM_RESET,
+            REBOOT,
+            CHANGE_BLIMS_LAT,
+            CHANGE_BLIMS_LONG,
+            CHANGE_REF_PRESS,
+            CHANGE_ALT_STATE,
+            CHANGE_SD_STATE,
+            CHANGE_ALT_ARMED,
+            CHANGE_FLIGHTMODE
+        } COMMAND_OPTIONS; 
+
         const char* usb_port = "/dev/rocket";
 
         int serial_data;
@@ -48,9 +57,10 @@ class RocketTelemetryProtoBuilder {
 
         ssize_t read_packet(int fd, char* packet, size_t max_size);
 
-        void write_command(char com);
+        void write_command(COMMAND_OPTIONS com, int Number = -1);
 
         uint32_t recycle_count;
+
     public: 
         // Establish serial connection 
         RocketTelemetryProtoBuilder();

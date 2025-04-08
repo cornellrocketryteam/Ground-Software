@@ -95,8 +95,85 @@ RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
     close(serial_data);
 }
 
-void RocketTelemetryProtoBuilder::write_command(char com){
-    write(serial_data, &com, 1);
+void RocketTelemetryProtoBuilder::write_command(COMMAND_OPTIONS com, int Number){
+    const char * buf; 
+    std::string num; 
+    if (Number != -1){
+        num = std::to_string(Number); 
+    }
+    switch(com){
+        case LAUNCH:
+            buf = "<L>";
+            write(serial_data, buf, sizeof(buf)); 
+            break;
+        case OPEN_MAV:
+            buf = "<M>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CLOSE_MAV:
+            buf = "<m>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case OPEN_SV:
+            buf = "<S>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CLOSE_SV:
+            buf = "<s>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case SAFE:
+            buf = "<V>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CLEAR_SD:
+            buf = "<D>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case FRAM_RESET:
+            buf = "<F>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case REBOOT:
+            buf = "<R>"; 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_BLIMS_LAT:
+            num = "<C1" + num + ">"; 
+            buf = num.c_str();
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_BLIMS_LONG:
+            num = "<C2" + num + ">"; 
+            buf = num.c_str();
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_REF_PRESS:
+            num = "<C3" + num + ">"; 
+            buf = num.c_str(); 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_ALT_STATE:
+            num = "<C4" + num + ">"; 
+            buf = num.c_str(); 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_SD_STATE:
+            num = "<C5" + num + ">"; 
+            buf = num.c_str(); 
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_ALT_ARMED:
+            num = "<C6" + num + ">"; 
+            buf = num.c_str();
+            write(serial_data, buf, sizeof(buf));
+            break;
+        case CHANGE_FLIGHTMODE:
+            num = "<C7" + num + ">"; 
+            buf = num.c_str(); 
+            write(serial_data, buf, sizeof(buf));
+            break;
+    }
 }
 
 void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
@@ -162,6 +239,41 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     if (com->reboot()){
         spdlog::critical("Rocket: Reboot command received");
         write_command(REBOOT); 
+    }
+
+    if (com->has_change_blims_lat()){
+        spdlog::info("Received CHANGE_BLIMS_LAT command");
+        write_command(CHANGE_BLIMS_LAT, com->change_blims_lat().number()); 
+    }
+
+    if (com->has_change_blims_long()){
+        spdlog::info("Received CHANGE_BLIMS_LONG command");
+        write_command(CHANGE_BLIMS_LONG, com->change_blims_long().number()); 
+    }
+
+    if (com->has_change_ref_press()){
+        spdlog::info("Received CHANGE_REF_PRESS command");
+        write_command(CHANGE_REF_PRESS, com->change_ref_press().number()); 
+    }
+
+    if (com->has_change_alt_state()){
+        spdlog::info("Received CHANGE_ALT_STATE command");
+        write_command(CHANGE_ALT_STATE, com->change_alt_state().number()); 
+    }
+
+    if (com->has_change_sd_state()){
+        spdlog::info("Received CHANGE_SD_STATE command");
+        write_command(CHANGE_SD_STATE, com->change_sd_state().number()); 
+    }
+
+    if (com->has_change_alt_armed()){
+        spdlog::info("Received CHANGE_ALT_ARMED command");
+        write_command(CHANGE_ALT_ARMED, com->change_alt_armed().number()); 
+    }
+
+    if (com->has_change_flightmode()){
+        spdlog::info("Received CHANGE_FLIGHTMODE command");
+        write_command(CHANGE_FLIGHTMODE, com->change_flightmode().number()); 
     }
 }
 

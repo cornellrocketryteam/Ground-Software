@@ -19,13 +19,17 @@ QD::QD(){
     digitalWrite(PUL_PIN, HIGH); 
 
     digitalWrite(DIR_PIN, HIGH); // default clockwise 
+
+    spdlog::info("QD: Initialized");
 }
 
 QD::~QD(){}
 
 bool QD::Actuate(){
-    spdlog::info("Actuating the QD\n");
-    if (actuating){
+    spdlog::info("QD: Actuating");
+
+    if (actuating) {
+        spdlog::error("QD: Already actuating");
         return false; // cannot actuate a sensor that is already actuating 
     }
 

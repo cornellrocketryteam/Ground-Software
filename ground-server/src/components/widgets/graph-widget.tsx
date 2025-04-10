@@ -32,28 +32,17 @@ function tickFormatter(tick: number) {
 }
 
 export default function GraphWidget(minuteDuration: number): Widget {
-  const GraphWidgetComponent = ({ measurement, channel }: WidgetProps) => {
-    const { data, sendHistoricalDataReq } = useData();
+  const GraphWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
+    const { sendHistoricalDataReq } = useData();
 
     useEffect(() => {
+      console.log("Sending historical data request")
       sendHistoricalDataReq(-minuteDuration, 0, channel.dbField);
-    }, []);
+    }, [channel.dbField, sendHistoricalDataReq]);
 
-    if (
-      data[measurement] === undefined||
-      data[measurement][channel.dbField] === undefined ||
-      data[measurement][channel.dbField].length === 0
-    ) {
-      return (
-        <div className="w-full h-full flex flex-col justify-center items-center gap-2">
-          <p className="font-semibold text-lg">{channel.label}</p>
-          <p className="font-normal text-lg">No data</p>
-        </div>
-      );
-    }
-
-    const fieldData = data[measurement][channel.dbField];
-    const latestValue = fieldData[fieldData.length - 1].value;
+    const sortedKeys = Object.keys(fieldData).sort();
+    const latestKey = sortedKeys[sortedKeys.length - 1];
+    const latestValue = fieldData[latestKey];
     if (typeof latestValue !== "number") {
       return (
         <div>
@@ -65,11 +54,11 @@ export default function GraphWidget(minuteDuration: number): Widget {
     const color = "hsl(var(--chart-1))";
     const now = Date.now();
 
-    const chartData = fieldData
-      .filter((d) => d.timestamp.getTime() >= now - minuteDuration * 60000)
-      .map((d) => ({
-        timestamp: d.timestamp.getTime(),
-        value: d.value,
+    const chartData = Object.keys(fieldData)
+      .filter((key) => new Date(key).getTime() >= now - minuteDuration * 60000)
+      .map((key) => ({
+        timestamp: new Date(key).getTime(),
+        value: fieldData[key],
       }));
 
     return (

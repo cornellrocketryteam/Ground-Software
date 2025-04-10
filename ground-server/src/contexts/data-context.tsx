@@ -1,40 +1,42 @@
 "use client";
 
-import type { DataPoint } from "@/lib/definitions";
 import {
   createContext,
   useContext,
   useEffect,
   useState,
   useRef,
+  useCallback,
   ReactNode,
 } from "react";
 
 type DataContextType = {
   connected: boolean;
-  data: Record<string, Record<string, DataPoint[]>>; // has type measurement -> field -> DataPoint[]
+  data: Record<string, Record<string, Record<string, unknown>>>; // measurement -> field -> timestamp -> value: unknown
   sendHistoricalDataReq: (start: number, stop: number, field: string) => void;
+  registerLiveDbField: (dbField: string) => void;
+  deregisterLiveDbField: (dbField: string) => void;
 };
 
 const DataContext = createContext<DataContextType>({
   connected: false,
   data: {},
-  sendHistoricalDataReq() {},
+  sendHistoricalDataReq: () => {},
+  registerLiveDbField: () => {},
+  deregisterLiveDbField: () => {},
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<Record<string, Record<string, DataPoint[]>>>(
-    {},
-  );
+  const liveDbFields = useRef<Set<string>>(new Set());
+  const [data, setData] = useState<
+    Record<string, Record<string, Record<string, unknown>>>
+  >({});
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Create the WebSocket connection once on mount
-  const connect = () => {
-    // Adjust your WebSocket URL as needed
+  // Connection function wrapped in useCallback to maintain a stable reference
+  const connect = useCallback(() => {
     const url = "ws://192.168.1.200:8080/ws";
-
-    // Create and store the WebSocket instance
     wsRef.current = new WebSocket(url);
 
     wsRef.current.onopen = () => {
@@ -51,32 +53,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.error("WebSocket error:", error);
       setConnected(false);
       wsRef.current?.close();
+      // Attempt to reconnect after 1 second
       setTimeout(connect, 1000);
     };
 
     wsRef.current.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log(message);
+      console.log("Message received", message);
 
       if (message.historical) {
-        // Historical data
-        console.log("Historical Message Received");
-
         if (message.data === null) {
           console.log("No data received from historical message");
           return;
         }
 
+        // Update state with historical data
         setData((prevData) => {
-          const measurement = message.measurement;
-          const field = message.field;
-          const widgetData: DataPoint[] = message.data.map(
-            (item: { timestamp: string; value: number }) => {
-              return {
-                timestamp: new Date(item.timestamp),
-                value: item.value,
-              };
+          const { measurement, field } = message;
+          const widgetData = message.data.reduce(
+            (
+              acc: Record<string, unknown>,
+              item: { timestamp: string; value: number }
+            ) => {
+              acc[item.timestamp] = item.value;
+              return acc;
             },
+            {}
           );
 
           return {
@@ -88,20 +90,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
           };
         });
       } else {
-        // Live data
-
+        // Update state with live data using the registered fields
         setData((prevData) => {
           const newData = { ...prevData };
+
           for (const measurement in message) {
-            if (!(measurement in newData)) {
+            if (!newData[measurement]) {
               newData[measurement] = {};
             }
 
-            for (const field in message[measurement]) {
-              newData[measurement][field] = [
-                ...(newData[measurement][field] || []),
-                message[measurement][field],
-              ];
+            // Iterate over the registered live fields
+            for (const field of liveDbFields.current) {
+              // Only update if the field exists in the current measurement data from the message
+              if (field in message[measurement]) {
+                if (!newData[measurement][field]) {
+                  newData[measurement][field] = {};
+                }
+
+                const { timestamp, value } = message[measurement][field];
+                newData[measurement][field][timestamp] = value;
+              }
             }
           }
           return newData;
@@ -109,43 +117,60 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Clean up when component unmounts
+    // Return cleanup function that closes the WebSocket connection on unmount
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
         wsRef.current = null;
       }
     };
-  };
+  }, []);
 
-  useEffect(connect, []);
+  // Initialize the WebSocket connection on component mount
+  useEffect(() => {
+    const cleanup = connect();
+    return cleanup;
+  }, [connect]);
 
-  const sendHistoricalDataReq = (
-    start: number,
-    stop: number,
-    field: string,
-  ) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          start,
-          stop,
-          field,
-        }),
-      );
-    } else {
-      console.error("WebSocket not connected. Cannot request historical data.");
-    }
+  // Memoize the historical data request function to avoid unnecessary re-renders
+  const sendHistoricalDataReq = useCallback(
+    (start: number, stop: number, field: string) => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ start, stop, field }));
+      } else {
+        console.error(
+          "WebSocket not connected. Cannot request historical data."
+        );
+      }
+    },
+    []
+  );
+
+  // Register a new database field for live updates
+  const registerLiveDbField = useCallback((dbField: string) => {
+    liveDbFields.current.add(dbField);
+  }, []);
+
+  // Deregister a database field from live updates
+  const deregisterLiveDbField = useCallback((dbField: string) => {
+    liveDbFields.current.delete(dbField);
+  }, []);
+
+  // Memoized context value to ensure stable consumers
+  const contextValue = {
+    connected,
+    data,
+    sendHistoricalDataReq,
+    registerLiveDbField,
+    deregisterLiveDbField,
   };
 
   return (
-    <DataContext.Provider value={{ connected, data, sendHistoricalDataReq }}>
-      {children}
-    </DataContext.Provider>
+    <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
   );
 }
 
-// Convenience hook to easily consume the WebSocket context anywhere
+// Hook to easily access the context
 export function useData() {
   return useContext(DataContext);
 }

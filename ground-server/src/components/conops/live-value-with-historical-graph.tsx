@@ -17,11 +17,6 @@ interface TelemetryChannel {
   unit?: string;
 }
 
-interface DataPoint {
-  timestamp: Date;
-  value: number;
-}
-
 /** Reusable helper to configure your chart’s label/color */
 function getConfig(channel: TelemetryChannel) {
   const chartConfig = {
@@ -58,7 +53,7 @@ export function LiveValueWithHistoricalGraph({
   if (
     !data[channel.dbMeasurement] ||
     !data[channel.dbMeasurement][channel.dbField] ||
-    data[channel.dbMeasurement][channel.dbField].length === 0
+    Object.keys(data[channel.dbMeasurement][channel.dbField]).length === 0
   ) {
     return (
       <div className="border p-4 rounded-lg shadow-md flex flex-col items-center">
@@ -69,17 +64,19 @@ export function LiveValueWithHistoricalGraph({
   }
 
   // Pull data from your websocket/db using channel.dbField
-  const fieldData = data[channel.dbMeasurement][channel.dbField] as DataPoint[];
+
+
+  const fieldData = data[channel.dbMeasurement][channel.dbField];
 
   // Filter data to the last 'duration' minutes
   const now = Date.now();
   const cutoff = now - duration * 60_000;
-  const filteredData = fieldData.filter(
-    (point) => point.timestamp.getTime() >= cutoff,
-  );
+  const filteredDataKeys = Object.keys(fieldData).filter(
+    (timestamp) => new Date(timestamp).getTime() >= cutoff,
+  ).sort();
 
   // If no recent data, show a simple message
-  if (filteredData.length === 0) {
+  if (filteredDataKeys.length === 0) {
     return (
       <div className="border p-4 rounded-lg shadow-md flex flex-col items-center">
         <h2 className="text-sm font-bold mb-2">{channel.label}</h2>
@@ -89,7 +86,9 @@ export function LiveValueWithHistoricalGraph({
   }
 
   // Live value = latest data point
-  const latestValue = filteredData[filteredData.length - 1].value.toFixed(3);
+
+  const latestValueKey = filteredDataKeys[filteredDataKeys.length - 1];
+  const latestValue = (fieldData[latestValueKey] as number).toFixed(3);
 
   const color = "hsl(var(--chart-1))";
 
@@ -109,10 +108,10 @@ export function LiveValueWithHistoricalGraph({
           className="w-[400px] h-[300px]"
         >
           <LineChart
-            data={filteredData.map((d) => ({
+            data={filteredDataKeys.map((key) => ({
               // Recharts expects numeric timestamps
-              timestamp: d.timestamp.getTime(),
-              value: d.value,
+              timestamp: new Date(key).getTime(),
+              value: fieldData[key],
             }))}
             margin={{ top: 0, right: 30, left: -10, bottom: 40 }}
           >

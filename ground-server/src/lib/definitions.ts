@@ -1,11 +1,7 @@
 import type { ComponentType } from "react";
 
-export type DataPoint = {
-  timestamp: Date;
-  value: unknown;
-};
-
 export type WidgetProps = {
+  fieldData: Record<string, unknown>;
   measurement: string;
   channel: TelemetryChannel;
 };

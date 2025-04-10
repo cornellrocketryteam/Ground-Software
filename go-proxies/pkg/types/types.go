@@ -262,7 +262,7 @@ func (d *Datastore) GetLastPoint() ([]byte, error) {
 	var jsonData []byte
 
 	//Use a map to accumulate all fields for a single data point
-	data := make(map[string]map[string]interface{})
+	data := make(map[string]map[string]DataPoint)
 
 	for results.Next() {
 		record := results.Record()
@@ -274,9 +274,12 @@ func (d *Datastore) GetLastPoint() ([]byte, error) {
 		fieldValue := record.Value()
 
 		if data[measurement] == nil {
-			data[measurement] = make(map[string]interface{})
+			data[measurement] = make(map[string]DataPoint)
 		}
-		data[measurement][fieldName] = fieldValue
+		data[measurement][fieldName] = DataPoint{
+			Timestamp: record.Time(),
+			Value:     fieldValue,
+		}
 	}
 
 	if err := results.Err(); err != nil {

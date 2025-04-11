@@ -1,16 +1,14 @@
 "use server";
 
-import {
-  CommanderClient,
-  Command,
-  type CommandReply,
-} from "@/proto-out/command";
+import { CommanderClient } from "@/proto-out/protos/command_grpc";
+
+import { Command, type CommandReply } from "@/proto-out/protos/command";
 import * as grpc from "@grpc/grpc-js";
 import { auth } from "@/app/auth";
 
 const client = new CommanderClient(
   "192.168.1.201:50051",
-  grpc.credentials.createInsecure(),
+  grpc.credentials.createInsecure()
 );
 
 export async function isConnected() {

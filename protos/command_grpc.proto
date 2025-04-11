@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "protos/command.proto";
+
+option go_package = ".";
+
+package command;
+
+service FillStationTelemeter {
+  // Sends telemetry
+  rpc StreamTelemetry (FillStationTelemetryRequest) returns (stream FillStationTelemetry) {}
+}
+
+service RocketTelemeter {
+  // Sends telemetry
+  rpc StreamTelemetry (RocketTelemetryRequest) returns (stream RocketTelemetry) {}
+}
+
+service Commander {
+  // Sends a command and returns a reply
+  rpc SendCommand (Command) returns (CommandReply) {}
+}

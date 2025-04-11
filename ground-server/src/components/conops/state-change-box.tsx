@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { sendCommand } from "@/lib/grpcClient";
+import { FlightMode } from "@/proto-out/protos/command";
 
 export default function StateChangeBox() {
   const [altitudeArmed, setAltitudeArmed] = useState(false);
@@ -29,60 +31,72 @@ export default function StateChangeBox() {
   const [sdState, setSdState] = useState(false);
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
-  const [flightMode, setFlightMode] = useState("Select");
+  const [flightMode, setFlightMode] = useState<FlightMode | null>(null);
+
+  const handleAltitudeArmedSubmit = () => {
+    console.log("Altitude armed state submitted:", altitudeArmed);
+    sendCommand({ changeAltArmed: altitudeArmed });
+  };
 
   const handleReferencePressureSubmit = () => {
-    // TODO: Implement reference pressure submission logic
+    if (referencePressure === "") return;
+
     console.log("Reference pressure submitted:", referencePressure);
+    sendCommand({ changeRefPress: { number: Number(referencePressure) } });
   };
 
   const handleLatitudeSubmit = () => {
-    // TODO: Implement latitude submission logic
+    if (latitude === "") return;
+
     console.log("Latitude submitted:", latitude);
+    sendCommand({ changeBlimsLat: { number: Number(latitude) } });
   };
 
   const handleLongitudeSubmit = () => {
-    // TODO: Implement longitude submission logic
-    console.log("Longitude submitted:", longitude);
-  };
+    if (longitude === "") return;
 
-  const handleAltitudeArmedSubmit = () => {
-    // TODO: Implement altitude armed submission logic
-    console.log("Altitude armed state submitted:", altitudeArmed);
+    console.log("Longitude submitted:", longitude);
+    sendCommand({ changeBlimsLong: { number: Number(longitude) } });
   };
 
   const handleAltimeterStateSubmit = () => {
-    // TODO: Implement altimeter state submission logic
     console.log("Altimeter state submitted:", altimeterState);
+    sendCommand({ changeAltState: altimeterState });
   };
 
   const handleSdStateSubmit = () => {
-    // TODO: Implement SD state submission logic
     console.log("SD state submitted:", sdState);
-  };
-
-  const handleFlightModeSelect = (mode: string) => {
-    setFlightMode(mode);
+    sendCommand({ changeSdState: sdState });
   };
 
   const handleFlightModeSubmit = () => {
-    // TODO: Implement flight mode submission logic
+    if (flightMode === null) return;
+
     console.log("Flight mode submitted:", flightMode);
+    sendCommand({ changeFlightmode: flightMode });
   };
 
+  const formattedFlightMode = useMemo(() => {
+    if (flightMode === null) return "Select";
+    // FlightMode[mode] converts 0 to "STARTUP", for example.
+    const rawName = FlightMode[flightMode];
+    // Convert "DROGUE_DEPLOYED" to "Drogue Deployed"
+    return rawName
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }, [flightMode]);
+  
   return (
     <div className="border border-gray-300 p-6 rounded-lg flex flex-col space-y-6">
       <h2 className="text-lg font-bold text-center">State Change</h2>
-      
+
       {/* Altitude Armed Switch */}
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-bold text-center">Altitude Armed</h4>
         <div className="flex items-center space-x-2">
           <span className="text-sm">{altitudeArmed ? "True" : "False"}</span>
-          <Switch
-            checked={altitudeArmed}
-            onCheckedChange={setAltitudeArmed}
-          />
+          <Switch checked={altitudeArmed} onCheckedChange={setAltitudeArmed} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
@@ -91,9 +105,12 @@ export default function StateChangeBox() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Altitude Armed State Change</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Confirm Altitude Armed State Change
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you would like to continue with Altitude Armed state change?
+                  Are you sure you would like to continue with Altitude Armed
+                  state change?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -126,9 +143,12 @@ export default function StateChangeBox() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Reference Pressure Change</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Confirm Reference Pressure Change
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you would like to continue with Reference Pressure change?
+                  Are you sure you would like to continue with Reference
+                  Pressure change?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -159,9 +179,12 @@ export default function StateChangeBox() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Altimeter State Change</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Confirm Altimeter State Change
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you would like to continue with Altimeter State change?
+                  Are you sure you would like to continue with Altimeter State
+                  change?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -180,10 +203,7 @@ export default function StateChangeBox() {
         <h4 className="text-sm font-bold text-center">SD State</h4>
         <div className="flex items-center space-x-2">
           <span className="text-sm">{sdState ? "True" : "False"}</span>
-          <Switch
-            checked={sdState}
-            onCheckedChange={setSdState}
-          />
+          <Switch checked={sdState} onCheckedChange={setSdState} />
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="default" size="sm">
@@ -211,7 +231,7 @@ export default function StateChangeBox() {
       {/* BLiMS Target */}
       <div className="flex flex-col space-y-4">
         <h4 className="text-sm font-bold text-center">BLiMS Target</h4>
-        
+
         {/* Latitude Input */}
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-bold text-center">Latitude</h4>
@@ -233,7 +253,8 @@ export default function StateChangeBox() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirm Latitude Change</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you would like to continue with Latitude change?
+                    Are you sure you would like to continue with Latitude
+                    change?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -268,7 +289,8 @@ export default function StateChangeBox() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirm Longitude Change</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you would like to continue with Longitude change?
+                    Are you sure you would like to continue with Longitude
+                    change?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -290,26 +312,28 @@ export default function StateChangeBox() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-32">
-                {flightMode}
+                {formattedFlightMode ?? "Select"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Startup")}>
+              <DropdownMenuItem onClick={() => setFlightMode(0)}>
                 Startup
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Standby")}>
+              <DropdownMenuItem onClick={() => setFlightMode(FlightMode.STANDBY)}>
                 Standby
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Ascent")}>
+              <DropdownMenuItem onClick={() => setFlightMode(FlightMode.ASCENT)}>
                 Ascent
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Drogue Deployed")}>
+              <DropdownMenuItem
+                onClick={() => setFlightMode(FlightMode.DROGUE_DEPLOYED)}
+              >
                 Drogue Deployed
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Main Deployed")}>
+              <DropdownMenuItem onClick={() => setFlightMode(FlightMode.MAIN_DEPLOYED)}>
                 Main Deployed
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFlightModeSelect("Fault")}>
+              <DropdownMenuItem onClick={() => setFlightMode(FlightMode.FAULT)}>
                 Fault
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -324,7 +348,8 @@ export default function StateChangeBox() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Confirm Flight Mode Change</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you would like to continue with Flight Mode change?
+                  Are you sure you would like to continue with Flight Mode
+                  change?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -339,4 +364,4 @@ export default function StateChangeBox() {
       </div>
     </div>
   );
-} 
+}

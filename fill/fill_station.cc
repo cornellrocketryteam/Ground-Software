@@ -30,7 +30,7 @@
 #include <grpcpp/grpcpp.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "protos/command.grpc.pb.h"
+#include "protos/command_grpc.grpc.pb.h"
 
 using command::Command;
 using command::Commander;

@@ -32,12 +32,12 @@ function tickFormatter(tick: number) {
 }
 
 export default function GraphWidget(minuteDuration: number): Widget {
-  const GraphWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
+  const GraphWidgetComponent = ({ fieldData, measurement, channel }: WidgetProps) => {
     const { sendHistoricalDataReq } = useData();
 
     useEffect(() => {
       console.log("Sending historical data request")
-      sendHistoricalDataReq(-minuteDuration, 0, channel.dbField);
+      sendHistoricalDataReq(-minuteDuration, 0, measurement, channel.dbField);
     }, [channel.dbField, sendHistoricalDataReq]);
 
     const sortedKeys = Object.keys(fieldData).sort();

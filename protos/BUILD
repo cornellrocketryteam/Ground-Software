@@ -8,14 +8,25 @@ proto_library(
     srcs = ["command.proto"],
 )
 
+proto_library(
+    name = "command_grpc_proto",
+    srcs = ["command_grpc.proto"],
+    deps = [":command_proto"],
+)
+
 cc_proto_library(
     name = "command_cc_proto",
     deps = [":command_proto"],
 )
 
+cc_proto_library(
+    name = "command_grpc_cc_proto",
+    deps = [":command_grpc_proto"],
+)
+
 cc_grpc_library(
-    name = "command_cc_grpc",
-    srcs = [":command_proto"],
+    name = "command_grpc_cc_grpc",
+    srcs = [":command_grpc_proto"],
     grpc_only = True,
-    deps = [":command_cc_proto"],
+    deps = [":command_grpc_cc_proto"],
 )

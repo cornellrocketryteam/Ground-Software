@@ -4,7 +4,7 @@
 // 28 to account for 26 byte packet, then /r/n characters
 #define UMB_PACKET_SIZE 28
 
-#include "protos/command.grpc.pb.h"
+#include "protos/command_grpc.grpc.pb.h"
 #include <iostream>
 #include <fcntl.h>   
 
@@ -56,8 +56,6 @@ class RocketTelemetryProtoBuilder {
         void openfile();
 
         ssize_t read_packet(int fd, char* packet, size_t max_size);
-
-        void write_command(COMMAND_OPTIONS com, int Number = -1);
 
         uint32_t recycle_count;
 

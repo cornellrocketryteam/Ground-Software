@@ -134,6 +134,16 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     ],
   },
   {
+    label: "Umbilical Connection Lock",
+    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
+    dbField: "umbilical_connection_lock",
+    widgets: [
+      BoolStateWidget("Connection Lock", "Off"),
+      BoolLightWidget(),
+      EventCounterWidget(),
+    ],
+  },
+  {
     label: "ADC Valid",
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
     dbField: "adc_valid",

@@ -242,37 +242,37 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 
     if (com->has_change_blims_lat()){
-        spdlog::info("Received CHANGE_BLIMS_LAT command");
+        spdlog::critical("Rocket: CHANGE_BLIMS_LAT command received");
         write_command(CHANGE_BLIMS_LAT, com->change_blims_lat().number()); 
     }
 
     if (com->has_change_blims_long()){
-        spdlog::info("Received CHANGE_BLIMS_LONG command");
+        spdlog::critical("Rocket: CHANGE_BLIMS_LONG command received");
         write_command(CHANGE_BLIMS_LONG, com->change_blims_long().number()); 
     }
 
     if (com->has_change_ref_press()){
-        spdlog::info("Received CHANGE_REF_PRESS command");
+        spdlog::critical("Rocket: CHANGE_REF_PRESS command received");
         write_command(CHANGE_REF_PRESS, com->change_ref_press().number()); 
     }
 
     if (com->has_change_alt_state()){
-        spdlog::info("Received CHANGE_ALT_STATE command");
+        spdlog::critical("Rocket: CHANGE_ALT_STATE command received");
         write_command(CHANGE_ALT_STATE, com->change_alt_state().number()); 
     }
 
     if (com->has_change_sd_state()){
-        spdlog::info("Received CHANGE_SD_STATE command");
+        spdlog::critical("Rocket: CHANGE_SD_STATE command received");
         write_command(CHANGE_SD_STATE, com->change_sd_state().number()); 
     }
 
     if (com->has_change_alt_armed()){
-        spdlog::info("Received CHANGE_ALT_ARMED command");
+        spdlog::critical("Rocket: CHANGE_ALT_ARMED command received");
         write_command(CHANGE_ALT_ARMED, com->change_alt_armed().number()); 
     }
 
     if (com->has_change_flightmode()){
-        spdlog::info("Received CHANGE_FLIGHTMODE command");
+        spdlog::critical("Rocket: CHANGE_FLIGHTMODE command received");
         write_command(CHANGE_FLIGHTMODE, com->change_flightmode().number()); 
     }
 }

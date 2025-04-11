@@ -16,6 +16,5 @@ cc_binary(
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",
         "//fill/lib/MockWiringPi:mock_wiringpi_lib"
-    ],
-    linkopts = ["-lsdbus-c++"],
+    ]
 )

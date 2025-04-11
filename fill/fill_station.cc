@@ -32,9 +32,9 @@
 
 #include "protos/command.grpc.pb.h"
 
-#include <sdbus-c++/sdbus-c++.h>
-
-// #include <sdbus-c++/sdbus-c++.h>
+#include <fstream>
+#include <cstdlib>
+#include <stdexcept>
 
 using command::Command;
 using command::Commander;
@@ -83,39 +83,54 @@ FillStationTelemetry readTelemetry() {
     return t;
 }
 
-// Function to send a Bluetooth message to start the payload
+
+// Requires bluetoothctl to be installed
+// TODO: See if this should run in other thread
 void sendPayloadStartCommand() {
     try {
-        // Connect to the system bus
-        auto connection = sdbus::createSystemBusConnection();
-        connection->enterEventLoopAsync();
 
-        const std::string devicePath = "/org/bluez/hci0/dev_XX_XX_XX_XX_XX_XX"; // Raspberry Pico W's object path
-        const std::string charPath = devicePath + "/service0010/char0011";      // Characteristic for payload command
-
-        // Create a proxy for the GATT characteristic
-        auto characteristicProxy = sdbus::createProxy(*connection, "org.bluez", charPath);
-
-        // Prepare the command value to send
-        const std::vector<uint8_t> commandValue = { 0x01 };
-
-        // Prepare an empty options dictionary
-        std::map<std::string, sdbus::Variant> options;
-
-        std::cout<<"Sending Payload Start Command\n";
-
-        // Invoke the WriteValue method on the GATT characteristic
-        characteristicProxy->callMethod("WriteValue")
-            .onInterface("org.bluez.GattCharacteristic1")
-            .withArguments(commandValue, options);
-
-        spdlog::info("Payload start command sent successfully");
+        // Device MAC address of the Raspberry Pico W
+        // TODO:  Add actually values
+        const std::string deviceMAC = "XX:XX:XX:XX:XX:XX";
+        const std::string serviceUUID = "XXXX";
+        const std::string charUUID = "XXXX";
+        
+        // Create temporary file for bluetoothctl commands
+        std::string tempFileName = "/tmp/bluetoothctl_commands.txt";
+        std::ofstream commandFile(tempFileName);
+        
+        if (!commandFile.is_open()) {
+            throw std::runtime_error("Failed to create temporary command file");
+        }
+        
+        // Write bluetoothctl commands to file
+        commandFile << "connect " << deviceMAC << std::endl;
+        commandFile << "menu gatt" << std::endl;
+        commandFile << "select-attribute /org/bluez/hci0/dev_" 
+                   << deviceMAC << "/service" << serviceUUID 
+                   << "/char" << charUUID << std::endl;
+        commandFile << "write 0x01" << std::endl; 
+        commandFile << "disconnect" << std::endl;
+        commandFile << "quit" << std::endl;
+        commandFile.close();
+        
+        // Execute bluetoothctl with the commands
+        std::string cmd = "bluetoothctl < " + tempFileName + " > /dev/null 2>&1";
+        int result = system(cmd.c_str());
+        
+        if (result == 0) {
+            spdlog::info("Payload start command sent successfully");
+        } else {
+            spdlog::error("Failed to send payload start command, return code: {}", result);
+        }
+        
+        // Clean up
+        std::remove(tempFileName.c_str());
     }
-    catch (const sdbus::Error &e) {
+    catch (const std::exception &e) {
         spdlog::error("Failed to send payload start command: {}", e.what());
     }
 }
-
 
 // Fill Station service to accept commands.
 class CommanderServiceImpl final : public Commander::Service
@@ -179,7 +194,6 @@ class CommanderServiceImpl final : public Commander::Service
         if (request->payload_start()) {
             spdlog::critical("Payload: Start command received");
             sendPayloadStartCommand();
-            // TODO: Implement payload start command
         }
     
         // protoBuild.sendCommand(request);

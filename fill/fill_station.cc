@@ -9,7 +9,7 @@
 #include <filesystem>
 
 #include <spdlog/spdlog.h>
-#include "spdlog/sinks/basic_file_sink.h"
+#include <spdlog/sinks/rotating_file_sink.h>
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 #include "actuators/qd.h"
@@ -86,44 +86,44 @@ class CommanderServiceImpl final : public Commander::Service
                        CommandReply *reply) override
     {
         if (request->qd_retract()) {
-            spdlog::critical("QD: Retract command received");
             qd.Actuate();
+            spdlog::critical("QD: Retract command received");
         }
 
         if (request->has_bv1_open()) {
             if (request->bv1_open()) {
-                spdlog::critical("BV: Open command received");
                 ball_valve.open();
+                spdlog::critical("BV: Open command received");
             } else {
-                spdlog::critical("QD: Close command received");
                 ball_valve.close();
+                spdlog::critical("QD: Close command received");
             }
         }
 
         if (request->has_bv1_off()) {
             if (request->bv1_off()) {
-                spdlog::critical("BV: Off command received");
                 ball_valve.powerOff();
+                spdlog::critical("BV: Off command received");
             } else {
-                spdlog::critical("BV: On command received");
                 ball_valve.powerOn();
+                spdlog::critical("BV: On command received");
             }
         }
 
         if(request->has_sv1_open()){
             if(request->sv1_open()){
-                spdlog::critical("SV1: Open command received");
                 sv1.openAsync();
-            } else{
-                spdlog::critical("SV1: Close command received");
+                spdlog::critical("SV1: Open command received");
+            } else {
                 sv1.close();
+                spdlog::critical("SV1: Close command received");
             }
         }
         
         if (request->has_ignite()){
             if (request->ignite()){
-                spdlog::critical("Ignitor: Ignite command received");
                 ignitor.Actuate();
+                spdlog::critical("Ignitor: Ignite command received");
             }
         }
 
@@ -149,7 +149,7 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
     Status StreamTelemetry(ServerContext *context, const FillStationTelemetryRequest *request,
                        ServerWriter<FillStationTelemetry> *writer) override
     {
-        spdlog::info("Received initial connection point for the fill-station telemetry service.\n");
+        spdlog::critical("Received initial connection point for the fill station telemetry");
         while (true) {
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
@@ -177,8 +177,6 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
                     // Broken stream
                     return Status::CANCELLED; 
                 }
-            } else {
-                spdlog::error("Error reading rocket packet: {}", t.status().ToString());      
             }
         }
         return Status::OK;
@@ -216,20 +214,21 @@ void setup_logging() {
     // Create the log file
     std::filesystem::create_directories("logs");
 
-    auto t = std::time(nullptr);
-    std::tm tm = *std::localtime(&t);
+    std::string log_base = "logs/log.txt";
 
-    std::ostringstream oss;
-    oss << "logs/log_" << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".txt";
+    // Max file size: 1.9 GiB
+    size_t max_file_size = 1900 * 1024 * 1024;
+    size_t max_files = 10;
 
     // Write all logs to the file
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(oss.str(), true);
+    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_base, max_file_size, max_files);
+    rotating_sink->set_level(spdlog::level::debug);
 
     // Only show warning or higher in terminal
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    console_sink->set_level(spdlog::level::warn);  
+    console_sink->set_level(spdlog::level::warn);
 
-    std::vector<spdlog::sink_ptr> sinks {file_sink, console_sink};
+    std::vector<spdlog::sink_ptr> sinks {rotating_sink, console_sink};
     auto logger = std::make_shared<spdlog::logger>("multi_sink", sinks.begin(), sinks.end());
 
     logger->set_level(spdlog::level::debug);
@@ -237,8 +236,7 @@ void setup_logging() {
 
     spdlog::set_default_logger(logger);
 
-    spdlog::set_pattern("[%H:%M:%S] [%^%l%$] [%s:%#] %v");
-    spdlog::info("Logging system initialized");
+    spdlog::set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
 }
 
 /*
@@ -255,7 +253,6 @@ int main(int argc, char **argv)
     // Start the server in another thread
     std::shared_ptr<Server> server;
     RunServer(absl::GetFlag(FLAGS_server_port), server);
-    std::thread serverThread(RunServer, absl::GetFlag(FLAGS_server_port), server);
 
     server->Shutdown();
 

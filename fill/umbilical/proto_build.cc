@@ -42,7 +42,7 @@ ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t ma
 
 void RocketTelemetryProtoBuilder::openfile(){
     if ((serial_data = open("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
-        spdlog::error("Umb: Error opening /dev/rocket"); 
+        spdlog::debug("Umb: Error opening /dev/rocket"); 
     }
 
     fcntl(serial_data, F_SETFL, O_RDWR) ;
@@ -51,7 +51,7 @@ void RocketTelemetryProtoBuilder::openfile(){
     memset(&tty, 0, sizeof(tty));
 
     if (tcgetattr(serial_data, &tty) != 0) {
-        spdlog::error("Umb: Error getting termios attributes for file descriptor");
+        // spdlog::debug("Umb: Error getting termios attributes for file descriptor");
         close(serial_data);
     }
 
@@ -80,7 +80,7 @@ void RocketTelemetryProtoBuilder::openfile(){
     tty.c_cc[VTIME] = 10;
 
     if (tcsetattr(serial_data, TCSANOW, &tty) != 0) {
-        spdlog::error("Umb: Error setting termios attributes");
+        // spdlog::debug("Umb: Error setting termios attributes");
     }
 
     usleep(10);
@@ -172,7 +172,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
 
     if (recycle_count == 100){
         recycle_count = 0;
-        spdlog::info("Umb: Recycle limit reached. Opening file again");
+        // spdlog::info("Umb: Recycle limit reached. Opening file again");
         openfile();
     }
 
@@ -193,11 +193,10 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         char packet[UMB_PACKET_SIZE]; 
 
         int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
-        spdlog::info("Umb: Packet: [{}]", packet);
 
         if (status == -1 || status < UMB_PACKET_SIZE - 1){
             // This means we did not read enough bytes 
-            spdlog::error("Umb: {} bytes read", status); 
+            // spdlog::debug("Umb: Only {} bytes read", status); 
             return absl::InternalError("Not enough Bytes"); 
         }
 
@@ -283,9 +282,8 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
 
         spdlog::info("Umb: Metadata: {:032b}", metadata);
         spdlog::info("Umb: Events: {:032b}", events_val);
-        spdlog::info("Umb: MS since boot: {}", ms_since_boot);
-        spdlog::info("Umb: Battery voltage: {}", battery_voltage);
-        spdlog::info("Umb: PT 3: {}, PT 4: {}, RTD: {}", pt3, pt4, rtd_temp);
+        spdlog::info("Umb: MS: {}", ms_since_boot);
+        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}", pt3, pt4, rtd_temp);
 
     } else {
         spdlog::error("Umb: Serial port is not open. Trying again");

@@ -44,6 +44,17 @@ message Command {
     optional bool sd_clear = 12;
     optional bool fram_reset = 13;
     optional bool reboot = 14;
+    optional ChangeFSWCommand change_blims_lat = 15; 
+    optional ChangeFSWCommand change_blims_long = 16;
+    optional ChangeFSWCommand change_ref_press = 17;
+    optional ChangeFSWCommand change_alt_state = 18;
+    optional ChangeFSWCommand change_sd_state = 19;
+    optional ChangeFSWCommand change_alt_armed = 20;
+    optional ChangeFSWCommand change_flightmode = 21; 
+}
+
+message ChangeFSWCommand {
+    uint32 number = 1; 
 }
 
 message VentCommand {

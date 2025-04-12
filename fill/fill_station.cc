@@ -96,7 +96,7 @@ class CommanderServiceImpl final : public Commander::Service
                 spdlog::critical("BV: Open command received");
             } else {
                 ball_valve.close();
-                spdlog::critical("QD: Close command received");
+                spdlog::critical("BV: Close command received");
             }
         }
 

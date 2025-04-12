@@ -30,7 +30,7 @@ float Sensor::ReadPT1() {
     float voltage = Read(PT1_CHANNEL, ADC1_INDEX);
     // spdlog::info("PT1: Voltage read: {}", voltage); Commented out for test launch
 
-    return 1000 * voltage / 1349; 
+    return 1500 * voltage / 1349; 
 }
 
 float Sensor::ReadPT2() {

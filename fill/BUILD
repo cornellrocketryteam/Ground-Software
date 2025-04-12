@@ -2,7 +2,7 @@ cc_binary(
     name = "fill_station",
     srcs = ["fill_station.cc"],
     deps = [
-        "//protos:command_cc_grpc",
+        "//protos:command_grpc_cc_grpc",
         "//fill/actuators:qd",
         "//fill/actuators:ball_valve",
         "//fill/umbilical:rocket_proto_builder",

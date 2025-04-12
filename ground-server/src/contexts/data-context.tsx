@@ -13,7 +13,7 @@ import {
 type DataContextType = {
   connected: boolean;
   data: Record<string, Record<string, Record<string, unknown>>>; // measurement -> field -> timestamp -> value: unknown
-  sendHistoricalDataReq: (start: number, stop: number, field: string) => void;
+  sendHistoricalDataReq: (start: number, stop: number, measurement: string, field: string) => void;
   registerLiveDbField: (dbField: string) => void;
   deregisterLiveDbField: (dbField: string) => void;
 };
@@ -134,9 +134,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // Memoize the historical data request function to avoid unnecessary re-renders
   const sendHistoricalDataReq = useCallback(
-    (start: number, stop: number, field: string) => {
+    (start: number, stop: number, measurement: string, field: string) => {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ start, stop, field }));
+        wsRef.current.send(JSON.stringify({ start, stop, measurement, field }));
       } else {
         console.error(
           "WebSocket not connected. Cannot request historical data."

@@ -27,7 +27,8 @@ ENV PORT=80
 # Build the protobufs
 COPY protos /protos
 RUN mkdir src && mkdir src/proto-out
-RUN protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/proto-out --ts_proto_opt=outputClientImpl=grpc-js,esModuleInterop=true,outputServices=grpc-js,paths=source_relative -I../protos ../protos/command.proto
+RUN protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/proto-out --ts_proto_opt=outputClientImpl=grpc-js,esModuleInterop=true,outputServices=grpc-js -I../ ../protos/command.proto
+RUN protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=src/proto-out --ts_proto_opt=outputClientImpl=grpc-js,esModuleInterop=true,outputServices=grpc-js -I../ ../protos/command_grpc.proto
 
 # Build the React app for production
 COPY ./ground-server .

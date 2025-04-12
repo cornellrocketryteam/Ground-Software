@@ -95,185 +95,134 @@ RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
     close(serial_data);
 }
 
-void RocketTelemetryProtoBuilder::write_command(COMMAND_OPTIONS com, int Number){
-    const char * buf; 
-    std::string num; 
-    if (Number != -1){
-        num = std::to_string(Number); 
-    }
-    switch(com){
-        case LAUNCH:
-            buf = "<L>";
-            write(serial_data, buf, sizeof(buf)); 
-            break;
-        case OPEN_MAV:
-            buf = "<M>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CLOSE_MAV:
-            buf = "<m>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case OPEN_SV:
-            buf = "<S>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CLOSE_SV:
-            buf = "<s>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case SAFE:
-            buf = "<V>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CLEAR_SD:
-            buf = "<D>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case FRAM_RESET:
-            buf = "<F>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case REBOOT:
-            buf = "<R>"; 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_BLIMS_LAT:
-            num = "<C1" + num + ">"; 
-            buf = num.c_str();
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_BLIMS_LONG:
-            num = "<C2" + num + ">"; 
-            buf = num.c_str();
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_REF_PRESS:
-            num = "<C3" + num + ">"; 
-            buf = num.c_str(); 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_ALT_STATE:
-            num = "<C4" + num + ">"; 
-            buf = num.c_str(); 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_SD_STATE:
-            num = "<C5" + num + ">"; 
-            buf = num.c_str(); 
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_ALT_ARMED:
-            num = "<C6" + num + ">"; 
-            buf = num.c_str();
-            write(serial_data, buf, sizeof(buf));
-            break;
-        case CHANGE_FLIGHTMODE:
-            num = "<C7" + num + ">"; 
-            buf = num.c_str(); 
-            write(serial_data, buf, sizeof(buf));
-            break;
-    }
-}
-
 void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
+    // Handle SV2 open/close commands inline.
     if (com->has_sv2_close()){
-        if (com->sv2_close()) {
+        if (com->sv2_close()){
             spdlog::critical("SV2: Close command received");
-            write_command(CLOSE_SV);
+            const char* cmd = "<s>";
+            write(serial_data, cmd, strlen(cmd));
         } else {
             spdlog::critical("SV2: Open command received");
-            write_command(OPEN_SV);
+            const char* cmd = "<S>";
+            write(serial_data, cmd, strlen(cmd));
         }
     }
 
+    // Handle MAV open/close commands inline.
     if (com->has_mav_open()){
         if (com->mav_open()){
             spdlog::critical("MAV: Open command received");
-            write_command(OPEN_MAV);
+            const char* cmd = "<M>";
+            write(serial_data, cmd, strlen(cmd));
         } else {     
             spdlog::critical("MAV: Close command received");
-            write_command(CLOSE_MAV);
+            const char* cmd = "<m>";
+            write(serial_data, cmd, strlen(cmd));
         }
     }
 
+    // Handle launch command.
     if (com->launch()){
         spdlog::critical("MAV: Launch command received");
-        write_command(LAUNCH);
+        const char* cmd = "<L>";
+        write(serial_data, cmd, strlen(cmd));
     }
 
+    // Handle vent command with a background thread.
     if (com->has_vent()) {
         spdlog::critical("SV2: Vent command received");
-
         auto sleep_duration = com->vent().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
-            write_command(OPEN_SV);
-            sleep(sleep_duration); 
-            write_command(CLOSE_SV); 
+            const char* openCmd = "<S>";
+            write(serial_data, openCmd, strlen(openCmd));
+
+            sleep(sleep_duration);
+            
+            const char* closeCmd = "<s>";
+            write(serial_data, closeCmd, strlen(closeCmd));
         });
         vent_sender.detach();
     }
 
+    // Handle vent and ignite command.
     if (com->has_vent_and_ignite()) {
         spdlog::critical("SV2: Vent and ignite command received");
-
         auto sleep_duration = com->vent_and_ignite().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
-            write_command(OPEN_SV);
-            sleep(sleep_duration); 
-            write_command(CLOSE_SV); 
+            const char* openCmd = "<S>";
+            write(serial_data, openCmd, strlen(openCmd));
+
+            sleep(sleep_duration);
+
+            const char* closeCmd = "<s>";
+            write(serial_data, closeCmd, strlen(closeCmd));
         });
         vent_sender.detach();
     }
 
+    // Handle SD clear command.
     if (com->sd_clear()){
         spdlog::critical("SD: Clear command received");
-        write_command(CLEAR_SD); 
+        const char* cmd = "<D>";
+        write(serial_data, cmd, strlen(cmd));
     }
 
+    // Handle FRAM reset command.
     if (com->fram_reset()){
         spdlog::critical("SV2: Reset command received");
-        write_command(FRAM_RESET);
+        const char* cmd = "<F>";
+        write(serial_data, cmd, strlen(cmd));
     }
     
+    // Handle reboot command.
     if (com->reboot()){
         spdlog::critical("Rocket: Reboot command received");
-        write_command(REBOOT); 
+        const char* cmd = "<R>";
+        write(serial_data, cmd, strlen(cmd));
     }
 
+    // Handle commands with number parameters.
     if (com->has_change_blims_lat()){
         spdlog::critical("Rocket: CHANGE_BLIMS_LAT command received");
-        write_command(CHANGE_BLIMS_LAT, com->change_blims_lat().number()); 
+        std::string cmd = "<C1" + std::to_string(com->change_blims_lat().number()) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_blims_long()){
         spdlog::critical("Rocket: CHANGE_BLIMS_LONG command received");
-        write_command(CHANGE_BLIMS_LONG, com->change_blims_long().number()); 
+        std::string cmd = "<C2" + std::to_string(com->change_blims_long().number()) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_ref_press()){
         spdlog::critical("Rocket: CHANGE_REF_PRESS command received");
-        write_command(CHANGE_REF_PRESS, com->change_ref_press().number()); 
+        std::string cmd = "<C3" + std::to_string(com->change_ref_press().number()) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_alt_state()){
         spdlog::critical("Rocket: CHANGE_ALT_STATE command received");
-        write_command(CHANGE_ALT_STATE, com->change_alt_state().number()); 
+        std::string cmd = "<C4" + std::to_string(static_cast<int>(com->change_alt_state())) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_sd_state()){
         spdlog::critical("Rocket: CHANGE_SD_STATE command received");
-        write_command(CHANGE_SD_STATE, com->change_sd_state().number()); 
+        std::string cmd = "<C5" + std::to_string(static_cast<int>(com->change_sd_state())) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_alt_armed()){
         spdlog::critical("Rocket: CHANGE_ALT_ARMED command received");
-        write_command(CHANGE_ALT_ARMED, com->change_alt_armed().number()); 
+        std::string cmd = "<C6" + std::to_string(static_cast<int>(com->change_alt_armed())) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 
     if (com->has_change_flightmode()){
         spdlog::critical("Rocket: CHANGE_FLIGHTMODE command received");
-        write_command(CHANGE_FLIGHTMODE, com->change_flightmode().number()); 
+        std::string cmd = "<C7" + std::to_string(static_cast<int>(com->change_flightmode())) + ">";
+        write(serial_data, cmd.c_str(), cmd.size());
     }
 }
 
@@ -325,7 +274,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketMetadata->set_gps_valid(static_cast<bool>((metadata >> 2) & 0x1));
         rocketMetadata->set_imu_valid(static_cast<bool>((metadata >> 3) & 0x1));
         rocketMetadata->set_acc_valid(static_cast<bool>((metadata >> 4) & 0x1));
-        // bit index 5 is unused
+        rocketMetadata->set_umbilical_connection_lock(static_cast<bool>((metadata >> 5) & 0x1));
         rocketMetadata->set_adc_valid(static_cast<bool>((metadata >> 6) & 0x1));
         rocketMetadata->set_fram_valid(static_cast<bool>((metadata >> 7) & 0x1));
         rocketMetadata->set_sd_valid(static_cast<bool>((metadata >> 8) & 0x1));

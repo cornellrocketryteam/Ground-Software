@@ -50,7 +50,7 @@ type Datastore struct {
 }
 
 var legalMeasurements = []string{
-	"fill", "rocket",
+	"Fill Station", "Ground Radio", "Fill Radio", "Umbilical",
 }
 var legalFields = []string{
 	"rocket_time", "altitude", "temp", "voltage", "current", "pt3", "blims_state",
@@ -68,7 +68,7 @@ var legalFields = []string{
 }
 var legalAggregation = []string{"mean", "median", "mode"}
 
-var timestampLayout = "2006-01-02T15:04:05.99Z07:00"
+var timestampLayout = "2006-01-02T15:04:05.000Z07:00"
 
 // Init initializes the struct with default values
 func (d *Datastore) Init(ctx context.Context) {
@@ -136,7 +136,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 			fields["gps_valid"] = metaData.GpsValid
 			fields["imu_valid"] = metaData.ImuValid
 			fields["acc_valid"] = metaData.AccValid
-			// bit index 5 is unused
+			fields["umbilical_connection_lock"] = metaData.UmbilicalConnectionLock
 			fields["adc_valid"] = metaData.AdcValid
 			fields["fram_valid"] = metaData.FramValid
 			fields["sd_valid"] = metaData.SdValid

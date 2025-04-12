@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { sendCommand } from "@/lib/grpcClient";
-import { type Command } from "@/proto-out/command";
+import { type Command } from "@/proto-out/protos/command";
 import { useToast } from "@/components/ui/use-toast";
 
 interface ButtonConfig {

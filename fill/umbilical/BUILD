@@ -3,7 +3,7 @@ cc_library(
     srcs = ["proto_build.cc"],
     hdrs = ["proto_build.h"],
     deps = [
-        "//protos:command_cc_grpc",
+        "//protos:command_grpc_cc_grpc",
         "@com_github_grpc_grpc//:grpc++",
         "@com_github_grpc_grpc//:grpc++_reflection",
         "@abseil-cpp//absl/status:statusor",

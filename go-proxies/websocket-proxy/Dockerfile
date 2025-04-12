@@ -15,7 +15,7 @@ RUN go mod download
 # Build the protobufs
 COPY protos /protos
 RUN mkdir proto-out
-RUN protoc --go_out=./proto-out --go_opt=paths=source_relative --go-grpc_out=./proto-out --go-grpc_opt=paths=source_relative -I../protos ../protos/command.proto
+RUN protoc --go_out=./proto-out --go-grpc_out=./proto-out -I../ ../protos/command.proto
 
 # Copy the source code
 ADD go-proxies ./

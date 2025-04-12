@@ -28,21 +28,21 @@ float Sensor::Read(uint8_t channel, uint8_t index){
 
 float Sensor::ReadPT1() {
     float voltage = Read(PT1_CHANNEL, ADC1_INDEX);
-    spdlog::info("PT1: Voltage read: {}", voltage);
+    // spdlog::info("PT1: Voltage read: {}", voltage); Commented out for test launch
 
     return 1000 * voltage / 1349; 
 }
 
 float Sensor::ReadPT2() {
     float voltage = Read(PT2_CHANNEL, ADC1_INDEX);
-    spdlog::info("PT2: Voltage read: {}", voltage);
+    // spdlog::info("PT2: Voltage read: {}", voltage); Commented out for test launch
 
     return 1000 * voltage / 1338;
 }
 
 float Sensor::ReadLoadCell() {
     float voltage = Read(LC_CHANNEL, ADC1_INDEX);
-    spdlog::info("LC1: Voltage read: {}", voltage);
+    // spdlog::info("LC1: Voltage read: {}", voltage); Commented out for test launch
 
     return 250 * voltage / 1881; 
 }
@@ -50,7 +50,7 @@ float Sensor::ReadLoadCell() {
 float Sensor::ReadIgnitorOneContinuity() {
     // voltage < 10 implies no continuity, and >= 10 is continuity
     float voltage = Read(IGN_1_CONT_CHANNEL, ADC2_INDEX);
-    spdlog::info("Ign 1: Voltage read: {}", voltage);
+    // spdlog::info("Ign 1: Voltage read: {}", voltage); Commented out for test launch
 
     return voltage; 
 }
@@ -58,7 +58,7 @@ float Sensor::ReadIgnitorOneContinuity() {
 float Sensor::ReadIgnitorTwoContinuity() {
     // voltage < 10 implies no continuity, and >= 10 is continuity
     float voltage = Read(IGN_2_CONT_CHANNEL, ADC2_INDEX);
-    spdlog::info("Ign 2: Voltage read: {}", voltage);
+    // spdlog::info("Ign 2: Voltage read: {}", voltage); Commented out for test launch
 
     return voltage; 
 }

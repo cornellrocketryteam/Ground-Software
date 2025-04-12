@@ -211,10 +211,29 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
 }
 
 void setup_logging() {
-    // Create the log file
+    // Base logs directory
     std::filesystem::create_directories("logs");
 
-    std::string log_base = "logs/log.txt";
+    // Generate timestamped subdirectory
+    auto t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    std::ostringstream folder_stream;
+    folder_stream << "logs/" << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
+
+    std::string log_folder = folder_stream.str();
+    std::filesystem::create_directories(log_folder);
+
+    // Create "logs/latest" symlink
+    std::filesystem::path latest_symlink = "logs/latest";
+    std::error_code ec;
+    std::filesystem::remove(latest_symlink, ec);  // ignore error if it doesn't exist
+    std::filesystem::create_symlink(std::filesystem::absolute(log_folder), latest_symlink, ec);
+    if (ec) {
+        spdlog::warn("Could not create latest symlink: {}", ec.message());
+    }
+
+    // Log file path
+    std::string log_base = log_folder + "/log.txt";
 
     // Max file size: 1.9 GiB
     size_t max_file_size = 1900 * 1024 * 1024;
@@ -236,6 +255,7 @@ void setup_logging() {
 
     spdlog::set_default_logger(logger);
 
+    // Set log pattern
     spdlog::set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
 }
 

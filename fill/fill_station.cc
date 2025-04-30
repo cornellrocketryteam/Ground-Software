@@ -237,9 +237,19 @@ class CommanderServiceImpl final : public Commander::Service
             }
         }
 
-        if (request->has_vent_and_ignite()) {
-            spdlog::critical("Ignitor: Vent and ignite command received");
-            auto sleep_duration = request->vent_and_ignite().ignite_delay();
+        if (request->has_vent_ignite()) {
+            spdlog::critical("Ignitor: Vent and Ignite command received");
+            auto sleep_duration = request->vent_ignite().ignite_delay();
+            std::thread ignite_sender([sleep_duration](){
+                sleep(sleep_duration); 
+                ignitor.Actuate();
+            });
+            ignite_sender.detach();
+        }
+
+        if (request->has_vent_ignite_launch()) {
+            spdlog::critical("Ignitor: Vent and Ignite and Launch command received");
+            auto sleep_duration = request->vent_ignite_launch().ignite_delay();
             std::thread ignite_sender([sleep_duration](){
                 sleep(sleep_duration); 
                 ignitor.Actuate();

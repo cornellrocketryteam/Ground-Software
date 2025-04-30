@@ -9,7 +9,10 @@ import { Slider } from "@/components/ui/slider";
 export default function ControlsPage() {
   const [ventSliderValue, setVentSliderValue] = useState(1);
   const [ventIgniteSliderValue, setVentIgniteSliderValue] = useState(1);
-  const [igniteDelay, setIgniteDelay] = useState(1);
+  const [ventIgniteLaunchSliderValue, setVentIgniteLaunchSliderValue] = useState(1);
+  const [ventIgniteIgniteDelay, setVentIgniteIgniteDelay] = useState(1);
+  const [ventIgniteLaunchIgniteDelay, setVentIgniteLaunchIgniteDelay] = useState(1);
+  const [ventIgniteLaunchLaunchDelay, setVentIgniteLaunchLaunchDelay] = useState(1);
 
   return (
     <div>
@@ -185,9 +188,9 @@ export default function ControlsPage() {
                 label: "Vent + Ignite",
                 stateLabel: "Vented & Ignited",
                 command: {
-                  ventAndIgnite: {
+                  ventIgnite: {
                     ventDuration: ventIgniteSliderValue,
-                    igniteDelay: igniteDelay,
+                    igniteDelay: ventIgniteIgniteDelay,
                   },
                 },
                 isOn: true,
@@ -202,7 +205,7 @@ export default function ControlsPage() {
               </h4>
               <Slider
                 min={1}
-                max={4}
+                max={5}
                 step={1}
                 value={[ventIgniteSliderValue]}
                 onValueChange={(value: number[]) =>
@@ -218,13 +221,77 @@ export default function ControlsPage() {
               </h4>
               <Slider
                 min={0}
-                max={4}
+                max={10}
                 step={1}
-                value={[igniteDelay]}
-                onValueChange={(value: number[]) => setIgniteDelay(value[0])}
+                value={[ventIgniteIgniteDelay]}
+                onValueChange={(value: number[]) => setVentIgniteIgniteDelay(value[0])}
               />
               <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                {igniteDelay} {igniteDelay === 1 ? "second" : "seconds"}
+                {ventIgniteIgniteDelay} {ventIgniteIgniteDelay === 1 ? "second" : "seconds"}
+              </p>
+            </div>
+          </ActuationBox>
+          <ActuationBox
+            title="Vent + Ignite + Launch"
+            buttons={[
+              {
+                label: "Vent + Ignite + Launch",
+                stateLabel: "Vented & Ignited & Launched",
+                command: {
+                  ventIgniteLaunch: {
+                    ventDuration: ventIgniteLaunchSliderValue,
+                    igniteDelay: ventIgniteLaunchIgniteDelay,
+                    launchDelay: ventIgniteLaunchLaunchDelay,
+                  },
+                },
+                isOn: true,
+              },
+            ]}
+            initialStateLabel="No Data"
+            useSwitch={false}
+          >
+            <div className="mt-8 w-full flex flex-col items-center">
+              <h4 className="text-sm font-bold mb-4 text-center">
+                Vent Duration
+              </h4>
+              <Slider
+                min={1}
+                max={5}
+                step={1}
+                value={[ventIgniteLaunchSliderValue]}
+                onValueChange={(value: number[]) =>
+                  setVentIgniteLaunchSliderValue(value[0])
+                }
+              />
+              <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {ventIgniteLaunchSliderValue}{" "}
+                {ventIgniteLaunchSliderValue === 1 ? "second" : "seconds"}
+              </p>
+              <h4 className="mt-4 text-sm font-bold mb-4 text-center">
+                Ignite Delay
+              </h4>
+              <Slider
+                min={0}
+                max={10}
+                step={1}
+                value={[ventIgniteLaunchIgniteDelay]}
+                onValueChange={(value: number[]) => setVentIgniteLaunchIgniteDelay(value[0])}
+              />
+              <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {ventIgniteLaunchIgniteDelay} {ventIgniteLaunchIgniteDelay === 1 ? "second" : "seconds"}
+              </p>
+              <h4 className="mt-4 text-sm font-bold mb-4 text-center">
+                Launch Delay
+              </h4>
+              <Slider
+                min={0}
+                max={20}
+                step={1}
+                value={[ventIgniteLaunchLaunchDelay]}
+                onValueChange={(value: number[]) => setVentIgniteLaunchLaunchDelay(value[0])}
+              />
+              <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                {ventIgniteLaunchLaunchDelay} {ventIgniteLaunchLaunchDelay === 1 ? "second" : "seconds"}
               </p>
             </div>
           </ActuationBox>

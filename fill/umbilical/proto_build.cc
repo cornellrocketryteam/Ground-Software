@@ -146,11 +146,11 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
     }
 
     // Handle vent and ignite command.
-    if (com->has_vent_and_ignite()) {
-        spdlog::critical("SV2: Vent and ignite command received");
-        auto sleep_duration = com->vent_and_ignite().vent_duration();
+    if (com->has_vent_ignite()) {
+        spdlog::critical("SV2: Vent and Ignite command received");
+        auto sleep_duration = com->vent_ignite().vent_duration();
         std::thread vent_sender([this, sleep_duration](){
-            const char* openCmd = "<S>";
+            const char* openCmd = "<L>";
             write(serial_data, openCmd, strlen(openCmd));
 
             sleep(sleep_duration);
@@ -159,6 +159,29 @@ void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
             write(serial_data, closeCmd, strlen(closeCmd));
         });
         vent_sender.detach();
+    }
+
+    // Handle vent and ignite and launch command.
+    if (com->has_vent_ignite_launch()) {
+        spdlog::critical("SV2: Vent and Ignite and Launch command received");
+        auto vent_duration = com->vent_ignite_launch().vent_duration();
+        auto launch_delay = com->vent_ignite_launch().launch_delay();
+        std::thread vent_sender([this, vent_duration](){
+            const char* openCmd = "<S>";
+            write(serial_data, openCmd, strlen(openCmd));
+
+            sleep(vent_duration);
+
+            const char* closeCmd = "<s>";
+            write(serial_data, closeCmd, strlen(closeCmd));
+        });
+        vent_sender.detach();
+        std::thread launch_sender([this, launch_delay](){
+            sleep(launch_delay);
+            const char* cmd = "<L>";
+            write(serial_data, cmd, strlen(cmd));
+        });
+        launch_sender.detach();
     }
 
     // Handle SD clear command.

@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <random>
 #include <filesystem>
+#include <fstream>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -31,6 +32,7 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "protos/command_grpc.grpc.pb.h"
+
 
 using command::Command;
 using command::Commander;
@@ -78,6 +80,111 @@ FillStationTelemetry readTelemetry() {
     t.set_lc1(sensor_suite.ReadLoadCell());
     return t;
 }
+
+std::string find_device_mac(const std::string& name_substr) {
+
+    const signed int check_time_ms = 100;
+
+    // 1) power on + start scanning
+    // std::system("bluetoothctl power on > /dev/null 2>&1");
+    // std::system("bluetoothctl --timeout 4 scan on > /dev/null 2>&1");
+    // std::system("bluetoothctl scan off > /dev/null 2>&1");
+    // std::system(
+    //     "bluetoothctl --timeout 4 power on scan on > /dev/null 2>&1"
+    //   );
+
+    std::system(
+        "bash -c \"(echo -e 'power on\nscan on'; sleep 4; echo exit) | bluetoothctl > /dev/null 2>&1\""
+      );
+      std::cout<<"Scanning for devices..."<<std::endl;
+
+    std::string mac;
+    while (true) {
+        // 2) wait a bit, then read the cache
+        std::this_thread::sleep_for(std::chrono::milliseconds(check_time_ms));
+
+        FILE* pipe = popen("bluetoothctl devices", "r");
+        if (!pipe) throw std::runtime_error("popen(bluetoothctl devices) failed");
+
+        char line[256];
+        while (fgets(line, sizeof(line), pipe)) {
+            std::string str(line);
+            // std::cout<<str<<std::endl;
+            if (str.find(name_substr) != std::string::npos) {
+                // Format: "Device AA:BB:CC:DD:EE:FF Friendly-Name"
+                std::istringstream iss(str);
+                std::string token;
+                iss >> token >> mac;
+                break;
+            }
+        }
+        pclose(pipe);
+
+        // std::cout<<"Nothing seen"<<std::endl;
+        if (!mac.empty()) break;      // found it!
+    }
+
+    // 3) stop scanning and return
+    return mac;
+    // return "28:CD:C1:12:4F:22";
+}
+
+void start_payload() {
+    bool success = false;
+    try {
+        std::string deviceMAC = find_device_mac("Pico");
+        // std::string deviceMAC = "28:CD:C1:12:4F:22";
+
+        std::string cmd = "bluetoothctl connect " + deviceMAC + " > /dev/null 2>&1";
+        int result = std::system(cmd.c_str());
+        
+        if (result == 0) {
+            spdlog::info("Payload start command sent successfully");
+            success = true;
+        } else {
+            spdlog::error("Failed to send payload start command, return code: {}", result);
+        }
+        
+    }
+    catch (const std::exception &e) {
+        spdlog::error("Failed to send payload start command: {}", e.what());
+    }
+   
+    auto t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    std::ostringstream ts_stream;
+    ts_stream << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S");
+    std::string ts_str = ts_stream.str();
+
+    // Ensure the directory exists
+    const std::filesystem::path payloadDir{"payload"};
+    std::error_code ec;
+    if (!std::filesystem::create_directories(payloadDir, ec) && ec) {
+        spdlog::error("Failed to create '{}': {}", payloadDir.string(), ec.message());
+    }
+
+    // Build filename: payload/payload_<timestamp>.txt
+    std::string filename = payloadDir.string() + "/payload_" + ts_str + ".txt";
+
+    // Write the timestamp into that file
+    std::ofstream out(filename);
+    if (!out) {
+        spdlog::error("Could not open '{}' for writing", filename);
+    } else {
+        out << "Date: " << std::put_time(&tm, "%Y-%m-%d") << std::endl;
+        out << "Time: " << std::put_time(&tm, "%H:%M:%S") << std::endl;
+        out << "Hour: " << std::put_time(&tm, "%H") << std::endl;
+        out << "Minute: " << std::put_time(&tm, "%M") << std::endl;
+        out << "Second: " << std::put_time(&tm, "%S") << std::endl;
+        out << "Full timestamp: " << ts_str << std::endl;
+        out << "Sent successfully: " << (success ? "true" : "false") << std::endl;
+        out.close();
+        spdlog::info("Wrote payload timestamp to '{}'", filename);
+        std::cout<<"Wrote payload timestamp to '"<<filename<<"'"<<std::endl;
+    }
+
+};
+
 
 // Fill Station service to accept commands.
 class CommanderServiceImpl final : public Commander::Service
@@ -136,7 +243,12 @@ class CommanderServiceImpl final : public Commander::Service
             });
             ignite_sender.detach();
         }
-    
+
+        if (request->payload_start()) {
+            spdlog::critical("Payload: Start command received");
+            start_payload();
+        }
+
         protoBuild.sendCommand(request);
 
         return Status::OK;
@@ -211,6 +323,8 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
 }
 
 void setup_logging() {
+
+    
     // Base logs directory
     std::filesystem::create_directories("logs");
 
@@ -239,6 +353,7 @@ void setup_logging() {
     size_t max_file_size = 1900 * 1024 * 1024;
     size_t max_files = 10;
 
+
     // Write all logs to the file
     auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(log_base, max_file_size, max_files);
     rotating_sink->set_level(spdlog::level::debug);
@@ -253,6 +368,8 @@ void setup_logging() {
     logger->set_level(spdlog::level::debug);
     logger->flush_on(spdlog::level::warn);
 
+
+
     spdlog::set_default_logger(logger);
 
     // Set log pattern
@@ -265,16 +382,22 @@ MAIN
 // Start server and client services
 int main(int argc, char **argv)
 {
-    absl::ParseCommandLine(argc, argv);
+   
 
-    // Set up spdlog
-    setup_logging();
+    // absl::ParseCommandLine(argc, argv);
+
+
+    // // Set up spdlog
+    // setup_logging();
+
+
+    start_payload();
 
     // Start the server in another thread
-    std::shared_ptr<Server> server;
-    RunServer(absl::GetFlag(FLAGS_server_port), server);
+    // std::shared_ptr<Server> server;
+    // RunServer(absl::GetFlag(FLAGS_server_port), server);
 
-    server->Shutdown();
+    // server->Shutdown();
 
     return 0;
 }

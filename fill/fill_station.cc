@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <random>
 #include <filesystem>
+#include <fstream>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -79,6 +80,115 @@ FillStationTelemetry readTelemetry() {
     return t;
 }
 
+std::string find_device_mac(const std::string& name_substr) {
+    // Start scanning for bluetooth devices
+    std::system("bluetoothctl power on > /dev/null 2>&1");
+    std::system("(bluetoothctl scan on > /dev/null 2>&1 &)");
+    
+    // Set a timeout
+    const int timeout_seconds = 30;
+    const int check_freq_ms = 100;
+    auto start_time = std::chrono::steady_clock::now();
+
+    std::string mac;
+    while (mac.empty()) {
+        // Check for timeout
+        auto current_time = std::chrono::steady_clock::now();
+        
+        if (std::chrono::duration_cast<std::chrono::seconds>(
+            current_time - start_time).count() > timeout_seconds) {
+            // timeout
+            break;
+        }
+        
+        // Check for devices
+        FILE* pipe = popen("bluetoothctl devices", "r");
+        if (!pipe) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(check_freq_ms));
+            continue;
+        }
+        
+        char line[256];
+        while (fgets(line, sizeof(line), pipe)) {
+            std::string str(line);
+            if (str.find(name_substr) != std::string::npos) {
+                std::istringstream iss(str);
+                std::string token;
+                iss >> token >> mac;
+                break;
+            }
+        }
+        pclose(pipe);
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(check_freq_ms));
+    }
+    
+    // Stop scanning
+    std::system("bluetoothctl scan off > /dev/null 2>&1");
+
+    return mac;
+}
+
+std::tm get_timestamp() {
+    auto t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    return tm;
+}
+
+void start_payload() {
+    // Get timestamp of payload command being received from GSW
+    auto tm_start = get_timestamp();
+
+    std::string deviceMAC = find_device_mac("Pico");
+
+    if (deviceMAC.empty()) {
+        spdlog::error("Failed to find device with name containing 'Pico'");
+        return;
+    }
+    std::string cmd = "bluetoothctl connect " + deviceMAC + " > /dev/null 2>&1";
+
+    int result = std::system(cmd.c_str());
+    auto tm_end = get_timestamp();
+    if (result == 0) {
+        spdlog::critical("Payload start command sent successfully to Payload");
+    } else {
+        spdlog::error("Failed to send payload start command, return code: {}", result);
+    }
+
+    // Ensure the directory exists
+    const std::filesystem::path payloadDir{"payload"};
+    std::error_code ec;
+    if (!std::filesystem::create_directories(payloadDir, ec) && ec) {
+        spdlog::error("Failed to create '{}': {}", payloadDir.string(), ec.message());
+    }
+
+    // Get string name of the latest timestamp
+    std::ostringstream os;
+    os << std::put_time(&tm_start, "%Y-%m-%d_%H-%M-%S");
+    std::string timestamp_name = os.str();
+
+    // Build filename: payload/payload_<timestamp>.txt
+    std::string filename = payloadDir.string() + "/payload_" + timestamp_name + ".txt";
+
+    // Write the timestamp into that file
+    std::ofstream out(filename);
+    if (!out) {
+        spdlog::error("Could not open '{}' for writing", filename);
+        return;
+    }
+    out << "Date: " << std::put_time(&tm_start, "%Y-%m-%d") << "\n" << std::endl;
+    out << "Payload start command received from GSW at: " << std::put_time(&tm_start, "%Y-%m-%d %H:%M:%S") << std::endl;
+    if (result == 0) {
+        out << "Payload start command sent successfully to Payload at :";
+    } else {
+        out << "Failed to send payload start command: ";
+    }
+    out << std::put_time(&tm_end, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+    out.close();
+};
+
+
 // Fill Station service to accept commands.
 class CommanderServiceImpl final : public Commander::Service
 {
@@ -135,6 +245,20 @@ class CommanderServiceImpl final : public Commander::Service
                 ignitor.Actuate();
             });
             ignite_sender.detach();
+        }
+
+        if (request->payload_start()) {
+            spdlog::critical("Payload: Start command received");
+            std::thread payload_thread([]() {
+                try {
+                    start_payload();
+                } catch (const std::exception& e) {
+                    spdlog::error("Exception in payload thread: {}", e.what());
+                } catch (...) {
+                    spdlog::error("Unknown exception in payload thread");
+                }
+            });
+            payload_thread.detach();
         }
     
         protoBuild.sendCommand(request);

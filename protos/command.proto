@@ -27,18 +27,19 @@ message Command {
   optional bool mav_open = 7;
   optional bool launch = 8;
   optional VentCommand vent = 9;
-  optional VentIgniteCommand vent_and_ignite = 10;
-  optional bool payload_start = 11;
-  optional bool sd_clear = 12;
-  optional bool fram_reset = 13;
-  optional bool reboot = 14;
-  optional ChangeFSWCommand change_blims_lat = 15;
-  optional ChangeFSWCommand change_blims_long = 16;
-  optional ChangeFSWCommand change_ref_press = 17;
-  optional bool change_alt_state = 18;
-  optional bool change_sd_state = 19;
-  optional bool change_alt_armed = 20;
-  optional FlightMode change_flightmode = 21;
+  optional VentIgniteCommand vent_ignite = 10;
+  optional VentIgniteLaunchCommand vent_ignite_launch = 11;
+  optional bool payload_start = 12;
+  optional bool sd_clear = 13;
+  optional bool fram_reset = 14;
+  optional bool reboot = 15;
+  optional ChangeFSWCommand change_blims_lat = 16;
+  optional ChangeFSWCommand change_blims_long = 17;
+  optional ChangeFSWCommand change_ref_press = 18;
+  optional bool change_alt_state = 19;
+  optional bool change_sd_state = 20;
+  optional bool change_alt_armed = 21;
+  optional FlightMode change_flightmode = 22;
 }
 
 message VentCommand {
@@ -48,6 +49,12 @@ message VentCommand {
 message VentIgniteCommand {
   uint32 vent_duration = 1;
   uint32 ignite_delay = 2;
+}
+
+message VentIgniteLaunchCommand {
+  uint32 vent_duration = 1;
+  uint32 ignite_delay = 2;
+  uint32 launch_delay = 3;
 }
 
 message ChangeFSWCommand {

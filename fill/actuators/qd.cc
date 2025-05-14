@@ -49,9 +49,9 @@ void QD::turnMotor(){
     for (int step = 0; step < 7000; step++) {
         // Generate one pulse with 50% duty cycle
         digitalWrite(PUL_PIN, LOW);  
-        delay(2);             
+        delayMicroseconds(350);             
         digitalWrite(PUL_PIN, HIGH);  
-        delay(2);                
+        delayMicroseconds(350);                
     }
 
     digitalWrite(ENA_PIN, LOW);

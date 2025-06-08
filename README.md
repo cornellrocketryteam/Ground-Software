@@ -173,3 +173,6 @@ The discard_analysis_cache flag limits ram usage to prevent Pi 4 crashing
 ```bazel build fill:all --discard_analysis_cache```
  
 After building, run as in the native linux installation instructions above.
+
+### Set up certs
+Have your ca.crt, server.crt, and server.key in the /crt/ directory on the Pi 5. Add the base64 encoded client.crt, client.key, and ca.crt to the .env files on the ground-server PC for both proxies and the ground server

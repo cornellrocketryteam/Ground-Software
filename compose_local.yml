@@ -1,8 +1,9 @@
 services:
   webserver:
-    image: ghcr.io/cornellrocketryteam/ground-server:latest
-    networks:
-      - ground-network
+    image: ghcr.io/cornellrocketryteam/ground-server:local
+    network_mode: "host"
+    # networks:
+    #   - ground-network
     ports:
       - 80:80
     env_file:
@@ -13,16 +14,18 @@ services:
     image: ghcr.io/cornellrocketryteam/fill-telem-proxy:latest
     depends_on:
       - influxdb
-    networks:
-      - ground-network
+    network_mode: "host"
+    # networks:
+    #   - ground-network
     env_file:
       - ./.env.fill-telem-proxy
   rocket-telem-proxy:
     image: ghcr.io/cornellrocketryteam/rocket-telem-proxy:latest
     depends_on:
       - influxdb
-    networks:
-      - ground-network
+    network_mode: "host"
+    # networks:
+    #   - ground-network
     env_file:
       - ./.env.rocket-telem-proxy
   websocket-proxy:
@@ -30,16 +33,18 @@ services:
     depends_on:
       - influxdb
       - webserver
-    networks:
-      - ground-network
+    network_mode: "host"
+    # networks:
+    #   - ground-network
     ports:
       - 8080:8080
     env_file:
       - ./.env.websocket-proxy
   influxdb:
     image: influxdb:2.7.10
-    networks:
-      - ground-network
+    network_mode: "host"
+    # networks:
+    #   - ground-network
     ports:
       - 8086:8086
     environment:
@@ -70,5 +75,5 @@ secrets:
 volumes:
   influxdb-data:
   influxdb-config:
-networks:
-  ground-network:
+# networks:
+#   ground-network:

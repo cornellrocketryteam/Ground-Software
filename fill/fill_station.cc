@@ -317,9 +317,27 @@ class RocketTelemeterServiceImpl final : public RocketTelemeter::Service
     }
 };
 
+void read ( const std::string& filename, std::string& data )
+{
+        std::ifstream file ( filename.c_str (), std::ios::in );
+
+	if ( file.is_open () )
+	{
+		std::stringstream ss;
+		ss << file.rdbuf ();
+
+		file.close ();
+
+		data = ss.str ();
+	}
+
+	return;
+}
+
 // Server startup function
 void RunServer(uint16_t port, std::shared_ptr<Server> server)
 {
+    std::cout << "Running server\n";
     std::string server_address = absl::StrFormat("0.0.0.0:%d", port);
     CommanderServiceImpl commander_service;
     TelemeterServiceImpl telemeter_service;
@@ -328,8 +346,21 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     grpc::EnableDefaultHealthCheckService(true);
     grpc::reflection::InitProtoReflectionServerBuilderPlugin();
     ServerBuilder builder;
+    // Create SSL Credentials
+    std::string key;
+    std::string cert;
+    std::string root;
+
+    read ( "/crt/server.crt", cert );
+    read ( "/crt/server.key", key );
+    read ( "/crt/ca.crt", root );
+    grpc::SslServerCredentialsOptions ssl_options;
+    ssl_options.pem_root_certs = root;
+    ssl_options.pem_key_cert_pairs.push_back({key, cert});
+    ssl_options.client_certificate_request = GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
+
     // Listen on the given address without any authentication mechanism.
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+    builder.AddListeningPort(server_address, grpc::SslServerCredentials(ssl_options));
     // Register services.
     builder.RegisterService(&commander_service);
     builder.RegisterService(&telemeter_service);

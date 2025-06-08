@@ -2,13 +2,36 @@
 
 import { CommanderClient } from "@/proto-out/protos/command_grpc";
 
+import { Buffer } from 'node:buffer';
 import { Command, type CommandReply } from "@/proto-out/protos/command";
 import * as grpc from "@grpc/grpc-js";
 import { auth } from "@/app/auth";
+import process from 'node:process';
+
+function getSslCredentials() {
+  const rootCA = process.env.ROOT_CA;
+  const clientCert = process.env.CLIENT_CERT;
+  const clientKey = process.env.CLIENT_KEY;
+
+  if (!clientCert || !clientKey || !rootCA) {
+    throw new Error('SSL certificates not found in environment variables.');
+  }
+
+  return grpc.credentials.createSsl(
+    Buffer.from(rootCA, 'base64'),
+    Buffer.from(clientKey, 'base64'),
+    Buffer.from(clientCert, 'base64'),
+  );
+}
+
+const server_path = process.env.GRPC_SERVER
+if (!server_path) {
+  throw new Error('gRPC Server Path not found in environment variables. (GRPC_SERVER)')
+}
 
 const client = new CommanderClient(
-  "192.168.1.201:50051",
-  grpc.credentials.createInsecure()
+  server_path,
+  getSslCredentials()
 );
 
 export async function isConnected() {

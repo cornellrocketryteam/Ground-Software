@@ -6,6 +6,8 @@ services:
     #   - ground-network
     ports:
       - 80:80
+    env_file:
+      - ./.env.ground-server
     depends_on:
       - influxdb
   fill-telem-proxy:

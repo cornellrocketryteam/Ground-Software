@@ -3,6 +3,9 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
 	"io"
 	"log"
 	"os"
@@ -13,7 +16,7 @@ import (
 
 	pb "github.com/cornellrocketryteam/Ground-Software/go-proxies/proto-out"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -25,11 +28,46 @@ func main() {
 	var datastore types.Datastore
 	datastore.Init(ctx)
 
+	// Set up certs for the grpc server
+	// Load certificates from environment variables
+	clientCertPEM := os.Getenv("CLIENT_CERT")
+	clientKeyPEM := os.Getenv("CLIENT_KEY")
+	caCertPEM := os.Getenv("CA_CERT")
+
+	// Decode PEM encoded certificates and keys
+	clientCert, _ := pem.Decode([]byte(clientCertPEM))
+	clientKey, _ := pem.Decode([]byte(clientKeyPEM))
+	caCert, _ := pem.Decode([]byte(caCertPEM))
+
+	// Parse certificates and keys
+	clientCertParsed, _ := x509.ParseCertificate(clientCert.Bytes)
+	clientKeyParsed, _ := x509.ParsePKCS1PrivateKey(clientKey.Bytes)
+	caCertParsed, _ := x509.ParseCertificate(caCert.Bytes)
+
+	// Create TLS credentials
+	cert := tls.Certificate{
+		Certificate: [][]byte{clientCertParsed.Raw},
+		PrivateKey:  clientKeyParsed,
+	}
+
+	certPool := x509.NewCertPool()
+	certPool.AddCert(caCertParsed)
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      certPool,
+		//InsecureSkipVerify: true, // Only use for testing, not production
+	}
+
+	// Create gRPC dial options
+	creds := credentials.NewTLS(tlsConfig)
+	opts := grpc.WithTransportCredentials(creds)
+
 	// Set up a connection to the grpc server
 	address := os.Getenv("FILL_HOSTNAME") + ":50051"
 	conn, err := grpc.NewClient(
 		address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		opts,
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
 			Timeout:             2 * time.Second,  // wait 2 seconds for ping ack before considering the connection dead

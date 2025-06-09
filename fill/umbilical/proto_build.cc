@@ -273,6 +273,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         float pt3;
         float pt4; 
         float rtd_temp;
+        float altitude;
 
         char packet[UMB_PACKET_SIZE]; 
 
@@ -291,6 +292,7 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         memcpy(&pt3, packet + 14, sizeof(pt3));
         memcpy(&pt4, packet + 18, sizeof(pt4));
         memcpy(&rtd_temp, packet + 22, sizeof(rtd_temp));
+        memcpy(&altitude, packet + 26, sizeof(altitude));
 
         rocketMetadata->set_alt_armed(static_cast<bool>((metadata >> 0) & 0x1));
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata >> 1) & 0x1));
@@ -363,11 +365,12 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketUmbTelemetry->set_pt3(pt3);
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(rtd_temp);
+        rocketUmbTelemetry->set_altitude(altitude);
 
         spdlog::info("Umb: Metadata: {:032b}", metadata);
         spdlog::info("Umb: Events: {:032b}", events_val);
         spdlog::info("Umb: MS: {}", ms_since_boot);
-        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}", pt3, pt4, rtd_temp);
+        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}, Altitude: {}", pt3, pt4, rtd_temp, altitude);
 
     } else {
         spdlog::error("Umb: Serial port is not open. Trying again");

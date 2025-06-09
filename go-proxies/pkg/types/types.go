@@ -126,6 +126,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 		fields["pt3"] = umbTelem.Pt3
 		fields["pt4"] = umbTelem.Pt4
 		fields["rtd_temp"] = umbTelem.RtdTemp
+		fields["altitude"] = umbTelem.altitude
 
 		// TODO: Find a better way of flattening (or removing the flattening) so that this does not have to be manually updated
 

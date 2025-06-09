@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"io"
 	"log"
@@ -30,9 +31,24 @@ func main() {
 
 	// Set up certs for the grpc server
 	// Load certificates from environment variables
-	clientCertPEM := os.Getenv("CLIENT_CERT")
-	clientKeyPEM := os.Getenv("CLIENT_KEY")
-	caCertPEM := os.Getenv("CA_CERT")
+	clientCertB64 := os.Getenv("CLIENT_CERT")
+	clientKeyB64 := os.Getenv("CLIENT_KEY")
+	caCertB64 := os.Getenv("CA_CERT")
+
+	if clientCertB64 == "" {
+		log.Fatal("CLIENT_CERT environment variable not set or empty")
+	}
+	if clientKeyB64 == "" {
+		log.Fatal("CLIENT_KEY environment variable not set or empty")
+	}
+	if caCertB64 == "" {
+		log.Fatal("CA_CERT environment variable not set or empty")
+	}
+	// log.Printf("CLIENT_CERT: %s\nCLIENT_KEY: %s\nCA_CERT: %s", clientCertPEM, clientKeyPEM, caCertPEM)
+
+	clientCertPEM, _ := base64.StdEncoding.DecodeString(clientCertB64)
+	clientKeyPEM, _ := base64.StdEncoding.DecodeString(clientKeyB64)
+	caCertPEM, _ := base64.StdEncoding.DecodeString(caCertB64)
 
 	// Decode PEM encoded certificates and keys
 	clientCert, _ := pem.Decode([]byte(clientCertPEM))

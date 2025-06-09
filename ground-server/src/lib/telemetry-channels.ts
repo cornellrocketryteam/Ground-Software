@@ -530,7 +530,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     label: "Altitude",
     unit: "m",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
     dbField: "altimeter_altitude",
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },

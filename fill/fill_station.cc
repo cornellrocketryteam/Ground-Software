@@ -357,7 +357,7 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     grpc::SslServerCredentialsOptions ssl_options;
     ssl_options.pem_root_certs = root;
     ssl_options.pem_key_cert_pairs.push_back({key, cert});
-    ssl_options.client_certificate_request = GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
+    // ssl_options.client_certificate_request = GRPC_SSL_REQUEST_AND_REQUIRE_CLIENT_CERTIFICATE_AND_VERIFY;
 
     // Listen on the given address without any authentication mechanism.
     builder.AddListeningPort(server_address, grpc::SslServerCredentials(ssl_options));

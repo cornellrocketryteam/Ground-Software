@@ -353,7 +353,7 @@ void ConnectionWatchdog(int* num_connections) {
             spdlog::info("No connections detected! Starting watchdog timer");
             is_disconnected = true;
             no_connections_time = std::time(nullptr);
-        } else if (!initialization && *num_connections == 0 && std::time(nullptr) - no_connections_time > 30) {
+        } else if (!initialization && *num_connections == 0 && std::time(nullptr) - no_connections_time > 60) {
             // Send disconnect command
             spdlog::critical("BV: Closing due to inactive connections");
             ball_valve.close();

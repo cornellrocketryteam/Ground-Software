@@ -4,6 +4,9 @@
 #include <poll.h>
 #include <cmath>
 
+const float A = 0.0039083;
+const float B = -0.0000005775;
+
 bool is_fd_disconnected(int fd)
 {
     struct pollfd pfd = {fd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0};
@@ -334,9 +337,8 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto()
         memcpy(&rtd_temp, packet + 22, sizeof(rtd_temp));
         memcpy(&altitude, packet + 26, sizeof(altitude));
 
-        const float A = 3.9083 * pow(10, -3);
-        const float B = (-5.775) * pow(10, -7);
-        rtd_temp = ((-A) + sqrt(pow(A, 2) - 4 * B * (1 - rtd_temp * 0.0005 / 0.72927))) / (2 * B);
+        // rtd_temp = ((-A) + sqrt(-3.9999847252 * B * (1 - rtd_temp * 0.0005 / 0.72927))) / (2 * B);
+        
 
         rocketMetadata->set_alt_armed(static_cast<bool>((metadata >> 0) & 0x1));
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata >> 1) & 0x1));
@@ -405,17 +407,19 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto()
         events->set_state_change_command_received(static_cast<bool>((events_val >> 28) & 0x1));
         events->set_umbilical_disconnected(static_cast<bool>((events_val >> 29) & 0x1));
 
+        spdlog::info("Umb: Metadata: {:032b}", metadata);
+        spdlog::info("Umb: Events: {:032b}", events_val);
+        spdlog::info("Umb: MS: {}", ms_since_boot);
+        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}, Altitude: {}", pt3, pt4, rtd_temp, altitude);
+
+        rtd_temp = (-A) - sqrt((A*A) - 4 * B * (1 - ((rtd_temp * 0.0005) / 0.72927))) / (2 * B);
+
         rocketUmbTelemetry->set_ms_since_boot(ms_since_boot);
         rocketUmbTelemetry->set_battery_voltage(battery_voltage);
         rocketUmbTelemetry->set_pt3(pt3);
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(rtd_temp);
         rocketUmbTelemetry->set_altitude(altitude);
-
-        spdlog::info("Umb: Metadata: {:032b}", metadata);
-        spdlog::info("Umb: Events: {:032b}", events_val);
-        spdlog::info("Umb: MS: {}", ms_since_boot);
-        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}, Altitude: {}", pt3, pt4, rtd_temp, altitude);
 
     } else {
         spdlog::error("Umb: Serial port is not open. Trying again");

@@ -31,12 +31,12 @@ function tickFormatter(tick: number) {
   return formattedTime;
 }
 
-export default function GraphWidget(minuteDuration: number): Widget {
-  const GraphWidgetComponent = ({ fieldData, measurement, channel }: WidgetProps) => {
+export default function GraphWidget(minuteDuration: number, min?: number, max?: number): Widget {
+  const GraphWidgetComponent = ({ fieldData, measurement, channel, }: WidgetProps) => {
     const { sendHistoricalDataReq } = useData();
 
     useEffect(() => {
-      console.log("Sending historical data request")
+      console.log(`Sending historical data request with values:\nminuteDuration:${minuteDuration}\nmeasurement:${measurement}\ndbField:${channel.dbField}`)
       sendHistoricalDataReq(-minuteDuration, 0, measurement, channel.dbField);
     }, [channel.dbField, sendHistoricalDataReq]);
 
@@ -90,8 +90,9 @@ export default function GraphWidget(minuteDuration: number): Widget {
               }}
             />
             <YAxis
-              domain={["dataMin", "dataMax"]}
+              domain={[min ?? "dataMin", max ?? "dataMax"]}
               tickFormatter={(tick) => tick.toFixed(2)}
+              allowDataOverflow={true}
               label={{
                 value: `${channel.label} (${channel.unit || ""})`, // Use unit if provided
                 style: { textAnchor: "middle" },

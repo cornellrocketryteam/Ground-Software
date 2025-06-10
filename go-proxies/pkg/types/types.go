@@ -196,12 +196,12 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Validate input (important to prevent injection attacks!)
 	if req.Measurement == "" || !slices.Contains(legalMeasurements, req.Measurement) {
-		response := HistoricalDataResponse{Error: "Measurement does not exist"}
+		response := HistoricalDataResponse{Error: "Measurement does not exist", Historical: true}
 		return response
 	}
 
 	if req.Field == "" || !slices.Contains(legalFields, req.Field) {
-		response := HistoricalDataResponse{Error: "Field does not exist"}
+		response := HistoricalDataResponse{Error: "Field does not exist", Historical: true}
 		return response
 	}
 

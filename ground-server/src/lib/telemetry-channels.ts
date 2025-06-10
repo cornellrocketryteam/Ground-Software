@@ -81,7 +81,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "C",
     dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
     dbField: "rtd_temp",
-    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60), GraphWidget(2, -50, 75)],
   },
   {
     label: "Altimeter Armed",

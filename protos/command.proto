@@ -170,6 +170,7 @@ message RocketUmbTelemetry {
   float pt3 = 5;
   float pt4 = 6;
   float rtd_temp = 7;
+  float altitude = 8;
 }
 
 message RocketTelemetry {

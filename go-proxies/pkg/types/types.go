@@ -126,6 +126,7 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 		fields["pt3"] = umbTelem.Pt3
 		fields["pt4"] = umbTelem.Pt4
 		fields["rtd_temp"] = umbTelem.RtdTemp
+		fields["altitude"] = umbTelem.Altitude
 
 		// TODO: Find a better way of flattening (or removing the flattening) so that this does not have to be manually updated
 
@@ -195,12 +196,12 @@ func (d *Datastore) RocketTelemetryStore(packet *pb.RocketTelemetry) {
 func (d *Datastore) Query(req HistoricalDataRequest) HistoricalDataResponse {
 	// Validate input (important to prevent injection attacks!)
 	if req.Measurement == "" || !slices.Contains(legalMeasurements, req.Measurement) {
-		response := HistoricalDataResponse{Error: "Measurement does not exist"}
+		response := HistoricalDataResponse{Error: "Measurement does not exist", Historical: true}
 		return response
 	}
 
 	if req.Field == "" || !slices.Contains(legalFields, req.Field) {
-		response := HistoricalDataResponse{Error: "Field does not exist"}
+		response := HistoricalDataResponse{Error: "Field does not exist", Historical: true}
 		return response
 	}
 

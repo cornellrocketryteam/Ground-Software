@@ -1,8 +1,8 @@
 #ifndef PROTO_BUILD_H
 #define PROTO_BUILD_H
 
-// 28 to account for 26 byte packet, then /r/n characters
-#define UMB_PACKET_SIZE 28
+// 32 to account for 30 byte packet, then /r/n characters
+#define UMB_PACKET_SIZE 32
 
 #include "protos/command_grpc.grpc.pb.h"
 #include <iostream>

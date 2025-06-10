@@ -8,6 +8,7 @@
 #include <random>
 #include <filesystem>
 #include <fstream>
+#include <ctime>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
@@ -62,6 +63,9 @@ Sensor sensor_suite;
 
 /* Umblical Tools */
 RocketTelemetryProtoBuilder protoBuild;
+
+/* Connection Tracking */
+int num_connections;
 
 ABSL_FLAG(uint16_t, server_port, 50051, "Server port for the fill station telemetry");
 
@@ -284,10 +288,12 @@ class TelemeterServiceImpl final : public FillStationTelemeter::Service
                        ServerWriter<FillStationTelemetry> *writer) override
     {
         spdlog::critical("Received initial connection point for the fill station telemetry");
+        num_connections++;
         while (true) {
             FillStationTelemetry t = readTelemetry();
             if (!writer->Write(t)) {
                 // Broken stream
+                num_connections--;
                 return Status::CANCELLED; 
             }
         }
@@ -334,6 +340,35 @@ void read ( const std::string& filename, std::string& data )
 	return;
 }
 
+// Watchdog for connections
+void ConnectionWatchdog(int* num_connections) {
+    bool is_disconnected = false;
+    bool initialization = true;
+    std::time_t no_connections_time;
+    while (true) {
+        if (*num_connections > 0) {
+            is_disconnected = false;
+            initialization = false;
+        } else if (*num_connections == 0 && !initialization && !is_disconnected) {
+            spdlog::info("No connections detected! Starting watchdog timer");
+            is_disconnected = true;
+            no_connections_time = std::time(nullptr);
+        } else if (!initialization && *num_connections == 0 && std::time(nullptr) - no_connections_time > 60) {
+            // Send disconnect command
+            spdlog::critical("BV: Closing due to inactive connections");
+            ball_valve.close();
+            ball_valve.powerOn();
+            // Safe the rocket
+            int serial_data;
+            if ((serial_data = open("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
+                spdlog::debug("Umb: Error opening /dev/rocket"); 
+            }
+            spdlog::critical("Venting the Rocket due to disconnection!");
+            write(serial_data, "<V>", strlen("<V>"));
+        }
+    }
+}
+
 // Server startup function
 void RunServer(uint16_t port, std::shared_ptr<Server> server)
 {
@@ -369,6 +404,8 @@ void RunServer(uint16_t port, std::shared_ptr<Server> server)
     server = builder.BuildAndStart();
 
     spdlog::info("Server listening on {}\n", server_address); 
+
+    std::thread myThread(ConnectionWatchdog, &num_connections);
 
     // Wait for the server to shutdown. Note that some other thread must be
     // responsible for shutting down the server for this call to ever return.

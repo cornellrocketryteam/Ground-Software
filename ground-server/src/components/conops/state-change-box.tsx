@@ -33,9 +33,14 @@ export default function StateChangeBox() {
   const [longitude, setLongitude] = useState("");
   const [flightMode, setFlightMode] = useState<FlightMode | null>(null);
 
-  const handleAltitudeArmedSubmit = () => {
+  const handleAltitudeArmedSubmit = async () => {
     console.log("Altitude armed state submitted:", altitudeArmed);
-    sendCommand({ changeAltArmed: altitudeArmed });
+    try {
+      const res = await sendCommand({ changeAltArmed: altitudeArmed });
+      console.log("Altitude armed command sent successfully! Acknowledged:", res);
+    } catch (error) {
+      console.error("Failed to send altitude armed command:", error);
+    }
   };
 
   const handleReferencePressureSubmit = () => {
@@ -45,11 +50,15 @@ export default function StateChangeBox() {
     sendCommand({ changeRefPress: { number: Number(referencePressure) } });
   };
 
-  const handleLatitudeSubmit = () => {
+  const handleLatitudeSubmit = async () => {
     if (latitude === "") return;
-
-    console.log("Latitude submitted:", latitude);
-    sendCommand({ changeBlimsLat: { number: Number(latitude) } });
+     console.log("Latitude submitted:", latitude);
+    try {
+      const res = await sendCommand({ changeBlimsLat: { number: Number(latitude) } });
+      console.log("Change BLiMS lat command sent successfully! Acknowledged:", res);
+    } catch (error) {
+      console.error("Failed to send change BLiMS lat command:", error);
+    }
   };
 
   const handleLongitudeSubmit = () => {

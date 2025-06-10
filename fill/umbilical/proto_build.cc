@@ -2,27 +2,36 @@
 #include <iostream>
 #include <unistd.h>
 #include <poll.h>
+#include <cmath>
 
-bool is_fd_disconnected(int fd) {
+const float A = 0.0039083;
+const float B = -0.0000005775;
+
+bool is_fd_disconnected(int fd)
+{
     struct pollfd pfd = {fd, POLLIN | POLLPRI | POLLERR | POLLHUP, 0};
     int ret = poll(&pfd, 1, 0); // Timeout = 0 (non-blocking check)
 
     return (ret > 0 && (pfd.revents & (POLLHUP | POLLERR)));
 }
 
-ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t max_size) {
-    size_t index = 0;  // Current position in the packet
-    char byte;         // Single byte buffer
+ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char *packet, size_t max_size)
+{
+    size_t index = 0; // Current position in the packet
+    char byte;        // Single byte buffer
     ssize_t bytesRead;
 
-    while (index < max_size) {  
-        bytesRead = read(fd, &byte, 1);  // Read one byte at a time
+    while (index < max_size)
+    {
+        bytesRead = read(fd, &byte, 1); // Read one byte at a time
 
-        if (bytesRead < 0) {
+        if (bytesRead < 0)
+        {
             return -1;
         }
 
-        if (bytesRead == 0) {
+        if (bytesRead == 0)
+        {
             // End of file reached
             break;
         }
@@ -31,7 +40,8 @@ ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t ma
         packet[index++] = byte;
 
         // Stop if newline is found
-        if (byte == '\n') {
+        if (byte == '\n')
+        {
             break;
         }
     }
@@ -40,17 +50,20 @@ ssize_t RocketTelemetryProtoBuilder::read_packet(int fd, char* packet, size_t ma
     return index;
 }
 
-void RocketTelemetryProtoBuilder::openfile(){
-    if ((serial_data = open("/dev/rocket", O_RDWR | O_NOCTTY)) == -1) {
-        spdlog::debug("Umb: Error opening /dev/rocket"); 
+void RocketTelemetryProtoBuilder::openfile()
+{
+    if ((serial_data = open("/dev/rocket", O_RDWR | O_NOCTTY)) == -1)
+    {
+        spdlog::debug("Umb: Error opening /dev/rocket");
     }
 
-    fcntl(serial_data, F_SETFL, O_RDWR) ;
+    fcntl(serial_data, F_SETFL, O_RDWR);
 
     struct termios tty;
     memset(&tty, 0, sizeof(tty));
 
-    if (tcgetattr(serial_data, &tty) != 0) {
+    if (tcgetattr(serial_data, &tty) != 0)
+    {
         // spdlog::debug("Umb: Error getting termios attributes for file descriptor");
         close(serial_data);
     }
@@ -79,210 +92,240 @@ void RocketTelemetryProtoBuilder::openfile(){
     tty.c_cc[VMIN] = 0;
     tty.c_cc[VTIME] = 10;
 
-    if (tcsetattr(serial_data, TCSANOW, &tty) != 0) {
+    if (tcsetattr(serial_data, TCSANOW, &tty) != 0)
+    {
         // spdlog::debug("Umb: Error setting termios attributes");
     }
 
     usleep(10);
 }
 
-RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder(){
+RocketTelemetryProtoBuilder::RocketTelemetryProtoBuilder()
+{
     openfile();
     recycle_count = 0;
 }
 
-RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder(){
+RocketTelemetryProtoBuilder::~RocketTelemetryProtoBuilder()
+{
     close(serial_data);
 }
 
-void RocketTelemetryProtoBuilder::sendCommand(const Command* com) {
+void RocketTelemetryProtoBuilder::sendCommand(const Command *com)
+{
     // Handle SV2 open/close commands inline.
-    if (com->has_sv2_close()){
-        if (com->sv2_close()){
+    if (com->has_sv2_close())
+    {
+        if (com->sv2_close())
+        {
             spdlog::critical("SV2: Close command received");
-            const char* cmd = "<s>";
+            const char *cmd = "<s>";
             write(serial_data, cmd, strlen(cmd));
-        } else {
+        }
+        else
+        {
             spdlog::critical("SV2: Open command received");
-            const char* cmd = "<S>";
+            const char *cmd = "<S>";
             write(serial_data, cmd, strlen(cmd));
         }
     }
 
     // Handle MAV open/close commands inline.
-    if (com->has_mav_open()){
-        if (com->mav_open()){
+    if (com->has_mav_open())
+    {
+        if (com->mav_open())
+        {
             spdlog::critical("MAV: Open command received");
-            const char* cmd = "<M>";
+            const char *cmd = "<M>";
             write(serial_data, cmd, strlen(cmd));
-        } else {     
+        }
+        else
+        {
             spdlog::critical("MAV: Close command received");
-            const char* cmd = "<m>";
+            const char *cmd = "<m>";
             write(serial_data, cmd, strlen(cmd));
         }
     }
 
     // Handle launch command.
-    if (com->launch()){
+    if (com->launch())
+    {
         spdlog::critical("MAV: Launch command received");
-        const char* cmd = "<L>";
+        const char *cmd = "<L>";
         write(serial_data, cmd, strlen(cmd));
     }
 
     // Handle vent command with a background thread.
-    if (com->has_vent()) {
+    if (com->has_vent())
+    {
         spdlog::critical("SV2: Vent command received");
         auto sleep_duration = com->vent().vent_duration();
-        std::thread vent_sender([this, sleep_duration](){
+        std::thread vent_sender([this, sleep_duration]()
+                                {
             const char* openCmd = "<S>";
             write(serial_data, openCmd, strlen(openCmd));
 
             sleep(sleep_duration);
             
             const char* closeCmd = "<s>";
-            write(serial_data, closeCmd, strlen(closeCmd));
-        });
+            write(serial_data, closeCmd, strlen(closeCmd)); });
         vent_sender.detach();
     }
 
     // Handle vent and ignite command.
-    if (com->has_vent_ignite()) {
+    if (com->has_vent_ignite())
+    {
         spdlog::critical("SV2: Vent and Ignite command received");
         auto sleep_duration = com->vent_ignite().vent_duration();
-        std::thread vent_sender([this, sleep_duration](){
+        std::thread vent_sender([this, sleep_duration]()
+                                {
             const char* openCmd = "<L>";
             write(serial_data, openCmd, strlen(openCmd));
 
             sleep(sleep_duration);
 
             const char* closeCmd = "<s>";
-            write(serial_data, closeCmd, strlen(closeCmd));
-        });
+            write(serial_data, closeCmd, strlen(closeCmd)); });
         vent_sender.detach();
     }
 
     // Handle vent and ignite and launch command.
-    if (com->has_vent_ignite_launch()) {
+    if (com->has_vent_ignite_launch())
+    {
         spdlog::critical("SV2: Vent and Ignite and Launch command received");
         auto vent_duration = com->vent_ignite_launch().vent_duration();
         auto launch_delay = com->vent_ignite_launch().launch_delay();
-        std::thread vent_sender([this, vent_duration](){
+        std::thread vent_sender([this, vent_duration]()
+                                {
             const char* openCmd = "<S>";
             write(serial_data, openCmd, strlen(openCmd));
 
             sleep(vent_duration);
 
             const char* closeCmd = "<s>";
-            write(serial_data, closeCmd, strlen(closeCmd));
-        });
+            write(serial_data, closeCmd, strlen(closeCmd)); });
         vent_sender.detach();
-        std::thread launch_sender([this, launch_delay](){
+        std::thread launch_sender([this, launch_delay]()
+                                  {
             sleep(launch_delay);
             const char* cmd = "<L>";
-            write(serial_data, cmd, strlen(cmd));
-        });
+            write(serial_data, cmd, strlen(cmd)); });
         launch_sender.detach();
     }
 
     // Handle SD clear command.
-    if (com->sd_clear()){
+    if (com->sd_clear())
+    {
         spdlog::critical("SD: Clear command received");
-        const char* cmd = "<D>";
+        const char *cmd = "<D>";
         write(serial_data, cmd, strlen(cmd));
     }
 
     // Handle FRAM reset command.
-    if (com->fram_reset()){
+    if (com->fram_reset())
+    {
         spdlog::critical("SV2: Reset command received");
-        const char* cmd = "<F>";
+        const char *cmd = "<F>";
         write(serial_data, cmd, strlen(cmd));
     }
-    
+
     // Handle reboot command.
-    if (com->reboot()){
+    if (com->reboot())
+    {
         spdlog::critical("Rocket: Reboot command received");
-        const char* cmd = "<R>";
+        const char *cmd = "<R>";
         write(serial_data, cmd, strlen(cmd));
     }
 
     // Handle commands with number parameters.
-    if (com->has_change_blims_lat()){
+    if (com->has_change_blims_lat())
+    {
         spdlog::critical("Rocket: CHANGE_BLIMS_LAT command received");
         std::string cmd = "<C1" + std::to_string(com->change_blims_lat().number()) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_blims_long()){
+    if (com->has_change_blims_long())
+    {
         spdlog::critical("Rocket: CHANGE_BLIMS_LONG command received");
         std::string cmd = "<C2" + std::to_string(com->change_blims_long().number()) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_ref_press()){
+    if (com->has_change_ref_press())
+    {
         spdlog::critical("Rocket: CHANGE_REF_PRESS command received");
         std::string cmd = "<C3" + std::to_string(com->change_ref_press().number()) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_alt_state()){
+    if (com->has_change_alt_state())
+    {
         spdlog::critical("Rocket: CHANGE_ALT_STATE command received");
         std::string cmd = "<C4" + std::to_string(static_cast<int>(com->change_alt_state())) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_sd_state()){
+    if (com->has_change_sd_state())
+    {
         spdlog::critical("Rocket: CHANGE_SD_STATE command received");
         std::string cmd = "<C5" + std::to_string(static_cast<int>(com->change_sd_state())) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_alt_armed()){
+    if (com->has_change_alt_armed())
+    {
         spdlog::critical("Rocket: CHANGE_ALT_ARMED command received");
         std::string cmd = "<C6" + std::to_string(static_cast<int>(com->change_alt_armed())) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 
-    if (com->has_change_flightmode()){
+    if (com->has_change_flightmode())
+    {
         spdlog::critical("Rocket: CHANGE_FLIGHTMODE command received");
         std::string cmd = "<C7" + std::to_string(static_cast<int>(com->change_flightmode())) + ">";
         write(serial_data, cmd.c_str(), cmd.size());
     }
 }
 
-absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
-    RocketTelemetry rocketTelemetry; 
+absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto()
+{
+    RocketTelemetry rocketTelemetry;
 
     recycle_count++;
 
-    if (recycle_count == 100){
+    if (recycle_count == 100)
+    {
         recycle_count = 0;
         // spdlog::info("Umb: Recycle limit reached. Opening file again");
         openfile();
     }
 
-     if (!is_fd_disconnected(serial_data)){
-        RocketUmbTelemetry* rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
-        RocketMetadata* rocketMetadata = rocketUmbTelemetry->mutable_metadata();
-        Events* events = rocketUmbTelemetry->mutable_events();
+    if (!is_fd_disconnected(serial_data))
+    {
+        RocketUmbTelemetry *rocketUmbTelemetry = rocketTelemetry.mutable_umb_telem();
+        RocketMetadata *rocketMetadata = rocketUmbTelemetry->mutable_metadata();
+        Events *events = rocketUmbTelemetry->mutable_events();
 
         uint16_t metadata;
-        uint32_t ms_since_boot; 
-        uint32_t events_val; 
+        uint32_t ms_since_boot;
+        uint32_t events_val;
 
         float battery_voltage;
         float pt3;
-        float pt4; 
+        float pt4;
         float rtd_temp;
         float altitude;
 
-        char packet[UMB_PACKET_SIZE]; 
+        char packet[UMB_PACKET_SIZE];
 
         int status = read_packet(serial_data, packet, UMB_PACKET_SIZE);
 
-        if (status == -1 || status < UMB_PACKET_SIZE - 1){
-            // This means we did not read enough bytes 
-            // spdlog::debug("Umb: Only {} bytes read", status); 
-            return absl::InternalError("Not enough Bytes"); 
+        if (status == -1 || status < UMB_PACKET_SIZE - 1)
+        {
+            // This means we did not read enough bytes
+            // spdlog::debug("Umb: Only {} bytes read", status);
+            return absl::InternalError("Not enough Bytes");
         }
 
         memcpy(&metadata, packet, sizeof(metadata));
@@ -293,6 +336,9 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         memcpy(&pt4, packet + 18, sizeof(pt4));
         memcpy(&rtd_temp, packet + 22, sizeof(rtd_temp));
         memcpy(&altitude, packet + 26, sizeof(altitude));
+
+        // rtd_temp = ((-A) + sqrt(-3.9999847252 * B * (1 - rtd_temp * 0.0005 / 0.72927))) / (2 * B);
+        
 
         rocketMetadata->set_alt_armed(static_cast<bool>((metadata >> 0) & 0x1));
         rocketMetadata->set_alt_valid(static_cast<bool>((metadata >> 1) & 0x1));
@@ -308,25 +354,26 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         rocketMetadata->set_mav_state(static_cast<bool>((metadata >> 11) & 0x1));
         rocketMetadata->set_sv2_state(static_cast<bool>((metadata >> 12) & 0x1));
 
-        switch((metadata >> 13) & 0b111) {
-            case 0b000:
-                rocketMetadata->set_flight_mode(command::STARTUP);
-                break; 
-            case 0b001:
-                rocketMetadata->set_flight_mode(command::STANDBY);
-                break; 
-            case 0b010:
-                rocketMetadata->set_flight_mode(command::ASCENT);
-                break; 
-            case 0b011:
-                rocketMetadata->set_flight_mode(command::DROGUE_DEPLOYED);
-                break; 
-            case 0b100:
-                rocketMetadata->set_flight_mode(command::MAIN_DEPLOYED);
-                break; 
-            case 0b101:
-                rocketMetadata->set_flight_mode(command::FAULT);
-                break; 
+        switch ((metadata >> 13) & 0b111)
+        {
+        case 0b000:
+            rocketMetadata->set_flight_mode(command::STARTUP);
+            break;
+        case 0b001:
+            rocketMetadata->set_flight_mode(command::STANDBY);
+            break;
+        case 0b010:
+            rocketMetadata->set_flight_mode(command::ASCENT);
+            break;
+        case 0b011:
+            rocketMetadata->set_flight_mode(command::DROGUE_DEPLOYED);
+            break;
+        case 0b100:
+            rocketMetadata->set_flight_mode(command::MAIN_DEPLOYED);
+            break;
+        case 0b101:
+            rocketMetadata->set_flight_mode(command::FAULT);
+            break;
         }
 
         events->set_altitude_armed(static_cast<bool>((events_val >> 0) & 0x1));
@@ -360,17 +407,19 @@ absl::StatusOr<RocketTelemetry> RocketTelemetryProtoBuilder::buildProto(){
         events->set_state_change_command_received(static_cast<bool>((events_val >> 28) & 0x1));
         events->set_umbilical_disconnected(static_cast<bool>((events_val >> 29) & 0x1));
 
+        spdlog::info("Umb: Metadata: {:032b}", metadata);
+        spdlog::info("Umb: Events: {:032b}", events_val);
+        spdlog::info("Umb: MS: {}", ms_since_boot);
+        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}, Altitude: {}", pt3, pt4, rtd_temp, altitude);
+
+        rtd_temp = (-A) - sqrt((A*A) - 4 * B * (1 - ((rtd_temp * 0.0005) / 0.72927))) / (2 * B);
+
         rocketUmbTelemetry->set_ms_since_boot(ms_since_boot);
         rocketUmbTelemetry->set_battery_voltage(battery_voltage);
         rocketUmbTelemetry->set_pt3(pt3);
         rocketUmbTelemetry->set_pt4(pt4);
         rocketUmbTelemetry->set_rtd_temp(rtd_temp);
         rocketUmbTelemetry->set_altitude(altitude);
-
-        spdlog::info("Umb: Metadata: {:032b}", metadata);
-        spdlog::info("Umb: Events: {:032b}", events_val);
-        spdlog::info("Umb: MS: {}", ms_since_boot);
-        spdlog::info("Umb: PT3: {}, PT4: {}, RTD: {}, Altitude: {}", pt3, pt4, rtd_temp, altitude);
 
     } else {
         spdlog::error("Umb: Serial port is not open. Trying again");

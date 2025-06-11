@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { passwordSchema } from "@/lib/zod";
+import process from 'node:process';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,7 +16,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { password } = await passwordSchema.parseAsync(credentials);
 
-          if (password === "crt") {
+          if (password === process.env.PASSWORD) {
             return {
               name: "Max Larsson",
             };

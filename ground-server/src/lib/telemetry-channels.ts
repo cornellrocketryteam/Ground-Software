@@ -5,6 +5,7 @@ import BoolLightWidget from "@/components/widgets/bool-light-widget";
 import BoolStateWidget from "@/components/widgets/bool-state-widget";
 import EventCounterWidget from "@/components/widgets/event-counter-widget";
 import MapWidget from "@/components/widgets/map-widget";
+import Rocket3DWidget from "@/components/widgets/rocket-3d-widget";
 
 import type { TelemetryChannel } from "@/lib/definitions";
 
@@ -643,6 +644,12 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbMeasurements: ["Fill Radio", "Ground Radio"],
     dbFields: ["imu_orientation_z"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Rocket 3D Orientation",
+    dbMeasurements: ["Fill Radio", "Ground Radio"],
+    dbFields: ["imu_orientation_x", "imu_orientation_y", "imu_orientation_z"],
+    widgets: [Rocket3DWidget()],
   },
   {
     label: "Accelerometer Acceleration X",

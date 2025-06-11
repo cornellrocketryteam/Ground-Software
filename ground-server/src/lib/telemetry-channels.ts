@@ -666,14 +666,4 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbField: "blims_motor_state",
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60), MonkeyWidget()],
   },
-
-  // ----------------------------
-  // Fake widgets
-  // ----------------------------
-  {
-    label: "Fuel",
-    dbMeasurements: ["FAKE"],
-    dbField: "fuel",
-    widgets: [FuelWidget()],
-  },
 ];

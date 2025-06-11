@@ -27,6 +27,10 @@ import type { Widget, TelemetryChannel } from "@/lib/definitions";
 interface DashboardWidgetProps {
   channel: TelemetryChannel;
   deleteWidget: () => void;
+  initialMode: string;
+  initialMeasurement: string;
+  onSettingsChange: (mode: string, measurement: string) => void;
+
   style?: CSSProperties;
   className?: string;
   onMouseDown?: (event: MouseEvent) => void;
@@ -40,6 +44,10 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     {
       channel,
       deleteWidget,
+      initialMode,
+      initialMeasurement,
+      onSettingsChange,
+
       style,
       className,
       onMouseDown,
@@ -74,8 +82,15 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
 
     const allModes = useMemo(() => Object.keys(modeMap), [modeMap]);
 
-    const [mode, setMode] = useState(allModes[0]);
-    const [measurement, setMeasurement] = useState(channel.dbMeasurements[0]);
+    const [mode, setMode] = useState(initialMode);
+    const [measurement, setMeasurement] = useState(initialMeasurement);
+
+    // Call onSettingsChange when mode or measurement changes from their initial values
+    useEffect(() => {
+      if (mode !== initialMode || measurement !== initialMeasurement) {
+        onSettingsChange(mode, measurement);
+      }
+    }, [mode, measurement, initialMode, initialMeasurement, onSettingsChange]);
 
     const activeWidget = modeMap[mode];
     if (!activeWidget) {

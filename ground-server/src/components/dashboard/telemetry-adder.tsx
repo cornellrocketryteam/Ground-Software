@@ -35,7 +35,7 @@ export function TelemetryAdder({
   setChannels,
 }: {
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const [open, setOpen] = useState(false);
@@ -84,7 +84,7 @@ function TelemetryChannelList({
 }: {
   setOpen: (open: boolean) => void;
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const addWidget = (channel: TelemetryChannel) => {
@@ -105,6 +105,8 @@ function TelemetryChannelList({
           minW: 2,
           minH: 2,
         },
+        mode: channel.widgets[0].mode,
+        measurement: channel.dbMeasurements[0],
       },
     ]);
     setOpen(false);

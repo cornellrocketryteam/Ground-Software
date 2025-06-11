@@ -35,7 +35,7 @@ export function PresetSelector({
   setChannels,
 }: {
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const [open, setOpen] = useState(false);
@@ -84,7 +84,7 @@ function PresetList({
 }: {
   setOpen: (open: boolean) => void;
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const selectPreset = (preset: Preset) => {

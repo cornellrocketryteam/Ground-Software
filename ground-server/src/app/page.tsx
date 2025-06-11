@@ -21,6 +21,8 @@ type Channel = {
   id: string;
   channel: TelemetryChannel;
   layout: Layout;
+  mode: string;
+  measurement: string;
 };
 
 export default function Home() {
@@ -39,15 +41,17 @@ export default function Home() {
           );
           if (tc === undefined) return undefined;
 
+          const widgets = ch.channel.widgets
+            .map((widget: any) =>
+              tc.widgets.find((w) => w.mode === widget.mode),
+            )
+            .filter((w: any) => w !== undefined);
+
           return {
             ...ch,
             channel: {
               ...ch.channel,
-              widgets: ch.channel.widgets
-                .map((widget: any) =>
-                  tc.widgets.find((w) => w.mode === widget.mode),
-                )
-                .filter((w: any) => w !== undefined),
+              widgets,
             },
           };
         })
@@ -84,11 +88,24 @@ export default function Home() {
         );
       };
 
+      const updateWidgetSettings = (mode: string, measurement: string) => {
+        setChannels((prevChannels) => {
+          const newChannels = prevChannels.map((c) =>
+            c.id === channel.id ? { ...c, mode, measurement } : c
+          );
+          localStorage.setItem("channels", JSON.stringify(newChannels));
+          return newChannels;
+        });
+      };
+
       return (
         <DashboardWidget
           key={channel.id}
           channel={channel.channel}
           deleteWidget={deleteWidget}
+          initialMode={channel.mode}
+          initialMeasurement={channel.measurement}
+          onSettingsChange={updateWidgetSettings}
         />
       );
     });

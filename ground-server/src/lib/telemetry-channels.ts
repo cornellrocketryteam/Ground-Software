@@ -664,7 +664,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     unit: "inches",
     dbMeasurements: ["Fill Radio", "Ground Radio"],
     dbField: "blims_motor_state",
-    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60), MonkeyWidget()],
   },
 
   // ----------------------------
@@ -675,11 +675,5 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     dbMeasurements: ["FAKE"],
     dbField: "fuel",
     widgets: [FuelWidget()],
-  },
-  {
-    label: "BLiMS",
-    dbMeasurements: ["FAKE"],
-    dbField: "blims",
-    widgets: [MonkeyWidget()],
   },
 ];

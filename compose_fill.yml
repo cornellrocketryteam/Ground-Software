@@ -1,5 +1,0 @@
-services:
-  fill-station:
-    image: ghcr.io/cornellrocketryteam/fill-station:latest
-    network_mode: "host"
-    privileged: true

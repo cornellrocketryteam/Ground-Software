@@ -10,8 +10,8 @@ export function LiveValueBox({ measurement, channel }: LiveValueBoxProps) {
 
   if (
     !data[measurement] ||
-    !data[measurement][channel.dbField] ||
-    Object.keys(data[measurement][channel.dbField]).length === 0
+    !data[measurement][channel.dbFields[0]] ||
+    Object.keys(data[measurement][channel.dbFields[0]]).length === 0
   ) {
     return (
       <div className="p-4 border dark:border-white rounded-lg shadow-md w-full h-24 flex flex-col justify-center items-center">
@@ -21,7 +21,7 @@ export function LiveValueBox({ measurement, channel }: LiveValueBoxProps) {
     );
   }
 
-  const fieldData = data[measurement][channel.dbField];
+  const fieldData = data[measurement][channel.dbFields[0]];
   const readingTimes = Object.keys(fieldData).sort();
   const latestReadingTime = readingTimes[readingTimes.length - 1];
   const latestReading = fieldData[latestReadingTime];

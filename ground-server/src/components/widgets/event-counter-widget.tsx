@@ -2,7 +2,8 @@ import type { Widget, WidgetProps } from "@/lib/definitions";
 
 export default function EventCounterWidget(): Widget {
   const EventCounterWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
-    const count = Object.values(fieldData).filter(
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const count = Object.values(firstFieldData).filter(
       (value) => value as boolean
     ).length;
     return (

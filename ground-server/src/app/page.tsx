@@ -36,23 +36,24 @@ export default function Home() {
       const parsedChannels = JSON.parse(storedChannels);
       const rehydratedChannels: Channel[] = parsedChannels
         .map((ch: any) => {
+          // Find channel by label (most reliable unique identifier)
           const tc = TELEMETRY_CHANNELS.find(
-            (tc) => tc.dbField === ch.channel.dbField,
+            (tc) => tc.label === ch.channel.label,
           );
-          if (tc === undefined) return undefined;
+          if (tc === undefined) {
+            console.warn(`Could not find telemetry channel with label: ${ch.channel.label}`);
+            return undefined;
+          }
 
-          const widgets = ch.channel.widgets
-            .map((widget: any) =>
-              tc.widgets.find((w) => w.mode === widget.mode),
-            )
-            .filter((w: any) => w !== undefined);
+          // Validate that the stored mode and measurement still exist
+          const validMode = tc.widgets.some(w => w.mode === ch.mode);
+          const validMeasurement = tc.dbMeasurements.includes(ch.measurement);
 
           return {
             ...ch,
-            channel: {
-              ...ch.channel,
-              widgets,
-            },
+            channel: tc, // Use the current telemetry channel definition
+            mode: validMode ? ch.mode : tc.widgets[0].mode, // Fallback to first mode if invalid
+            measurement: validMeasurement ? ch.measurement : tc.dbMeasurements[0], // Fallback to first measurement if invalid
           };
         })
         .filter((ch: any) => ch !== undefined);
@@ -73,7 +74,17 @@ export default function Home() {
         return prevChannel;
       });
 
-      localStorage.setItem("channels", JSON.stringify(newChannels));
+      // Save minimal data to localStorage - only what we need to restore
+      const channelsToSave = newChannels.map(ch => ({
+        id: ch.id,
+        channel: {
+          label: ch.channel.label, // Use label as unique identifier
+        },
+        layout: ch.layout,
+        mode: ch.mode,
+        measurement: ch.measurement,
+      }));
+      localStorage.setItem("channels", JSON.stringify(channelsToSave));
 
       return newChannels;
     });
@@ -83,9 +94,23 @@ export default function Home() {
     return channels.map((channel) => {
       const deleteWidget = () => {
         console.log("Deleting widget", channel.id);
-        setChannels((prevChannels) =>
-          prevChannels.filter((c) => c.id !== channel.id),
-        );
+        setChannels((prevChannels) => {
+          const newChannels = prevChannels.filter((c) => c.id !== channel.id);
+          
+          // Save minimal data to localStorage
+          const channelsToSave = newChannels.map(ch => ({
+            id: ch.id,
+            channel: {
+              label: ch.channel.label,
+            },
+            layout: ch.layout,
+            mode: ch.mode,
+            measurement: ch.measurement,
+          }));
+          localStorage.setItem("channels", JSON.stringify(channelsToSave));
+          
+          return newChannels;
+        });
       };
 
       const updateWidgetSettings = (mode: string, measurement: string) => {
@@ -93,7 +118,19 @@ export default function Home() {
           const newChannels = prevChannels.map((c) =>
             c.id === channel.id ? { ...c, mode, measurement } : c
           );
-          localStorage.setItem("channels", JSON.stringify(newChannels));
+          
+          // Save minimal data to localStorage
+          const channelsToSave = newChannels.map(ch => ({
+            id: ch.id,
+            channel: {
+              label: ch.channel.label,
+            },
+            layout: ch.layout,
+            mode: ch.mode,
+            measurement: ch.measurement,
+          }));
+          localStorage.setItem("channels", JSON.stringify(channelsToSave));
+          
           return newChannels;
         });
       };

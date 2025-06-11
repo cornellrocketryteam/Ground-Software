@@ -1,14 +1,13 @@
-import { useEffect } from "react";
 import Image from "next/image";
 import type { Widget, WidgetProps } from "@/lib/definitions";
 import monkey from "@/app/images/monkey-parachuting.png";
-import { useData } from "@/contexts/data-context";
 
 export default function MonkeyWidget(): Widget {
-  const MonkeyWidgetComponent = ({ fieldData }: WidgetProps) => {
-    const sortedKeys = Object.keys(fieldData).sort();
+  const MonkeyWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    const latestValue = fieldData[latestKey] as number;
+    const latestValue = firstFieldData[latestKey] as number;
 
     // Given that the value is between 0 and 1, we can convert it to a degree rotation
     // where 0 corresponds to -45 degrees and 1 corresponds to 45 degrees.

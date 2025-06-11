@@ -2,9 +2,10 @@ import type { Widget, WidgetProps } from "@/lib/definitions";
 
 export default function BoolLightWidget(): Widget {
   const BoolLightWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
-    const sortedKeys = Object.keys(fieldData).sort();
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    const latestValue = fieldData[latestKey] as boolean;
+    const latestValue = firstFieldData[latestKey] as boolean;
     const bgColor = latestValue ? "bg-green-500" : "bg-red-500";
 
     // Convert the ISO date string to a Date object

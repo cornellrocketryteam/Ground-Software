@@ -36,13 +36,15 @@ export default function GraphWidget(minuteDuration: number, min?: number, max?: 
     const { sendHistoricalDataReq } = useData();
 
     useEffect(() => {
-      console.log(`Sending historical data request with values:\nminuteDuration:${minuteDuration}\nmeasurement:${measurement}\ndbField:${channel.dbField}`)
-      sendHistoricalDataReq(-minuteDuration, 0, measurement, channel.dbField);
-    }, [channel.dbField, sendHistoricalDataReq]);
+      console.log(`Sending historical data request with values:\nminuteDuration:${minuteDuration}\nmeasurement:${measurement}\ndbField:${channel.dbFields[0]}`)
+      sendHistoricalDataReq(-minuteDuration, 0, measurement, channel.dbFields[0]);
+    }, [channel.dbFields, sendHistoricalDataReq]);
 
-    const sortedKeys = Object.keys(fieldData).sort();
+    // Use the first field's data
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    const latestValue = fieldData[latestKey];
+    const latestValue = firstFieldData[latestKey];
     if (typeof latestValue !== "number") {
       return (
         <div>
@@ -54,11 +56,11 @@ export default function GraphWidget(minuteDuration: number, min?: number, max?: 
     const color = "hsl(var(--chart-1))";
     const now = Date.now();
 
-    const chartData = Object.keys(fieldData)
+    const chartData = Object.keys(firstFieldData)
       .filter((key) => new Date(key).getTime() >= now - minuteDuration * 60000)
       .map((key) => ({
         timestamp: new Date(key).getTime(),
-        value: fieldData[key],
+        value: firstFieldData[key],
       }));
 
     return (

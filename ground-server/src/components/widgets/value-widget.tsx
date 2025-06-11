@@ -2,9 +2,11 @@ import type { Widget, WidgetProps } from "@/lib/definitions";
 
 export default function ValueWidget(decimalDigits?: number): Widget {
   const ValueWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
-    const sortedKeys = Object.keys(fieldData).sort();
+    // Use the first field's data
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    let latestValue = fieldData[latestKey] as any;
+    let latestValue = firstFieldData[latestKey] as any;
     if (decimalDigits && typeof latestValue === "number") {
       latestValue = latestValue.toFixed(decimalDigits);
     } else {

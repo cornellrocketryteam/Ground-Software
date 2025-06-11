@@ -90,6 +90,8 @@ function PresetList({
   const selectPreset = (preset: Preset) => {
     console.log("Selected preset:", preset);
     setChannels([]);
+    // Clear localStorage when preset is selected
+    localStorage.setItem("channels", JSON.stringify([]));
     setOpen(false);
   };
 

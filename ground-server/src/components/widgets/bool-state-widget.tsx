@@ -5,9 +5,11 @@ export default function BoolStateWidget(
   offStateLabel: string
 ): Widget {
   const BoolStateWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
-    const sortedKeys = Object.keys(fieldData).sort();
+    // Use the first field's data
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    const latestValue = fieldData[latestKey] as boolean;
+    const latestValue = firstFieldData[latestKey] as boolean;
     const displayValue = latestValue ? onStateLabel : offStateLabel;
 
     // Convert the ISO date string to a Date object

@@ -23,9 +23,6 @@ export default async function Navbar() {
         <Button variant="ghost" className="font-bold" asChild>
           <Link href="/controls">Controls</Link>
         </Button>
-        <Button variant="ghost" className="font-bold" asChild>
-          <Link href="/conops/page1">Conops</Link>
-        </Button>
       </div>
     );
   }

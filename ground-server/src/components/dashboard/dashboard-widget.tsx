@@ -27,6 +27,10 @@ import type { Widget, TelemetryChannel } from "@/lib/definitions";
 interface DashboardWidgetProps {
   channel: TelemetryChannel;
   deleteWidget: () => void;
+  initialMode: string;
+  initialMeasurement: string;
+  onSettingsChange: (mode: string, measurement: string) => void;
+
   style?: CSSProperties;
   className?: string;
   onMouseDown?: (event: MouseEvent) => void;
@@ -40,6 +44,10 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     {
       channel,
       deleteWidget,
+      initialMode,
+      initialMeasurement,
+      onSettingsChange,
+
       style,
       className,
       onMouseDown,
@@ -56,10 +64,16 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
     const { data, registerLiveDbField, deregisterLiveDbField } = useData();
 
     useEffect(() => {
-      registerLiveDbField(channel.dbField);
-      console.log(`Registering field ${channel.dbField}`);
-      return () => deregisterLiveDbField(channel.dbField);
-    }, [channel.dbField, registerLiveDbField, deregisterLiveDbField]);
+      channel.dbFields.forEach(field => {
+        registerLiveDbField(field);
+        console.log(`Registering field ${field}`);
+      });
+      return () => {
+        channel.dbFields.forEach(field => {
+          deregisterLiveDbField(field);
+        });
+      };
+    }, [channel.dbFields, registerLiveDbField, deregisterLiveDbField]);
 
     // Build a lookup for widget modes
     const modeMap = useMemo(() => {
@@ -74,17 +88,35 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
 
     const allModes = useMemo(() => Object.keys(modeMap), [modeMap]);
 
-    const [mode, setMode] = useState(allModes[0]);
-    const [measurement, setMeasurement] = useState(channel.dbMeasurements[0]);
+    const [mode, setMode] = useState(initialMode);
+    const [measurement, setMeasurement] = useState(initialMeasurement);
+
+    // Call onSettingsChange when mode or measurement changes from their initial values
+    useEffect(() => {
+      if (mode !== initialMode || measurement !== initialMeasurement) {
+        onSettingsChange(mode, measurement);
+      }
+    }, [mode, measurement, initialMode, initialMeasurement, onSettingsChange]);
 
     const activeWidget = modeMap[mode];
     if (!activeWidget) {
       throw new Error(`No widget found for mode: ${mode}`);
     }
 
-    const hasData = Object.keys(
-      data[measurement]?.[channel.dbField] ?? {}
-    ).length;
+    // Collect data from all dbFields
+    const fieldData = useMemo(() => {
+      const collected: Record<string, Record<string, unknown>> = {};
+      channel.dbFields.forEach(field => {
+        collected[field] = data[measurement]?.[field] ?? {};
+      });
+      return collected;
+    }, [data, measurement, channel.dbFields]);
+
+    // Check if we have data for any field
+    const hasData = channel.dbFields.some(field => 
+      Object.keys(fieldData[field]).length > 0
+    );
+    
     const ActiveComponent = hasData
       ? activeWidget.component
       : () => (
@@ -93,8 +125,6 @@ export const DashboardWidget = forwardRef<HTMLDivElement, DashboardWidgetProps>(
             <p className="font-normal text-lg">No data</p>
           </div>
         );
-
-    const fieldData = data[measurement]?.[channel.dbField];
 
     return (
       <div

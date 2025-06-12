@@ -1,11 +1,18 @@
 import Image from "next/image";
-import type { Widget } from "@/lib/definitions";
+import type { Widget, WidgetProps } from "@/lib/definitions";
 import monkey from "@/app/images/monkey-parachuting.png";
 
 export default function MonkeyWidget(): Widget {
-  const MonkeyWidgetComponent = () => {
-    // Replace with actual fuel level from data when available
-    const degrees = Math.floor(Math.random() * 60) - 20;
+  const MonkeyWidgetComponent = ({ fieldData, channel }: WidgetProps) => {
+    const firstFieldData = fieldData[channel.dbFields[0]] || {};
+    const sortedKeys = Object.keys(firstFieldData).sort();
+    const latestKey = sortedKeys[sortedKeys.length - 1];
+    const latestValue = firstFieldData[latestKey] as number;
+
+    // Given that the value is between 0 and 1, we can convert it to a degree rotation
+    // where 0 corresponds to -45 degrees and 1 corresponds to 45 degrees.
+    // This will rotate the image from -45 degrees to 45 degrees based on the value.
+    const degrees = latestValue * 90 - 45;
 
     return (
       <div className="relative w-full h-full flex items-center justify-center">

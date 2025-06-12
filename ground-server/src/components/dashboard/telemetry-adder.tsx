@@ -35,7 +35,7 @@ export function TelemetryAdder({
   setChannels,
 }: {
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const [open, setOpen] = useState(false);
@@ -84,29 +84,47 @@ function TelemetryChannelList({
 }: {
   setOpen: (open: boolean) => void;
   setChannels: Dispatch<
-    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout }[]>
+    SetStateAction<{ id: string; channel: TelemetryChannel; layout: Layout; mode: string; measurement: string }[]>
   >;
 }) {
   const addWidget = (channel: TelemetryChannel) => {
     const id = Date.now().toString();
     console.log(`Adding widget with id: ${id}`);
 
-    setChannels((prevChannels) => [
-      ...prevChannels,
-      {
-        id,
-        channel,
-        layout: {
-          i: id,
-          x: 0,
-          y: 0,
-          w: 4,
-          h: 3,
-          minW: 2,
-          minH: 2,
+    setChannels((prevChannels) => {
+      const newChannels = [
+        ...prevChannels,
+        {
+          id,
+          channel,
+          layout: {
+            i: id,
+            x: 0,
+            y: 0,
+            w: 4,
+            h: 3,
+            minW: 2,
+            minH: 2,
+          },
+          mode: channel.widgets[0].mode,
+          measurement: channel.dbMeasurements[0],
         },
-      },
-    ]);
+      ];
+
+      // Save minimal data to localStorage
+      const channelsToSave = newChannels.map(ch => ({
+        id: ch.id,
+        channel: {
+          label: ch.channel.label,
+        },
+        layout: ch.layout,
+        mode: ch.mode,
+        measurement: ch.measurement,
+      }));
+      localStorage.setItem("channels", JSON.stringify(channelsToSave));
+
+      return newChannels;
+    });
     setOpen(false);
   };
 

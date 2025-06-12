@@ -1,10 +1,11 @@
 import GraphWidget from "@/components/widgets/graph-widget";
 import ValueWidget from "@/components/widgets/value-widget";
-import FuelWidget from "@/components/widgets/fuel-widget";
 import MonkeyWidget from "@/components/widgets/monkey-widget";
 import BoolLightWidget from "@/components/widgets/bool-light-widget";
 import BoolStateWidget from "@/components/widgets/bool-state-widget";
 import EventCounterWidget from "@/components/widgets/event-counter-widget";
+import MapWidget from "@/components/widgets/map-widget";
+import Rocket3DWidget from "@/components/widgets/rocket-3d-widget";
 
 import type { TelemetryChannel } from "@/lib/definitions";
 
@@ -16,33 +17,33 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     label: "Pressure Transducer 1",
     unit: "psi",
     dbMeasurements: ["Fill Station"],
-    dbField: "pt1",
+    dbFields: ["pt1"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Pressure Transducer 2",
     unit: "psi",
     dbMeasurements: ["Fill Station"],
-    dbField: "pt2",
+    dbFields: ["pt2"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Load Cell 1",
     unit: "lbf",
     dbMeasurements: ["Fill Station"],
-    dbField: "lc1",
+    dbFields: ["lc1"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Igniter 1 Continuity",
     dbMeasurements: ["Fill Station"],
-    dbField: "ign1_cont",
+    dbFields: ["ign1_cont"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Igniter 2 Continuity",
     dbMeasurements: ["Fill Station"],
-    dbField: "ign2_cont",
+    dbFields: ["ign2_cont"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
 
@@ -52,41 +53,41 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     label: "MS since Boot",
     unit: "ms",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "ms_since_boot",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["ms_since_boot"],
     widgets: [ValueWidget()],
   },
   {
     label: "Battery Voltage",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "battery_voltage",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["battery_voltage"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
-    label: "Pressure Transducer 3",
+    label: "Run Tank Pressure",
     unit: "psi",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "pt3",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["pt3"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Pressure Transducer 4",
     unit: "psi",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "pt4",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["pt4"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "RTD Temp",
     unit: "C",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "rtd_temp",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["rtd_temp"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60), GraphWidget(2, -50, 75)],
   },
   {
     label: "Altimeter Armed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "alt_armed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["alt_armed"],
     widgets: [
       BoolStateWidget("Armed", "Disarmed"),
       BoolLightWidget(),
@@ -95,8 +96,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Altimeter Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "alt_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["alt_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -105,8 +106,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "GPS Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "gps_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["gps_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -115,8 +116,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "IMU Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "imu_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["imu_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -125,8 +126,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Accelerometer Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "acc_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["acc_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -135,8 +136,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Umbilical Connection Lock",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "umbilical_connection_lock",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["umbilical_connection_lock"],
     widgets: [
       BoolStateWidget("Connection Lock", "Off"),
       BoolLightWidget(),
@@ -145,8 +146,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "ADC Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "adc_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["adc_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -155,8 +156,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "FRAM Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "fram_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["fram_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -165,8 +166,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SD Valid",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sd_valid",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sd_valid"],
     widgets: [
       BoolStateWidget("Valid", "Off"),
       BoolLightWidget(),
@@ -175,8 +176,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "GPS Message Fresh",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "gps_msg_fresh",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["gps_msg_fresh"],
     widgets: [
       BoolStateWidget("Fresh", "Stale"),
       BoolLightWidget(),
@@ -185,8 +186,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Rocket was Safed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "rocket_was_safed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["rocket_was_safed"],
     widgets: [
       BoolStateWidget("Safed", "Primed"),
       BoolLightWidget(),
@@ -195,8 +196,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "MAV State",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "mav_state",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["mav_state"],
     widgets: [
       BoolStateWidget("On", "Off"),
       BoolLightWidget(),
@@ -205,8 +206,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SV2 State",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sv2_state",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sv2_state"],
     widgets: [
       BoolStateWidget("On", "Off"),
       BoolLightWidget(),
@@ -215,8 +216,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Flight Mode",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "flight_mode",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["flight_mode"],
     widgets: [ValueWidget()],
   },
 
@@ -225,8 +226,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   // ----------------------------
   {
     label: "Altitude Armed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "altitude_armed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["altitude_armed"],
     widgets: [
       BoolStateWidget("Armed", "Disarmed"),
       BoolLightWidget(),
@@ -235,8 +236,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Altimeter Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "altimeter_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["altimeter_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -245,8 +246,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Altimeter Reading Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "altimeter_reading_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["altimeter_reading_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -255,8 +256,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "GPS Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "gps_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["gps_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -265,8 +266,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "GPS Reading Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "gps_reading_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["gps_reading_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -275,8 +276,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "IMU Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "imu_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["imu_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -285,8 +286,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "IMU Reading Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "imu_reading_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["imu_reading_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -295,8 +296,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Accelerometer Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "accelerometer_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["accelerometer_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -305,8 +306,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Accelerometer Reading Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "accelerometer_reading_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["accelerometer_reading_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -315,8 +316,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "ADC Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "adc_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["adc_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -325,8 +326,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "ADC Reading Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "adc_reading_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["adc_reading_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -335,8 +336,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "FRAM Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "fram_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["fram_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -345,8 +346,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "FRAM Read Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "fram_read_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["fram_read_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -355,8 +356,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "FRAM Write Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "fram_write_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["fram_write_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -365,8 +366,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SD Init Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sd_init_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sd_init_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -375,8 +376,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SD Write Failed",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sd_write_failed",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sd_write_failed"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -385,8 +386,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "MAV Was Actuated",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "mav_was_actuated",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["mav_was_actuated"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -395,8 +396,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SV Was Actuated",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sv_was_actuated",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sv_was_actuated"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -405,8 +406,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Main Deploy Wait End",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "main_deploy_wait_end",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["main_deploy_wait_end"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -415,8 +416,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Main Log Shutoff",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "main_log_shutoff",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["main_log_shutoff"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -425,8 +426,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Cycle Overflow",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "cycle_overflow",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["cycle_overflow"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -435,8 +436,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Unknown Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "unknown_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["unknown_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -445,8 +446,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Launch Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "launch_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["launch_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -455,8 +456,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "MAV Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "mav_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["mav_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -465,8 +466,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "SV Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "sv_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["sv_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -475,8 +476,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Safe Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "safe_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["safe_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -485,8 +486,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Reset Card Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "reset_card_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["reset_card_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -495,8 +496,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Reset Fram Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "reset_fram_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["reset_fram_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -505,8 +506,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "State Change Command Received",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "state_change_command_received",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["state_change_command_received"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -515,8 +516,8 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   },
   {
     label: "Umbilical Disconnected",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "umbilical_disconnected",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["umbilical_disconnected"],
     widgets: [
       BoolStateWidget("True", "False"),
       BoolLightWidget(),
@@ -530,156 +531,152 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
   {
     label: "Altitude",
     unit: "m",
-    dbMeasurements: ["Umbilical", "Fill Radio", "Ground Radio"],
-    dbField: "altitude",
+    dbMeasurements: ["Umbilical", "Radio"],
+    dbFields: ["altitude"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Temperature",
     unit: "C",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "altimeter_temperature",
+    dbMeasurements: ["Radio"],
+    dbFields: ["altimeter_temperature"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Latitude",
     unit: "deg",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "gps_latitude",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_latitude"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Longitude",
     unit: "deg",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "gps_longitude",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_longitude"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
+    label: "GPS Location",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_latitude", "gps_longitude"],
+    widgets: [MapWidget()],
+  },
+  {
     label: "Satellites in view",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "gps_satellites_in_view",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_satellites_in_view"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Unix time",
     unit: "seconds",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "gps_unix_time",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_unix_time"],
     widgets: [ValueWidget(3)],
   },
   {
     label: "Horizontal accuracy",
     unit: "mm",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "gps_horizontal_accuracy",
+    dbMeasurements: ["Radio"],
+    dbFields: ["gps_horizontal_accuracy"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "IMU Acceleration X",
     unit: "m/s^2",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_acceleration_x",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_acceleration_x"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "IMU Acceleration Y",
     unit: "m/s^2",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_acceleration_y",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_acceleration_y"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "IMU Acceleration Z",
     unit: "m/s^2",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_acceleration_z",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_acceleration_z"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Gyro X",
     unit: "deg/s",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_gyro_x",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_gyro_x"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Gyro Y",
     unit: "deg/s",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_gyro_y",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_gyro_y"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Gyro Z",
     unit: "deg/s",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_gyro_z",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_gyro_z"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Orientation X",
     unit: "deg",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_orientation_x",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_orientation_x"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Orientation Y",
     unit: "deg",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_orientation_y",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_orientation_y"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Orientation Z",
     unit: "deg",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "imu_orientation_z",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_orientation_z"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
+  },
+  {
+    label: "Rocket 3D Orientation",
+    dbMeasurements: ["Radio"],
+    dbFields: ["imu_orientation_x", "imu_orientation_y", "imu_orientation_z"],
+    widgets: [Rocket3DWidget()],
   },
   {
     label: "Accelerometer Acceleration X",
     unit: "g",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "accelerometer_acceleration_x",
+    dbMeasurements: ["Radio"],
+    dbFields: ["accelerometer_acceleration_x"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Accelerometer Acceleration Y",
     unit: "g",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "accelerometer_acceleration_y",
+    dbMeasurements: ["Radio"],
+    dbFields: ["accelerometer_acceleration_y"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Accelerometer Acceleration Z",
     unit: "g",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "accelerometer_acceleration_z",
+    dbMeasurements: ["Radio"],
+    dbFields: ["accelerometer_acceleration_z"],
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
     label: "Motor state",
     unit: "inches",
-    dbMeasurements: ["Fill Radio", "Ground Radio"],
-    dbField: "blims_motor_state",
-    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
-  },
-
-  // ----------------------------
-  // Fake widgets
-  // ----------------------------
-  {
-    label: "Fuel",
-    dbMeasurements: ["FAKE"],
-    dbField: "fuel",
-    widgets: [FuelWidget()],
-  },
-  {
-    label: "BLiMS",
-    dbMeasurements: ["FAKE"],
-    dbField: "blims",
-    widgets: [MonkeyWidget()],
+    dbMeasurements: ["Radio"],
+    dbFields: ["blims_motor_state"],
+    widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60), MonkeyWidget()],
   },
 ];

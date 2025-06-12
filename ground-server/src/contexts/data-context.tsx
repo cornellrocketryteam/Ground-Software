@@ -7,6 +7,7 @@ import {
   useState,
   useRef,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -157,13 +158,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Memoized context value to ensure stable consumers
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     connected,
     data,
     sendHistoricalDataReq,
     registerLiveDbField,
     deregisterLiveDbField,
-  };
+  }), [connected, data, sendHistoricalDataReq, registerLiveDbField, deregisterLiveDbField]);
 
   return (
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>

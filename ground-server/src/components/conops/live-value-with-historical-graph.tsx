@@ -13,7 +13,7 @@ import {
 interface TelemetryChannel {
   label: string;
   dbMeasurement: string;
-  dbField: string;
+  dbFields: string[];
   unit?: string;
 }
 
@@ -37,7 +37,7 @@ function tickFormatter(tick: number) {
 }
 
 interface LiveValueWithHistoricalGraphProps {
-  /** A TelemetryChannel object that has label, dbField, and unit */
+  /** A TelemetryChannel object that has label, dbFields, and unit */
   channel: TelemetryChannel;
   /** Number of minutes of historical data to show in the chart */
   duration: number;
@@ -52,8 +52,8 @@ export function LiveValueWithHistoricalGraph({
   // If there's no data, show "No data"
   if (
     !data[channel.dbMeasurement] ||
-    !data[channel.dbMeasurement][channel.dbField] ||
-    Object.keys(data[channel.dbMeasurement][channel.dbField]).length === 0
+    !data[channel.dbMeasurement][channel.dbFields[0]] ||
+    Object.keys(data[channel.dbMeasurement][channel.dbFields[0]]).length === 0
   ) {
     return (
       <div className="border p-4 rounded-lg shadow-md flex flex-col items-center">
@@ -63,10 +63,10 @@ export function LiveValueWithHistoricalGraph({
     );
   }
 
-  // Pull data from your websocket/db using channel.dbField
+  // Pull data from your websocket/db using channel.dbFields[0]
 
 
-  const fieldData = data[channel.dbMeasurement][channel.dbField];
+  const fieldData = data[channel.dbMeasurement][channel.dbFields[0]];
 
   // Filter data to the last 'duration' minutes
   const now = Date.now();

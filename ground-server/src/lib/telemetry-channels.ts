@@ -62,7 +62,7 @@ export const TELEMETRY_CHANNELS: TelemetryChannel[] = [
     widgets: [ValueWidget(3), GraphWidget(1), GraphWidget(15), GraphWidget(60)],
   },
   {
-    label: "Pressure Transducer 3",
+    label: "Run Tank Pressure",
     unit: "psi",
     dbMeasurements: ["Umbilical", "Radio"],
     dbField: "pt3",

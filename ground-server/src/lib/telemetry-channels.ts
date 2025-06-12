@@ -1,6 +1,5 @@
 import GraphWidget from "@/components/widgets/graph-widget";
 import ValueWidget from "@/components/widgets/value-widget";
-import FuelWidget from "@/components/widgets/fuel-widget";
 import MonkeyWidget from "@/components/widgets/monkey-widget";
 import BoolLightWidget from "@/components/widgets/bool-light-widget";
 import BoolStateWidget from "@/components/widgets/bool-state-widget";

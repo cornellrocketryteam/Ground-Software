@@ -1,8 +1,6 @@
-import { useEffect } from "react";
 import Image from "next/image";
 import type { Widget, WidgetProps } from "@/lib/definitions";
 import monkey from "@/app/images/monkey-parachuting.png";
-import { useData } from "@/contexts/data-context";
 
 export default function MonkeyWidget(): Widget {
   const MonkeyWidgetComponent = ({ fieldData }: WidgetProps) => {
